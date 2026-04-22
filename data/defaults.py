@@ -1,0 +1,120 @@
+"""Default data used to bootstrap the simulator."""
+
+from models.schemas import MarketReport, TeamArchetype
+
+
+DEFAULT_MARKET_REPORT = MarketReport(
+    round_number=1,
+    total_demand=1200,
+    premium_share=0.25,
+    mid_share=0.50,
+    beginner_share=0.25,
+    material_cost_index=1.00,
+    supply_risk="Moderate",
+    quality_sensitivity=0.60,
+    event="Regional rec league season kickoff increases overall interest.",
+)
+
+
+DEFAULT_TEAM_ARCHETYPES = [
+    TeamArchetype(
+        name="Premium Quality",
+        description="Targets premium buyers with stronger quality control and brand trust.",
+        default_price_level="Premium",
+        default_capacity_plan="Selective Expansion",
+        default_quality_level="High",
+        default_inventory_posture="Lean",
+        base_cost=82.0,
+        base_capacity=260,
+        base_reputation=66.0,
+        base_defect_rate=0.028,
+        premium_fit=0.95,
+        mid_fit=0.55,
+        beginner_fit=0.20,
+    ),
+    TeamArchetype(
+        name="Sponsorship Growth",
+        description="Scales faster and starts with solid awareness, but still needs disciplined operations.",
+        default_price_level="Mid",
+        default_capacity_plan="Expand",
+        default_quality_level="Standard",
+        default_inventory_posture="Balanced",
+        base_cost=76.0,
+        base_capacity=320,
+        base_reputation=62.0,
+        base_defect_rate=0.042,
+        premium_fit=0.65,
+        mid_fit=0.78,
+        beginner_fit=0.35,
+    ),
+    TeamArchetype(
+        name="Engineering Challenger",
+        description="Wins with product design discipline, efficient quality, and steady mid-premium appeal.",
+        default_price_level="Mid",
+        default_capacity_plan="Maintain",
+        default_quality_level="High",
+        default_inventory_posture="Balanced",
+        base_cost=78.0,
+        base_capacity=290,
+        base_reputation=58.0,
+        base_defect_rate=0.025,
+        premium_fit=0.82,
+        mid_fit=0.72,
+        beginner_fit=0.28,
+    ),
+    TeamArchetype(
+        name="Low-Cost Volume",
+        description="Pushes throughput and low price points to serve beginner-heavy demand.",
+        default_price_level="Beginner",
+        default_capacity_plan="Expand",
+        default_quality_level="Basic",
+        default_inventory_posture="Build",
+        base_cost=58.0,
+        base_capacity=420,
+        base_reputation=48.0,
+        base_defect_rate=0.060,
+        premium_fit=0.18,
+        mid_fit=0.55,
+        beginner_fit=0.96,
+    ),
+    TeamArchetype(
+        name="Community / Club",
+        description="Builds dependable club demand through balanced quality, service, and moderate scale.",
+        default_price_level="Mid",
+        default_capacity_plan="Maintain",
+        default_quality_level="Standard",
+        default_inventory_posture="Balanced",
+        base_cost=64.0,
+        base_capacity=300,
+        base_reputation=60.0,
+        base_defect_rate=0.038,
+        premium_fit=0.35,
+        mid_fit=0.86,
+        beginner_fit=0.74,
+    ),
+]
+
+
+DEMO_USER_SEEDS = [
+    {
+        "username": "demo_admin",
+        "password": "DemoAdmin123!",
+        "role": "admin",
+        "team_name": None,
+        "is_active": True,
+    },
+    {
+        "username": "demo_alpha_lead",
+        "password": "DemoAlpha123!",
+        "role": "team_leader",
+        "team_name": "Team Alpha",
+        "is_active": True,
+    },
+    {
+        "username": "demo_beta_lead",
+        "password": "DemoBeta123!",
+        "role": "team_leader",
+        "team_name": "Team Beta",
+        "is_active": True,
+    },
+]

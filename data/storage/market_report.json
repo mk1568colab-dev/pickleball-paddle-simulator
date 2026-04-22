@@ -1,0 +1,11 @@
+{
+  "round_number": 1,
+  "total_demand": 1200,
+  "premium_share": 0.25,
+  "mid_share": 0.5,
+  "beginner_share": 0.25,
+  "material_cost_index": 1.0,
+  "supply_risk": "Moderate",
+  "quality_sensitivity": 0.6,
+  "event": "Regional rec league season kickoff increases overall interest."
+}
