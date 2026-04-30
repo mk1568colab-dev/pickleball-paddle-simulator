@@ -221,9 +221,12 @@ def _load_decisions_into_session(
     firm_decision: TeamDecision,
     product_decisions: list[ProductDecision],
     projects: list[ProductDevelopmentProject],
+    *,
+    update_archetype_widget: bool = True,
 ) -> None:
     """Push the current decision objects into Streamlit widget state."""
-    st.session_state[ARCHETYPE_KEY] = firm_decision.archetype
+    if update_archetype_widget:
+        st.session_state[ARCHETYPE_KEY] = firm_decision.archetype
     for field_name, widget_key in FIRM_WIDGET_KEYS.items():
         st.session_state[widget_key] = getattr(firm_decision, field_name)
 
@@ -781,10 +784,16 @@ def main() -> None:
             _suggested_firm_decision(team_name, selected_archetype),
             _suggested_product_decisions(team_name, selected_archetype, product_lines),
             saved_projects,
+            update_archetype_widget=False,
         )
         st.rerun()
     if saved_product_decisions and existing_firm_decision and identity_actions[1].button("Load Saved Round Submission"):
-        _load_decisions_into_session(existing_firm_decision, saved_product_decisions, saved_projects)
+        _load_decisions_into_session(
+            existing_firm_decision,
+            saved_product_decisions,
+            saved_projects,
+            update_archetype_widget=False,
+        )
         st.rerun()
 
     st.markdown("### 2. Current Team State")
