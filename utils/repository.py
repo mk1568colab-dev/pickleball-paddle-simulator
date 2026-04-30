@@ -166,6 +166,16 @@ def save_market_report(report: MarketReport) -> None:
         )
 
 
+def advance_market_report_to_next_round(report: MarketReport | None = None) -> MarketReport:
+    """Copy the completed round's market settings into the next editable round."""
+    completed_report = report or load_market_report()
+    payload = completed_report.to_dict()
+    payload["round_number"] = completed_report.round_number + 1
+    next_report = MarketReport.from_dict(payload)
+    save_market_report(next_report)
+    return next_report
+
+
 def load_round_status(round_number: int | None = None) -> ClassroomRoundStatus:
     """Load instructor-controlled submission status for a round."""
     ensure_app_storage()
@@ -1780,6 +1790,31 @@ def reset_runtime_data() -> None:
         connection.execute("DELETE FROM round_results")
         connection.execute("DELETE FROM team_states")
         connection.execute("DELETE FROM product_lines")
+
+
+def factory_reset_game_data() -> MarketReport:
+    """Reset all gameplay data to a fresh Round 1 state while preserving accounts."""
+    ensure_app_storage()
+    with get_connection() as connection:
+        connection.execute("DELETE FROM classroom_rounds")
+        connection.execute("DELETE FROM market_reports")
+        connection.execute("DELETE FROM product_decisions")
+        connection.execute("DELETE FROM product_forecasts")
+        connection.execute("DELETE FROM product_development_projects")
+        connection.execute("DELETE FROM forecast_accuracy_results")
+        connection.execute("DELETE FROM product_round_results")
+        connection.execute("DELETE FROM team_decisions")
+        connection.execute("DELETE FROM round_results")
+        connection.execute("DELETE FROM team_states")
+        connection.execute("DELETE FROM product_lines")
+
+    save_market_report(DEFAULT_MARKET_REPORT)
+    set_round_submissions_open(
+        DEFAULT_MARKET_REPORT.round_number,
+        True,
+        "Factory reset created a fresh Round 1.",
+    )
+    return DEFAULT_MARKET_REPORT
 
 
 def count_active_admins() -> int:

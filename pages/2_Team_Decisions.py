@@ -958,7 +958,7 @@ def main() -> None:
 
     st.markdown("### 5. Development Pipeline")
     st.caption(
-        "Use up to two project slots to invest ahead of launch. Launches are delayed until investment, readiness, and earliest launch-round gates are all satisfied."
+        "Use up to two project slots to invest ahead of launch. More investment speeds funding progress; higher testing improves readiness; advanced technology takes longer unless strong funding and testing earn limited expedite credit."
     )
     existing_projects = load_product_development_projects(team_name=team_name)
     existing_project_by_slot = {project.project_slot_name: project for project in existing_projects}

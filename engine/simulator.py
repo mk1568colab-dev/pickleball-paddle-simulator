@@ -35,6 +35,10 @@ from engine.config import (
     MAX_LAUNCHES_PER_ROUND,
     MIN_ATTRACTIVENESS,
     NPD_MIN_DEVELOPMENT_ROUNDS_BY_TECH_GENERATION,
+    NPD_EXPEDITE_EXTRA_PROGRESS_PER_ROUND,
+    NPD_EXPEDITE_PROGRESS_THRESHOLD,
+    NPD_EXPEDITE_TESTING_THRESHOLD,
+    NPD_MAX_EXPEDITE_ROUND_REDUCTION_BY_TECH_GENERATION,
     NPD_REQUIRED_INVESTMENT_BASE,
     NPD_REQUIRED_INVESTMENT_BY_SEGMENT,
     NPD_REQUIRED_INVESTMENT_BY_TECH_GENERATION,
@@ -1272,13 +1276,9 @@ def _progress_projects(
                 normalized_project.created_round = market_report.round_number
 
         required_investment = _required_investment_for_project(normalized_project)
-        min_launch_round = max(
-            normalized_project.created_round
-            + NPD_MIN_DEVELOPMENT_ROUNDS_BY_TECH_GENERATION[
-                normalized_project.target_tech_generation
-            ],
-            normalized_project.planned_launch_round,
-            1,
+        min_launch_round = _minimum_launch_round_for_project(
+            normalized_project,
+            required_investment,
         )
         normalized_project.required_investment = required_investment
         normalized_project.earliest_launch_round = min_launch_round
@@ -1329,6 +1329,11 @@ def _progress_projects(
             project=normalized_project,
             required_investment=required_investment,
         )
+        min_launch_round = _minimum_launch_round_for_project(
+            normalized_project,
+            required_investment,
+        )
+        normalized_project.earliest_launch_round = min_launch_round
         progress_ratio = (
             normalized_project.cumulative_investment / required_investment
             if required_investment > 0
@@ -2636,6 +2641,51 @@ def _project_readiness_score(
             100.0,
         ),
     )
+
+
+def _minimum_launch_round_for_project(
+    project: ProductDevelopmentProject,
+    required_investment: float,
+) -> int:
+    """Return the earliest launch round after tech timing and expedite credit."""
+    tech_development_floor = (
+        project.created_round
+        + NPD_MIN_DEVELOPMENT_ROUNDS_BY_TECH_GENERATION[project.target_tech_generation]
+    )
+    expedite_credit = _project_expedite_round_credit(project, required_investment)
+
+    return max(
+        project.created_round + 1,
+        tech_development_floor - expedite_credit,
+        project.planned_launch_round - expedite_credit,
+        1,
+    )
+
+
+def _project_expedite_round_credit(
+    project: ProductDevelopmentProject,
+    required_investment: float,
+) -> int:
+    """Return bounded launch-timing credit from high funding plus high testing."""
+    max_credit = NPD_MAX_EXPEDITE_ROUND_REDUCTION_BY_TECH_GENERATION[
+        project.target_tech_generation
+    ]
+    if max_credit <= 0 or required_investment <= 0 or not project.is_defined():
+        return 0
+
+    funding_progress = project.cumulative_investment / required_investment
+    testing_intensity = min(max(project.testing_intensity, 0.0), 1.0)
+    if (
+        funding_progress < NPD_EXPEDITE_PROGRESS_THRESHOLD
+        or testing_intensity < NPD_EXPEDITE_TESTING_THRESHOLD
+    ):
+        return 0
+
+    extra_progress = max(funding_progress - NPD_EXPEDITE_PROGRESS_THRESHOLD, 0.0)
+    earned_credit = 1 + int(
+        extra_progress // NPD_EXPEDITE_EXTRA_PROGRESS_PER_ROUND
+    )
+    return min(max_credit, earned_credit)
 
 
 def _required_investment_for_project(project: ProductDevelopmentProject) -> float:

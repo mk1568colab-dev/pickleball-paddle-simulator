@@ -181,7 +181,58 @@ def main() -> None:
         hide_index=True,
     )
 
-    st.subheader("6. Optional Balanced Teaching Score")
+    st.subheader("6. Product Development and Launch Readiness")
+    st.markdown(
+        """
+        Development projects behave like a simple stage-gate process. More money moves the project through the funding gate faster, while testing improves launch readiness and can support limited expediting:
+
+        ```text
+        required_investment =
+            base_required_investment
+          + segment_complexity_cost
+          + technology_generation_cost
+
+        funding_progress = cumulative_investment / required_investment
+
+        readiness_score =
+            readiness_from_funding_progress
+          + testing_intensity_bonus
+          - technology_complexity_penalty
+
+        launch_ready if:
+            cumulative_investment >= required_investment
+            and readiness_score >= launch_readiness_threshold
+            and current_round >= earliest_launch_round
+        ```
+
+        Strong funding plus strong testing can earn bounded expedite credit:
+
+        ```text
+        if funding_progress >= expedite_progress_threshold
+           and testing_intensity >= expedite_testing_threshold:
+               earliest_launch_round can move earlier
+        ```
+
+        This keeps the teaching tradeoff clear: teams can accelerate innovation, but only by spending cash and maintaining engineering discipline.
+        """
+    )
+    st.dataframe(
+        _constant_frame(
+            [
+                ("NPD_REQUIRED_INVESTMENT_BASE", config.NPD_REQUIRED_INVESTMENT_BASE, "Base development cost before segment and technology adjustments."),
+                ("LAUNCH_READINESS_THRESHOLD", config.LAUNCH_READINESS_THRESHOLD, "Readiness score required before a project can launch."),
+                ("READINESS_TESTING_BONUS_MAX", config.READINESS_TESTING_BONUS_MAX, "Maximum readiness benefit from testing intensity."),
+                ("READINESS_COMPLEXITY_PENALTY_PER_TECH", config.READINESS_COMPLEXITY_PENALTY_PER_TECH, "Readiness penalty for higher technology generations."),
+                ("NPD_EXPEDITE_PROGRESS_THRESHOLD", config.NPD_EXPEDITE_PROGRESS_THRESHOLD, "Funding-progress threshold for launch-timing expedite credit."),
+                ("NPD_EXPEDITE_TESTING_THRESHOLD", config.NPD_EXPEDITE_TESTING_THRESHOLD, "Testing-intensity threshold for launch-timing expedite credit."),
+                ("NPD_MAX_EXPEDITE_ROUND_REDUCTION_BY_TECH_GENERATION", config.NPD_MAX_EXPEDITE_ROUND_REDUCTION_BY_TECH_GENERATION, "Maximum rounds that expediting can pull forward by tech generation."),
+            ]
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.subheader("7. Optional Balanced Teaching Score")
     st.markdown(
         """
         The dashboard includes an optional classroom score to prevent pure profit-chasing:

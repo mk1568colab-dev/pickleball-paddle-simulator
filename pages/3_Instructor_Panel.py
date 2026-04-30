@@ -9,6 +9,8 @@ from engine.simulator import build_round_validation_rows, run_round
 from utils.auth import require_admin, require_authenticated_user
 from utils.bootstrap import ensure_app_storage
 from utils.repository import (
+    advance_market_report_to_next_round,
+    factory_reset_game_data,
     load_market_report,
     load_product_decisions,
     load_product_development_projects,
@@ -17,20 +19,26 @@ from utils.repository import (
     load_team_decisions,
     load_team_states,
     load_users,
-    reset_runtime_data,
     save_forecast_accuracy_results,
     save_product_development_projects,
     save_product_lines,
     save_product_round_results,
     save_round_results,
-    set_round_submissions_open,
     save_team_states,
+    set_round_submissions_open,
 )
 
 
 def _frame(records: list[dict[str, object]]) -> pd.DataFrame:
     """Convert dictionaries into a display DataFrame."""
     return pd.DataFrame(records) if records else pd.DataFrame()
+
+
+def _clear_game_editor_session_state() -> None:
+    """Clear cached decision-editor values after a full game reset."""
+    for key in list(st.session_state):
+        if key.startswith("stage_b_"):
+            del st.session_state[key]
 
 
 def _submission_status_rows(
@@ -76,6 +84,10 @@ def main() -> None:
     st.caption(
         "Admin-only controls for reviewing Stage C submissions, validating planning discipline and liquidity risk, and running the round engine."
     )
+    if notice := st.session_state.pop("instructor_panel_notice", None):
+        st.success(notice)
+    if warning := st.session_state.pop("instructor_panel_warning", None):
+        st.warning(warning)
 
     market_report = load_market_report()
     current_round = market_report.round_number
@@ -213,15 +225,44 @@ def main() -> None:
             save_team_states(updated_states)
             save_product_lines(updated_product_lines)
             save_product_development_projects(updated_projects)
-            st.success(
-                f"Round completed for {len(round_results)} teams, {len(product_results)} product slots, {len(forecast_accuracy_results)} forecast rows, and {len(updated_projects)} project slots."
+            next_market_report = advance_market_report_to_next_round(market_report)
+            set_round_submissions_open(
+                market_report.round_number,
+                False,
+                "Round completed by instructor.",
             )
+            set_round_submissions_open(
+                next_market_report.round_number,
+                True,
+                "Next round opened automatically after round execution.",
+            )
+            _clear_game_editor_session_state()
+            st.session_state["instructor_panel_notice"] = (
+                f"Round {market_report.round_number} completed for {len(round_results)} teams, "
+                f"{len(product_results)} product slots, and {len(forecast_accuracy_results)} forecast rows. "
+                f"Public Market Report is now ready for Round {next_market_report.round_number}."
+            )
+            st.rerun()
 
-    if st.button("Reset Decisions, Pipeline, Results, and Team State"):
-        reset_runtime_data()
-        st.warning(
-            "Runtime decisions, development projects, product slots, results, and team states have been reset."
+    st.markdown("#### Factory Reset")
+    st.warning(
+        "Factory reset erases all game progress, market report history, decisions, product portfolios, pipelines, results, and team states. It keeps admin/team-leader accounts."
+    )
+    confirm_factory_reset = st.checkbox(
+        "I understand this will restart the simulation at Round 1.",
+        key="confirm_factory_reset_game",
+    )
+    if st.button(
+        "Factory Reset Game",
+        disabled=not confirm_factory_reset,
+        help="Keeps user accounts, but resets the simulation itself to a fresh Round 1.",
+    ):
+        reset_report = factory_reset_game_data()
+        _clear_game_editor_session_state()
+        st.session_state["instructor_panel_warning"] = (
+            f"Factory reset complete. The game is back to Round {reset_report.round_number}; accounts were kept."
         )
+        st.rerun()
 
     st.subheader("Validation Detail")
     if validation_frame.empty:
