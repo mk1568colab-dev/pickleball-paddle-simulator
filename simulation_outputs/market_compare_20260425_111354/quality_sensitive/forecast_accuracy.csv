@@ -1,0 +1,73 @@
+round_number,team_name,product_id,slot_name,product_name,forecast_units,actual_demand_units,actual_sales_units,forecast_error_units,absolute_error_units,forecast_bias_pct,mape_or_wape_value
+1,Team 01,team_01_A,A,Elite Spin Pro,85,80.06,80,-4.94,4.94,-0.0582,0.0617
+1,Team 01,team_01_B,B,Control Tour,95,81.36,81,-13.64,13.64,-0.1436,0.1677
+1,Team 01,team_01_C,C,Club Prestige,0,0.0,0,0.0,0.0,0.0,0.0
+1,Team 02,team_02_A,A,Momentum Edge,158,78.36,78,-79.64,79.64,-0.504,1.0163
+1,Team 02,team_02_B,B,Rise Power,112,82.43,82,-29.57,29.57,-0.264,0.3587
+1,Team 02,team_02_C,C,Court Wave,145,70.12,70,-74.88,74.88,-0.5164,1.0679
+1,Team 03,team_03_A,A,Vector X,90,87.25,87,-2.75,2.75,-0.0306,0.0315
+1,Team 03,team_03_B,B,Axis Control,110,78.86,78,-31.14,31.14,-0.2831,0.395
+1,Team 03,team_03_C,C,Baseline Drive,0,0.0,0,0.0,0.0,0.0,0.0
+1,Team 04,team_04_A,A,Starter Pop,144,74.62,74,-69.38,69.38,-0.4818,0.9297
+1,Team 04,team_04_B,B,Club Value,125,49.08,49,-75.92,75.92,-0.6073,1.5466
+1,Team 04,team_04_C,C,Flex Edge,86,74.58,74,-11.42,11.42,-0.1328,0.1531
+1,Team 05,team_05_A,A,Club Control,83,93.37,88,10.37,10.37,0.1249,0.111
+1,Team 05,team_05_B,B,Court Starter,72,52.57,52,-19.43,19.43,-0.2699,0.3697
+1,Team 05,team_05_C,C,Club Spin,52,82.43,55,30.43,30.43,0.5852,0.3692
+1,Team 06,team_06_A,A,Elite Spin Pro,132,81.75,81,-50.25,50.25,-0.3807,0.6147
+1,Team 06,team_06_B,B,Control Tour,146,85.16,85,-60.84,60.84,-0.4167,0.7143
+1,Team 06,team_06_C,C,Club Prestige,0,0.0,0,0.0,0.0,0.0,0.0
+2,Team 01,team_01_A,A,Elite Spin Pro,85,93.12,92,8.12,8.12,0.0956,0.0872
+2,Team 01,team_01_B,B,Control Tour,95,87.9,87,-7.1,7.1,-0.0748,0.0808
+2,Team 01,team_01_C,C,Club Prestige,0,0.0,0,0.0,0.0,0.0,0.0
+2,Team 02,team_02_A,A,Momentum Edge,158,91.94,39,-66.06,66.06,-0.4181,0.7185
+2,Team 02,team_02_B,B,Rise Power,112,80.85,0,-31.15,31.15,-0.2782,0.3854
+2,Team 02,team_02_C,C,Court Wave,145,59.53,37,-85.47,85.47,-0.5894,1.4356
+2,Team 03,team_03_A,A,Vector X,90,94.23,91,4.23,4.23,0.047,0.0448
+2,Team 03,team_03_B,B,Axis Control,110,92.11,92,-17.89,17.89,-0.1627,0.1943
+2,Team 03,team_03_C,C,Baseline Drive,0,0.0,0,0.0,0.0,0.0,0.0
+2,Team 04,team_04_A,A,Starter Pop,144,79.81,79,-64.19,64.19,-0.4458,0.8042
+2,Team 04,team_04_B,B,Club Value,125,52.48,52,-72.52,72.52,-0.5801,1.3817
+2,Team 04,team_04_C,C,Flex Edge,86,86.13,86,0.13,0.13,0.0015,0.0015
+2,Team 05,team_05_A,A,Club Control,83,74.71,76,-8.29,8.29,-0.0999,0.111
+2,Team 05,team_05_B,B,Court Starter,72,58.16,58,-13.84,13.84,-0.1923,0.238
+2,Team 05,team_05_C,C,Club Spin,52,106.0,56,54.0,54.0,1.0385,0.5094
+2,Team 06,team_06_A,A,Elite Spin Pro,132,95.08,95,-36.92,36.92,-0.2797,0.3883
+2,Team 06,team_06_B,B,Control Tour,146,91.96,91,-54.04,54.04,-0.3702,0.5877
+2,Team 06,team_06_C,C,Club Prestige,0,0.0,0,0.0,0.0,0.0,0.0
+3,Team 01,team_01_A,A,Elite Spin Pro,85,113.6,86,28.6,28.6,0.3364,0.2517
+3,Team 01,team_01_B,B,Control Tour,95,80.1,80,-14.9,14.9,-0.1568,0.186
+3,Team 01,team_01_C,C,Club Prestige,0,0.0,0,0.0,0.0,0.0,0.0
+3,Team 02,team_02_A,A,Momentum Edge,158,103.98,131,-54.02,54.02,-0.3419,0.5196
+3,Team 02,team_02_B,B,Rise Power,112,76.34,99,-35.66,35.66,-0.3184,0.467
+3,Team 02,team_02_C,C,Court Wave,145,65.02,77,-79.98,79.98,-0.5516,1.23
+3,Team 03,team_03_A,A,Vector X,90,87.49,89,-2.51,2.51,-0.0279,0.0287
+3,Team 03,team_03_B,B,Axis Control,110,111.38,111,1.38,1.38,0.0125,0.0123
+3,Team 03,team_03_C,C,Baseline Drive,0,0.0,0,0.0,0.0,0.0,0.0
+3,Team 04,team_04_A,A,Starter Pop,144,73.33,73,-70.67,70.67,-0.4908,0.9638
+3,Team 04,team_04_B,B,Club Value,125,61.96,61,-63.04,63.04,-0.5043,1.0173
+3,Team 04,team_04_C,C,Flex Edge,86,99.13,80,13.13,13.13,0.1527,0.1325
+3,Team 05,team_05_A,A,Club Control,83,83.01,83,0.01,0.01,0.0001,0.0001
+3,Team 05,team_05_B,B,Court Starter,72,64.41,64,-7.59,7.59,-0.1055,0.1179
+3,Team 05,team_05_C,C,Club Spin,52,117.76,53,65.76,65.76,1.2645,0.5584
+3,Team 06,team_06_A,A,Elite Spin Pro,132,115.69,115,-16.31,16.31,-0.1236,0.141
+3,Team 06,team_06_B,B,Control Tour,146,82.81,82,-63.19,63.19,-0.4328,0.7632
+3,Team 06,team_06_C,C,Club Prestige,0,0.0,0,0.0,0.0,0.0,0.0
+4,Team 01,team_01_A,A,Elite Spin Pro,85,114.11,86,29.11,29.11,0.3425,0.2551
+4,Team 01,team_01_B,B,Control Tour,95,93.34,93,-1.66,1.66,-0.0174,0.0177
+4,Team 01,team_01_C,C,Club Prestige,0,0.0,0,0.0,0.0,0.0,0.0
+4,Team 02,team_02_A,A,Momentum Edge,158,100.63,100,-57.37,57.37,-0.3631,0.5701
+4,Team 02,team_02_B,B,Rise Power,112,92.84,100,-19.16,19.16,-0.1711,0.2064
+4,Team 02,team_02_C,C,Court Wave,145,79.56,79,-65.44,65.44,-0.4513,0.8226
+4,Team 03,team_03_A,A,Vector X,90,106.75,54,16.75,16.75,0.1861,0.1569
+4,Team 03,team_03_B,B,Axis Control,110,107.54,107,-2.46,2.46,-0.0223,0.0229
+4,Team 03,team_03_C,C,Baseline Drive,0,0.0,0,0.0,0.0,0.0,0.0
+4,Team 04,team_04_A,A,Starter Pop,144,82.19,82,-61.81,61.81,-0.4292,0.752
+4,Team 04,team_04_B,B,Club Value,115,55.82,55,-59.18,59.18,-0.5146,1.0601
+4,Team 04,team_04_C,C,Team 04 NextGen,86,127.95,79,41.95,41.95,0.4878,0.3279
+4,Team 05,team_05_A,A,Club Control,83,92.87,14,9.87,9.87,0.1189,0.1063
+4,Team 05,team_05_B,B,Court Starter,66,62.62,51,-3.38,3.38,-0.0512,0.0539
+4,Team 05,team_05_C,C,Club Spin,52,97.14,0,45.14,45.14,0.868,0.4647
+4,Team 06,team_06_A,A,Elite Spin Pro,132,117.44,117,-14.56,14.56,-0.1103,0.1239
+4,Team 06,team_06_B,B,Control Tour,146,97.19,97,-48.81,48.81,-0.3343,0.5023
+4,Team 06,team_06_C,C,Club Prestige,0,0.0,0,0.0,0.0,0.0,0.0

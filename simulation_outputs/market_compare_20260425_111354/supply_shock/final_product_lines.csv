@@ -1,0 +1,19 @@
+product_id,team_name,product_name,slot_name,is_active,target_segment,lifecycle_stage,age_in_rounds,base_defect_rate_modifier,base_demand_fit_modifier,tech_generation,cannibalization_group,launch_round,retirement_flag,retired_round,replacement_project_id,inventory_units,backlog_units
+team_01_A,Team 01,Elite Spin Pro,A,True,premium,maturity,5,-0.004,1.08,3,tour,0,False,,,0,14
+team_01_B,Team 01,Control Tour,B,True,mid,maturity,6,-0.002,1.02,2,tour,0,False,,,46,0
+team_01_C,Team 01,Club Prestige,C,False,mid,maturity,4,0.0,0.92,1,club,0,False,,,0,0
+team_02_A,Team 02,Momentum Edge,A,True,mid,maturity,5,0.002,1.05,2,power,0,False,,,16,0
+team_02_B,Team 02,Rise Power,B,True,premium,maturity,6,0.004,0.98,3,power,0,False,,,0,11
+team_02_C,Team 02,Court Wave,C,True,beginner,decline,7,0.003,1.04,1,entry,0,False,,,30,0
+team_03_A,Team 03,Vector X,A,True,premium,maturity,6,-0.003,1.06,3,engineered,0,False,,,0,24
+team_03_B,Team 03,Axis Control,B,True,mid,maturity,5,-0.001,1.03,2,engineered,0,False,,,2,0
+team_03_C,Team 03,Baseline Drive,C,False,beginner,maturity,5,0.002,0.88,1,entry,0,False,,,0,0
+team_04_A,Team 04,Starter Pop,A,True,beginner,maturity,6,0.004,1.1,1,entry,0,False,,,199,0
+team_04_B,Team 04,Club Value,B,False,beginner,decline,7,0.003,1.03,1,entry,0,True,4,,0,0
+team_04_C,Team 04,Team 04 NextGen,C,True,beginner,launch,1,0.002,1.08,3,beginner_nextgen,4,False,,team_04_P1,0,34
+team_05_A,Team 05,Club Control,A,True,mid,decline,7,0.001,1.07,2,club,0,False,,,0,3
+team_05_B,Team 05,Court Starter,B,True,beginner,decline,8,0.002,1.0,1,club,0,False,,,0,1
+team_05_C,Team 05,Club Spin,C,True,mid,maturity,5,0.0,1.01,2,club,0,False,,,0,8
+team_06_A,Team 06,Elite Spin Pro,A,True,premium,maturity,5,-0.004,1.08,3,tour,0,False,,,0,23
+team_06_B,Team 06,Control Tour,B,True,mid,maturity,6,-0.002,1.02,2,tour,0,False,,,53,0
+team_06_C,Team 06,Club Prestige,C,False,mid,maturity,4,0.0,0.92,1,club,0,False,,,0,0

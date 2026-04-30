@@ -1,101 +1,587 @@
-"""Dashboard page for reviewing saved simulator records."""
+"""Dashboard page for reviewing Stage C portfolio, forecast, and finance outputs."""
 
 from __future__ import annotations
 
 import pandas as pd
 import streamlit as st
 
+from engine.teaching import (
+    build_balanced_score_rows,
+    build_debrief_rows,
+    build_forecast_learning_rows,
+)
 from utils.auth import require_authenticated_user
 from utils.bootstrap import ensure_app_storage
 from utils.repository import (
+    load_forecast_accuracy_results,
     load_market_report,
+    load_product_development_projects,
+    load_product_lines,
+    load_product_round_results,
     load_round_results,
-    load_team_decisions,
     load_team_states,
 )
 
 
+TEAM_RESULT_COLUMNS = [
+    "round_number",
+    "team_name",
+    "archetype",
+    "active_product_count",
+    "active_project_count",
+    "launch_ready_project_count",
+    "launched_project_count",
+    "retired_product_count",
+    "total_forecast_units",
+    "total_actual_demand_units",
+    "forecast_error_units",
+    "absolute_forecast_error_units",
+    "forecast_wape",
+    "service_gap_units",
+    "weighted_average_selling_price",
+    "planned_production_units",
+    "actual_production_units",
+    "effective_capacity_units",
+    "utilization_pct",
+    "weighted_material_unit_cost",
+    "defect_rate",
+    "good_units_produced",
+    "demand_allocated",
+    "sales_units",
+    "lost_sales_units",
+    "backlog_units_end",
+    "ending_inventory",
+    "ending_raw_material_inventory",
+    "fill_rate",
+    "revenue",
+    "procurement_cost",
+    "production_cost",
+    "holding_cost",
+    "warranty_cost",
+    "backlog_cost",
+    "expansion_cost",
+    "innovation_investment",
+    "interest_expense",
+    "working_capital_requirement",
+    "planned_borrowing_amount",
+    "automatic_borrowing_amount",
+    "ending_cash_balance",
+    "short_term_debt_balance",
+    "liquidity_stress_flag",
+    "total_cost",
+    "profit",
+    "contribution_margin_per_unit",
+    "reputation_after_round",
+    "average_portfolio_tech_generation",
+    "cannibalized_demand_units",
+    "launch_events_text",
+]
+
+PRODUCT_RESULT_COLUMNS = [
+    "round_number",
+    "team_name",
+    "slot_name",
+    "product_name",
+    "target_segment",
+    "lifecycle_stage",
+    "age_in_rounds",
+    "tech_generation",
+    "selling_price_per_unit",
+    "forecast_units",
+    "planned_production_units",
+    "actual_production_units",
+    "defect_rate",
+    "good_units_produced",
+    "demand_allocated",
+    "actual_demand_units",
+    "sales_units",
+    "lost_sales_units",
+    "backlog_units_end",
+    "ending_inventory",
+    "fill_rate",
+    "forecast_error_units",
+    "absolute_error_units",
+    "forecast_bias_pct",
+    "mape_or_wape_value",
+    "revenue",
+    "production_cost",
+    "holding_cost",
+    "warranty_cost",
+    "allocated_procurement_cost",
+    "allocated_backlog_cost",
+    "allocated_expansion_cost",
+    "profit_contribution",
+    "tech_gap_to_market",
+    "tech_attractiveness_adjustment",
+    "cannibalization_in_units",
+    "cannibalization_out_units",
+    "launched_this_round",
+    "launch_event",
+    "retired_this_round",
+    "retirement_liquidation_revenue",
+]
+
+FORECAST_ACCURACY_COLUMNS = [
+    "round_number",
+    "team_name",
+    "slot_name",
+    "product_name",
+    "forecast_units",
+    "actual_demand_units",
+    "actual_sales_units",
+    "forecast_error_units",
+    "absolute_error_units",
+    "forecast_bias_pct",
+    "mape_or_wape_value",
+]
+
+
 def _frame(records: list[dict[str, object]]) -> pd.DataFrame:
-    """Convert a list of dictionaries into a display-friendly DataFrame."""
+    """Convert a list of dictionaries into a DataFrame."""
     return pd.DataFrame(records) if records else pd.DataFrame()
 
 
-def _build_rankings(round_results_frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Build the two ranking tables for the latest available round."""
-    latest_round = int(round_results_frame["round_number"].max())
-    latest_round_frame = round_results_frame[
-        round_results_frame["round_number"] == latest_round
-    ]
+def _download_frame(label: str, frame: pd.DataFrame, file_name: str) -> None:
+    """Render a CSV download button for a DataFrame."""
+    if frame.empty:
+        return
+    st.download_button(
+        label=label,
+        data=frame.to_csv(index=False).encode("utf-8"),
+        file_name=file_name,
+        mime="text/csv",
+    )
 
-    profit_ranking = latest_round_frame.sort_values(
-        by="profit",
-        ascending=False,
+
+def _latest_round_frame(frame: pd.DataFrame) -> pd.DataFrame:
+    """Return only the latest round in a result frame."""
+    latest_round = int(frame["round_number"].max())
+    return frame[frame["round_number"] == latest_round].copy()
+
+
+def _state_rows(states) -> list[dict[str, object]]:
+    """Flatten persistent team state into dashboard-friendly rows."""
+    rows: list[dict[str, object]] = []
+    for state in states:
+        next_inbound_round = min(
+            (order.arrival_round for order in state.open_material_orders),
+            default=None,
+        )
+        rows.append(
+            {
+                "team_name": state.team_name,
+                "archetype": state.archetype,
+                "cash_balance": state.cash_balance,
+                "short_term_debt_balance": state.short_term_debt_balance,
+                "interest_expense_last_round": state.interest_expense_last_round,
+                "liquidity_warning_flag": state.liquidity_warning_flag,
+                "working_capital_stress_score": state.working_capital_stress_score,
+                "finished_goods_inventory": state.inventory_units,
+                "raw_material_inventory": state.raw_material_inventory,
+                "backlog_units": state.backlog_units,
+                "installed_capacity_units": state.capacity_units,
+                "reputation_score": state.reputation_score,
+                "open_material_orders_count": len(state.open_material_orders),
+                "next_inbound_round": next_inbound_round,
+                "completed_rounds": ", ".join(str(item) for item in state.completed_rounds),
+                "cumulative_profit": state.cumulative_profit,
+            }
+        )
+    return rows
+
+
+def _team_rankings(
+    latest_team_frame: pd.DataFrame,
+    total_demand: int,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Build Stage B team-level ranking tables."""
+    ranking_base = latest_team_frame.copy()
+    ranking_base["market_share_pct"] = (ranking_base["demand_allocated"] / max(total_demand, 1)) * 100.0
+
+    profit_ranking = ranking_base.sort_values(by="profit", ascending=False)[
+        ["team_name", "profit", "revenue", "total_cost", "innovation_investment", "reputation_after_round"]
+    ]
+    market_share_ranking = ranking_base.sort_values(by=["demand_allocated", "sales_units"], ascending=[False, False])[
+        ["team_name", "demand_allocated", "market_share_pct", "sales_units", "average_portfolio_tech_generation"]
+    ]
+    service_ranking = ranking_base.sort_values(by=["fill_rate", "lost_sales_units", "backlog_units_end"], ascending=[False, True, True])[
+        ["team_name", "fill_rate", "lost_sales_units", "backlog_units_end", "ending_inventory"]
+    ]
+    defect_ranking = ranking_base.sort_values(by=["defect_rate", "warranty_cost"], ascending=[True, True])[
+        ["team_name", "defect_rate", "warranty_cost", "good_units_produced", "reputation_after_round"]
+    ]
+    utilization_ranking = ranking_base.sort_values(by=["utilization_pct", "effective_capacity_units"], ascending=[False, False])[
+        ["team_name", "utilization_pct", "effective_capacity_units", "planned_production_units", "actual_production_units"]
+    ]
+    forecast_accuracy_ranking = ranking_base.sort_values(
+        by=["forecast_wape", "absolute_forecast_error_units"],
+        ascending=[True, True],
     )[
         [
             "team_name",
-            "archetype",
-            "profit",
+            "forecast_wape",
+            "total_forecast_units",
+            "total_actual_demand_units",
+            "absolute_forecast_error_units",
+        ]
+    ]
+    return (
+        profit_ranking,
+        market_share_ranking,
+        service_ranking,
+        defect_ranking,
+        utilization_ranking,
+        forecast_accuracy_ranking,
+    )
+
+
+def _portfolio_snapshot_frame(product_lines_frame: pd.DataFrame) -> pd.DataFrame:
+    """Return a tidy active-portfolio snapshot frame."""
+    if product_lines_frame.empty:
+        return product_lines_frame
+    return product_lines_frame[
+        [
+            "team_name",
+            "slot_name",
+            "product_name",
+            "is_active",
+            "target_segment",
+            "lifecycle_stage",
+            "age_in_rounds",
+            "tech_generation",
+            "inventory_units",
+            "backlog_units",
+            "retirement_flag",
+            "retired_round",
+        ]
+    ].copy()
+
+
+def _pipeline_snapshot_frame(project_frame: pd.DataFrame) -> pd.DataFrame:
+    """Return a tidy development-pipeline frame."""
+    if project_frame.empty:
+        return project_frame
+    return project_frame[
+        [
+            "team_name",
+            "project_slot_name",
+            "project_name",
+            "status",
+            "target_segment",
+            "target_tech_generation",
+            "intended_slot_name",
+            "required_investment",
+            "cumulative_investment",
+            "investment_this_round",
+            "testing_intensity",
+            "launch_readiness_score",
+            "planned_launch_round",
+            "earliest_launch_round",
+            "launched_round",
+            "canceled_round",
+            "replaced_product_name",
+        ]
+    ].copy()
+
+
+def _lifecycle_distribution(product_lines_frame: pd.DataFrame) -> pd.DataFrame:
+    """Build lifecycle-stage counts."""
+    if product_lines_frame.empty:
+        return pd.DataFrame()
+    return (
+        product_lines_frame.groupby(["lifecycle_stage", "target_segment", "tech_generation"])
+        .size()
+        .reset_index(name="product_count")
+        .sort_values(by=["lifecycle_stage", "target_segment", "tech_generation"])
+    )
+
+
+def _product_profitability_frame(product_results_frame: pd.DataFrame) -> pd.DataFrame:
+    """Build a product profitability view for admins."""
+    if product_results_frame.empty:
+        return product_results_frame
+    return product_results_frame.sort_values(by=["profit_contribution", "sales_units"], ascending=[False, False])[
+        [
+            "team_name",
+            "slot_name",
+            "product_name",
+            "target_segment",
+            "lifecycle_stage",
+            "tech_generation",
+            "profit_contribution",
             "revenue",
-            "total_cost",
-            "reputation_after_round",
+            "sales_units",
+            "fill_rate",
+            "defect_rate",
+            "cannibalization_in_units",
+            "cannibalization_out_units",
         ]
     ]
 
-    sales_ranking = latest_round_frame.sort_values(
-        by=["sales_units", "demand_allocated"],
-        ascending=[False, False],
-    )[
+
+def _launch_log_frame(product_results_frame: pd.DataFrame) -> pd.DataFrame:
+    """Return launch and retirement events from product results."""
+    if product_results_frame.empty:
+        return product_results_frame
+    event_rows = product_results_frame[
+        (product_results_frame["launched_this_round"]) | (product_results_frame["retired_this_round"])
+    ].copy()
+    if event_rows.empty:
+        return event_rows
+    return event_rows[
         [
+            "round_number",
             "team_name",
-            "archetype",
-            "sales_units",
-            "demand_allocated",
-            "fill_rate",
-            "stockout_units",
+            "slot_name",
+            "product_name",
+            "launched_this_round",
+            "launch_event",
+            "retired_this_round",
+            "retirement_liquidation_revenue",
         ]
-    ]
-    return profit_ranking, sales_ranking
+    ].sort_values(by=["round_number", "team_name", "slot_name"], ascending=[False, True, True])
 
 
 def main() -> None:
-    """Render saved inputs and computed outputs."""
+    """Render Stage C saved inputs and outputs."""
     ensure_app_storage()
     user = require_authenticated_user()
 
     st.title("Results Dashboard")
-    st.caption("Review current round outcomes and persistent team performance.")
+    st.caption(
+        "Review Stage C portfolio performance with forecast accuracy, planning diagnostics, cash pressure, product detail, and development-pipeline progress."
+    )
 
     market_report = load_market_report()
-    current_round = market_report.round_number
-    round_results = load_round_results()
-    round_results_frame = _frame([item.to_dict() for item in round_results])
+    team_results = load_round_results()
+    team_results_frame = _frame([item.to_dict() for item in team_results])
+    forecast_accuracy_frame = _frame(
+        [item.to_dict() for item in load_forecast_accuracy_results()]
+    )
+    product_results = load_product_round_results()
+    product_results_frame = _frame([item.to_dict() for item in product_results])
+    product_lines = load_product_lines()
+    product_lines_frame = _frame([item.to_dict() for item in product_lines])
+    development_projects = load_product_development_projects()
+    project_frame = _frame([item.to_dict() for item in development_projects if item.is_defined()])
 
     st.subheader("Current Market Report")
     st.table(_frame([market_report.to_dict()]))
 
     if user.role == "admin":
-        decisions = load_team_decisions(round_number=current_round)
-        team_states = load_team_states()
+        (
+            team_summary_tab,
+            teaching_debrief_tab,
+            forecast_accuracy_tab,
+            product_detail_tab,
+            liquidity_tab,
+            portfolio_snapshot_tab,
+            pipeline_tab,
+            event_log_tab,
+        ) = st.tabs(
+            [
+                "Team Summary",
+                "Teaching Debrief",
+                "Forecast Accuracy",
+                "Product Detail",
+                "Liquidity / Debt",
+                "Portfolio Snapshot",
+                "Development Pipeline",
+                "Launch / Retirement Log",
+            ]
+        )
 
-        st.subheader("Saved Team Decisions")
-        st.dataframe(_frame([item.to_dict() for item in decisions]), use_container_width=True)
+        with team_summary_tab:
+            if team_results_frame.empty:
+                st.info("Run a round from the Instructor Panel to generate team-level results.")
+            else:
+                latest_team_frame = _latest_round_frame(team_results_frame)
+                latest_round = int(latest_team_frame["round_number"].iloc[0])
+                st.subheader(f"Latest Team Summary - Round {latest_round}")
+                st.dataframe(latest_team_frame[TEAM_RESULT_COLUMNS], use_container_width=True, hide_index=True)
+                _download_frame(
+                    "Download Latest Team Summary CSV",
+                    latest_team_frame[TEAM_RESULT_COLUMNS],
+                    f"round_{latest_round}_team_summary.csv",
+                )
 
-        st.subheader("Round Results")
-        if round_results_frame.empty:
-            st.info("Run a round from the Instructor Panel to generate results.")
-        else:
-            st.dataframe(round_results_frame, use_container_width=True)
-            profit_ranking, sales_ranking = _build_rankings(round_results_frame)
+                rankings = _team_rankings(latest_team_frame, market_report.total_demand)
+                st.markdown("#### Profit Ranking")
+                st.dataframe(rankings[0], use_container_width=True, hide_index=True)
+                st.markdown("#### Market Share / Demand Ranking")
+                st.dataframe(rankings[1], use_container_width=True, hide_index=True)
+                st.markdown("#### Service Level / Fill Rate Ranking")
+                st.dataframe(rankings[2], use_container_width=True, hide_index=True)
+                st.markdown("#### Defect Rate Ranking")
+                st.dataframe(rankings[3], use_container_width=True, hide_index=True)
+                st.markdown("#### Capacity Utilization Ranking")
+                st.dataframe(rankings[4], use_container_width=True, hide_index=True)
+                st.markdown("#### Forecast Accuracy Ranking")
+                st.dataframe(rankings[5], use_container_width=True, hide_index=True)
 
-            latest_round = int(round_results_frame["round_number"].max())
-            st.subheader(f"Profit Ranking - Round {latest_round}")
-            st.dataframe(profit_ranking, use_container_width=True)
+                st.markdown("#### Persistent Team State")
+                state_frame = _frame(_state_rows(load_team_states()))
+                if state_frame.empty:
+                    st.info("Persistent team state will appear after the first completed round.")
+                else:
+                    st.dataframe(state_frame, use_container_width=True, hide_index=True)
+                    _download_frame(
+                        "Download Team State CSV",
+                        state_frame,
+                        "persistent_team_state.csv",
+                    )
 
-            st.subheader(f"Demand / Sales Ranking - Round {latest_round}")
-            st.dataframe(sales_ranking, use_container_width=True)
+        with teaching_debrief_tab:
+            debrief_frame = _frame(build_debrief_rows(team_results, product_results))
+            balanced_score_frame = _frame(build_balanced_score_rows(team_results))
+            forecast_learning_frame = _frame(
+                build_forecast_learning_rows(load_forecast_accuracy_results())
+            )
+            if debrief_frame.empty:
+                st.info("Teaching debrief diagnostics appear after the first completed round.")
+            else:
+                st.subheader("Instructor Debrief Diagnostics")
+                st.dataframe(debrief_frame, use_container_width=True, hide_index=True)
+                _download_frame(
+                    "Download Debrief Diagnostics CSV",
+                    debrief_frame,
+                    "latest_round_debrief_diagnostics.csv",
+                )
+                st.markdown("#### Optional Balanced Teaching Score")
+                st.caption(
+                    "This is not a hidden game rule. It is an optional classroom scoring lens: 40% profit, 20% service, 20% forecast accuracy, 20% liquidity, with a liquidity-stress penalty."
+                )
+                st.dataframe(balanced_score_frame, use_container_width=True, hide_index=True)
+                _download_frame(
+                    "Download Balanced Score CSV",
+                    balanced_score_frame,
+                    "latest_round_balanced_score.csv",
+                )
+                st.markdown("#### Forecast Learning Evidence")
+                st.dataframe(forecast_learning_frame, use_container_width=True, hide_index=True)
+                _download_frame(
+                    "Download Forecast Learning CSV",
+                    forecast_learning_frame,
+                    "latest_round_forecast_learning.csv",
+                )
 
-        st.subheader("Persistent Team State")
-        st.dataframe(_frame([item.to_dict() for item in team_states]), use_container_width=True)
+        with forecast_accuracy_tab:
+            if forecast_accuracy_frame.empty:
+                st.info("Forecast-vs-actual rows will appear after the admin runs a round.")
+            else:
+                latest_accuracy_frame = _latest_round_frame(forecast_accuracy_frame)
+                st.subheader("Latest Product Forecast vs Actual")
+                st.dataframe(
+                    latest_accuracy_frame[FORECAST_ACCURACY_COLUMNS],
+                    use_container_width=True,
+                    hide_index=True,
+                )
+                _download_frame(
+                    "Download Latest Forecast Accuracy CSV",
+                    latest_accuracy_frame[FORECAST_ACCURACY_COLUMNS],
+                    "latest_product_forecast_accuracy.csv",
+                )
+                if not team_results_frame.empty:
+                    latest_team_frame = _latest_round_frame(team_results_frame)
+                    st.markdown("#### Team Planning Diagnostics")
+                    st.dataframe(
+                        latest_team_frame[
+                            [
+                                "team_name",
+                                "total_forecast_units",
+                                "total_actual_demand_units",
+                                "forecast_error_units",
+                                "absolute_forecast_error_units",
+                                "forecast_wape",
+                                "planned_production_units",
+                                "service_gap_units",
+                            ]
+                        ],
+                        use_container_width=True,
+                        hide_index=True,
+                    )
+
+        with product_detail_tab:
+            if product_results_frame.empty:
+                st.info("Run a round from the Instructor Panel to generate product-level results.")
+            else:
+                latest_product_frame = _latest_round_frame(product_results_frame)
+                st.subheader("Latest Product Detail")
+                st.dataframe(latest_product_frame[PRODUCT_RESULT_COLUMNS], use_container_width=True, hide_index=True)
+                _download_frame(
+                    "Download Latest Product Results CSV",
+                    latest_product_frame[PRODUCT_RESULT_COLUMNS],
+                    "latest_product_results.csv",
+                )
+                st.markdown("#### Product Profitability by Team")
+                st.dataframe(_product_profitability_frame(latest_product_frame), use_container_width=True, hide_index=True)
+
+        with liquidity_tab:
+            if team_results_frame.empty:
+                st.info("Liquidity and debt metrics will appear after the first completed round.")
+            else:
+                latest_team_frame = _latest_round_frame(team_results_frame)
+                st.subheader("Latest Team Financial Summary")
+                liquidity_frame = latest_team_frame[
+                        [
+                            "team_name",
+                            "revenue",
+                            "total_cost",
+                            "profit",
+                            "ending_cash_balance",
+                            "short_term_debt_balance",
+                            "interest_expense",
+                            "working_capital_requirement",
+                            "planned_borrowing_amount",
+                            "automatic_borrowing_amount",
+                            "liquidity_stress_flag",
+                        ]
+                    ]
+                st.dataframe(
+                    liquidity_frame,
+                    use_container_width=True,
+                    hide_index=True,
+                )
+                _download_frame(
+                    "Download Latest Liquidity CSV",
+                    liquidity_frame,
+                    "latest_liquidity_summary.csv",
+                )
+
+        with portfolio_snapshot_tab:
+            if product_lines_frame.empty:
+                st.info("Portfolio slots will appear after teams open the decision page or after the first round runs.")
+            else:
+                st.subheader("Current Portfolio Composition by Team")
+                portfolio_frame = _portfolio_snapshot_frame(product_lines_frame)
+                st.dataframe(portfolio_frame, use_container_width=True, hide_index=True)
+                _download_frame(
+                    "Download Portfolio Snapshot CSV",
+                    portfolio_frame,
+                    "portfolio_snapshot.csv",
+                )
+                st.markdown("#### Lifecycle Stage Distribution")
+                st.dataframe(_lifecycle_distribution(product_lines_frame), use_container_width=True, hide_index=True)
+
+        with pipeline_tab:
+            if project_frame.empty:
+                st.info("No development projects are active yet.")
+            else:
+                st.subheader("Development Pipeline")
+                pipeline_frame = _pipeline_snapshot_frame(project_frame)
+                st.dataframe(pipeline_frame, use_container_width=True, hide_index=True)
+                _download_frame(
+                    "Download Development Pipeline CSV",
+                    pipeline_frame,
+                    "development_pipeline.csv",
+                )
+
+        with event_log_tab:
+            launch_log = _launch_log_frame(product_results_frame)
+            if launch_log.empty:
+                st.info("Launch and retirement events appear after a round includes at least one project launch or product retirement.")
+            else:
+                st.dataframe(launch_log, use_container_width=True, hide_index=True)
         return
 
     team_name = user.team_name
@@ -103,25 +589,100 @@ def main() -> None:
         st.error("Your account does not have a team assignment yet.")
         st.stop()
 
-    st.subheader("Your Team Results")
-    own_results = load_round_results(team_name=team_name)
-    own_results_frame = _frame([item.to_dict() for item in own_results])
-    if own_results_frame.empty:
-        st.info("Your team does not have any saved round results yet.")
-    else:
-        st.dataframe(own_results_frame, use_container_width=True)
+    own_team_results = load_round_results(team_name=team_name)
+    own_team_results_frame = _frame([item.to_dict() for item in own_team_results])
+    own_forecast_accuracy_frame = _frame(
+        [item.to_dict() for item in load_forecast_accuracy_results(team_name=team_name)]
+    )
+    own_product_results = load_product_round_results(team_name=team_name)
+    own_product_results_frame = _frame([item.to_dict() for item in own_product_results])
+    own_portfolio_lines_frame = _frame([item.to_dict() for item in load_product_lines(team_name=team_name)])
+    own_project_frame = _frame([item.to_dict() for item in load_product_development_projects(team_name=team_name) if item.is_defined()])
 
-    st.subheader("Your Team State")
-    own_team_states = load_team_states(team_name=team_name)
-    st.dataframe(_frame([item.to_dict() for item in own_team_states]), use_container_width=True)
+    (
+        team_summary_tab,
+        forecast_accuracy_tab,
+        active_portfolio_tab,
+        pipeline_tab,
+        product_results_tab,
+        event_log_tab,
+    ) = st.tabs(
+        [
+            "Team Summary",
+            "Forecast Accuracy",
+            "Active Portfolio",
+            "Development Pipeline",
+            "Product Results",
+            "Launch / Retirement Log",
+        ]
+    )
 
-    st.subheader("Public Rankings")
-    if round_results_frame.empty:
-        st.info("Rankings appear after the admin runs a round.")
-    else:
-        profit_ranking, sales_ranking = _build_rankings(round_results_frame)
-        st.dataframe(profit_ranking, use_container_width=True)
-        st.dataframe(sales_ranking, use_container_width=True)
+    with team_summary_tab:
+        st.subheader("Your Team Aggregate Results")
+        if own_team_results_frame.empty:
+            st.info("Your team does not have any completed round results yet.")
+        else:
+            st.dataframe(own_team_results_frame[TEAM_RESULT_COLUMNS], use_container_width=True, hide_index=True)
+            own_debrief_frame = _frame(
+                build_debrief_rows(own_team_results, own_product_results)
+            )
+            if not own_debrief_frame.empty:
+                st.markdown("#### Your Debrief Prompt")
+                st.dataframe(own_debrief_frame, use_container_width=True, hide_index=True)
+
+        st.markdown("#### Public Ranking Table")
+        if team_results_frame.empty:
+            st.info("Rankings appear after the admin runs a round.")
+        else:
+            latest_team_frame = _latest_round_frame(team_results_frame)
+            rankings = _team_rankings(latest_team_frame, market_report.total_demand)
+            st.dataframe(rankings[0], use_container_width=True, hide_index=True)
+
+    with forecast_accuracy_tab:
+        st.subheader("Your Forecast Accuracy")
+        if own_forecast_accuracy_frame.empty:
+            st.info("Your forecast-vs-actual rows will appear after the admin runs a round.")
+        else:
+            st.dataframe(
+                own_forecast_accuracy_frame[FORECAST_ACCURACY_COLUMNS],
+                use_container_width=True,
+                hide_index=True,
+            )
+
+    with active_portfolio_tab:
+        st.subheader("Your Active Portfolio")
+        if own_portfolio_lines_frame.empty:
+            st.info("Your current portfolio state will appear after your slots are initialized.")
+        else:
+            st.dataframe(_portfolio_snapshot_frame(own_portfolio_lines_frame), use_container_width=True, hide_index=True)
+
+        st.markdown("#### Your Team State")
+        own_state_frame = _frame(_state_rows(load_team_states(team_name=team_name)))
+        if own_state_frame.empty:
+            st.info("Your persistent team state will appear after the first completed round.")
+        else:
+            st.dataframe(own_state_frame, use_container_width=True, hide_index=True)
+
+    with pipeline_tab:
+        st.subheader("Your Development Pipeline")
+        if own_project_frame.empty:
+            st.info("Your development projects will appear here after you create them on the Team Decisions page.")
+        else:
+            st.dataframe(_pipeline_snapshot_frame(own_project_frame), use_container_width=True, hide_index=True)
+
+    with product_results_tab:
+        st.subheader("Your Product Results")
+        if own_product_results_frame.empty:
+            st.info("Your product-level results will appear after the admin runs a round.")
+        else:
+            st.dataframe(own_product_results_frame[PRODUCT_RESULT_COLUMNS], use_container_width=True, hide_index=True)
+
+    with event_log_tab:
+        own_launch_log = _launch_log_frame(own_product_results_frame)
+        if own_launch_log.empty:
+            st.info("Launch and retirement events will appear here after a round generates them.")
+        else:
+            st.dataframe(own_launch_log, use_container_width=True, hide_index=True)
 
 
 main()

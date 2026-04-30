@@ -1,0 +1,7 @@
+strategy_key,strategy_label,appearances,profit_wins,balanced_wins,average_profit_rank,average_balanced_rank,average_profit,average_balanced_score,average_fill_rate,average_forecast_wape,average_cash_minus_debt,liquidity_stress_rate
+premium_quality,Premium quality,153,68,86,2.28,1.9,7207.15,68.5,0.7825,0.3241,52897.4,0.0784
+cash_conservative,Cash conservative,82,15,7,2.93,3.79,7708.5,50.2,0.6235,0.3768,53931.85,0.0
+balanced_sop,Balanced S&OP,120,1,5,4.05,3.74,2839.25,52.6,0.7898,0.454,36570.84,0.4083
+innovation_leap,Innovation leap,109,16,2,3.57,4.91,5774.81,35.2,0.7819,0.5581,5356.25,1.0
+low_cost_volume,Low-cost volume,139,0,0,6.26,5.68,-3803.16,28.9,0.8737,0.5799,-1856.06,0.6978
+aggressive_growth,Aggressive growth,68,0,0,6.43,5.81,-2946.98,31.5,0.8834,0.521,10453.8,1.0

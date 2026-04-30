@@ -1,0 +1,43 @@
+market_scenario,market_label,rank,team_name,archetype,strategy_key,strategy_label,profit,revenue,total_cost,sales_units,fill_rate,forecast_wape,ending_cash_balance,short_term_debt_balance,liquidity_stress_flag,reputation_after_round,balanced_score
+baseline,Baseline market,1,Team 05,Community / Club,cash_conservative,Cash conservative,7701.04,25544.88,17843.84,200,0.4579,0.5514,109330.8,0.0,False,0.0,80.0
+baseline,Baseline market,2,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4459.78,29988.0,25528.22,182,0.5793,0.3702,121154.89,12000.0,True,0.72,72.0
+baseline,Baseline market,3,Team 01,Premium Quality,premium_quality,Premium quality,-607.28,5365.44,5972.72,36,0.1686,0.8314,78688.36,0.0,False,18.48,36.0
+baseline,Baseline market,4,Team 06,Premium Quality,aggressive_growth,Aggressive growth,-4593.44,41863.68,46457.12,260,0.4363,0.4278,162698.12,120000.0,True,22.02,36.0
+baseline,Baseline market,5,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,-5999.67,41536.0,47535.67,337,0.6883,0.0764,32745.99,42000.0,True,0.0,40.0
+baseline,Baseline market,6,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,-9155.75,10248.0,19403.75,80,0.3225,0.6402,75796.03,84000.0,True,0.0,4.0
+demand_boom,Demand boom,1,Team 05,Community / Club,cash_conservative,Cash conservative,7452.93,25544.88,18091.95,200,0.207,0.8,107207.03,0.0,False,0.0,76.0
+demand_boom,Demand boom,2,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4148.23,29988.0,25839.77,182,0.2767,0.7105,117326.9,12000.0,True,0.0,72.0
+demand_boom,Demand boom,3,Team 01,Premium Quality,premium_quality,Premium quality,-675.36,5365.44,6040.8,36,0.0826,0.9174,78802.29,0.0,False,0.0,36.0
+demand_boom,Demand boom,4,Team 06,Premium Quality,aggressive_growth,Aggressive growth,-5122.45,41863.68,46986.13,260,0.222,0.7202,160015.08,120000.0,True,0.0,40.0
+demand_boom,Demand boom,5,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,-6597.49,41536.0,48133.49,337,0.3364,0.5874,27050.8,42000.0,True,0.0,40.0
+demand_boom,Demand boom,6,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,-9260.15,10248.0,19508.15,80,0.1447,0.8418,98768.74,84000.0,True,0.0,4.0
+volume_surge,Volume surge,1,Team 05,Community / Club,cash_conservative,Cash conservative,5426.33,21220.08,15793.75,166,0.1362,0.8419,120618.63,0.0,False,0.0,76.0
+volume_surge,Volume surge,2,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4615.78,29988.0,25372.22,182,0.2307,0.7601,130063.17,12000.0,True,0.0,72.0
+volume_surge,Volume surge,3,Team 01,Premium Quality,premium_quality,Premium quality,-604.55,5365.44,5969.99,36,0.0686,0.9314,80977.0,0.0,False,0.0,36.0
+volume_surge,Volume surge,4,Team 06,Premium Quality,aggressive_growth,Aggressive growth,-4274.37,42013.44,46287.81,261,0.1858,0.7687,173114.2,120000.0,True,0.0,40.0
+volume_surge,Volume surge,5,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,-5413.04,41664.48,47077.52,338,0.2735,0.6707,48052.49,42000.0,True,0.0,40.0
+volume_surge,Volume surge,6,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,-9140.88,10248.0,19388.88,80,0.117,0.8726,107108.72,84000.0,True,0.0,4.0
+supply_shock,Supply shock,1,Team 05,Community / Club,cash_conservative,Cash conservative,3387.76,21220.08,17832.32,166,0.4078,0.5177,80760.38,0.0,False,0.0,76.0
+supply_shock,Supply shock,2,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,1993.66,29988.0,27994.34,182,0.6198,0.3226,85608.15,12000.0,True,5.02,72.0
+supply_shock,Supply shock,3,Team 01,Premium Quality,premium_quality,Premium quality,-1220.0,5365.44,6585.44,36,0.1823,0.8177,57649.58,0.0,False,19.85,36.0
+supply_shock,Supply shock,4,Team 06,Premium Quality,aggressive_growth,Aggressive growth,-8965.96,41863.68,50829.64,260,0.4856,0.4179,100317.37,120000.0,True,6.07,40.0
+supply_shock,Supply shock,5,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,-10089.55,10248.0,20337.55,80,0.3457,0.6133,49167.25,84000.0,True,0.0,12.0
+supply_shock,Supply shock,6,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,-10140.41,43625.12,53765.53,357,0.7745,0.0705,0.0,93197.31,True,0.0,32.0
+tech_shift,Fast tech shift,1,Team 05,Community / Club,cash_conservative,Cash conservative,7203.83,25544.88,18341.05,200,0.2834,0.7251,104089.21,0.0,False,0.0,68.0
+tech_shift,Fast tech shift,2,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3836.68,29988.0,26151.32,182,0.3618,0.6175,113141.93,12000.0,True,0.0,56.0
+tech_shift,Fast tech shift,3,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,-378.11,10248.0,10626.11,80,0.1981,0.7821,76594.42,84000.0,True,0.0,20.0
+tech_shift,Fast tech shift,4,Team 01,Premium Quality,premium_quality,Premium quality,-3936.0,0.0,3936.0,0,1.0,0.0,70239.59,0.0,False,59.94,68.0
+tech_shift,Fast tech shift,5,Team 06,Premium Quality,aggressive_growth,Aggressive growth,-4925.38,35769.6,40694.98,214,0.4108,0.4588,146629.69,120000.0,True,0.0,32.0
+tech_shift,Fast tech shift,6,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,-7202.27,41536.0,48738.27,337,0.4478,0.4354,20378.33,42000.0,True,0.0,24.0
+price_recession,Price-pressure recession,1,Team 05,Community / Club,cash_conservative,Cash conservative,4159.93,21097.68,16937.75,166,0.8188,0.1955,84935.27,0.0,False,30.58,88.0
+price_recession,Price-pressure recession,2,Team 01,Premium Quality,premium_quality,Premium quality,-638.59,5365.44,6004.03,36,0.4188,0.5812,32489.09,0.0,False,55.33,56.0
+price_recession,Price-pressure recession,3,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,-7335.5,22241.0,29576.5,134,0.9913,0.3612,0.0,24690.32,True,99.25,56.0
+price_recession,Price-pressure recession,4,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,-9263.68,10248.0,19511.68,80,0.7358,0.1377,58713.2,87190.71,True,0.0,44.0
+price_recession,Price-pressure recession,5,Team 06,Premium Quality,aggressive_growth,Aggressive growth,-27508.23,26885.76,54393.99,169,0.5941,0.8065,0.0,184562.54,True,76.82,12.0
+price_recession,Price-pressure recession,6,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,-35683.04,23474.88,59157.92,190,0.9949,1.0003,0.0,240416.24,True,50.0,12.0
+quality_sensitive,Quality-sensitive market,1,Team 05,Community / Club,cash_conservative,Cash conservative,7328.46,25544.88,18216.42,200,0.4579,0.5514,104949.63,0.0,False,0.0,80.0
+quality_sensitive,Quality-sensitive market,2,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3992.96,29988.0,25995.04,182,0.5648,0.3872,115308.53,12000.0,True,0.0,72.0
+quality_sensitive,Quality-sensitive market,3,Team 01,Premium Quality,premium_quality,Premium quality,-709.4,5365.44,6074.84,36,0.1623,0.8377,74943.46,0.0,False,13.42,36.0
+quality_sensitive,Quality-sensitive market,4,Team 06,Premium Quality,aggressive_growth,Aggressive growth,-5390.61,41863.68,47254.29,260,0.4242,0.4398,154164.75,120000.0,True,16.16,36.0
+quality_sensitive,Quality-sensitive market,5,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,-5431.36,43091.84,48523.2,354,0.716,0.087,19919.12,42000.0,True,0.0,40.0
+quality_sensitive,Quality-sensitive market,6,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,-9311.91,10248.0,19559.91,80,0.3178,0.6457,67450.96,84000.0,True,0.0,4.0

@@ -1,0 +1,13 @@
+project_id,team_name,project_slot_name,project_name,target_segment,target_tech_generation,intended_slot_name,required_investment,cumulative_investment,investment_this_round,testing_intensity,launch_readiness_score,planned_launch_round,earliest_launch_round,status,cannibalization_group,projected_base_defect_modifier,projected_demand_fit_modifier,created_round,launched_round,canceled_round,launch_now,cancel_now,replaced_product_name
+team_01_P1,Team 01,P1,Team 01 NextGen,premium,4,C,19500.0,12000.0,0.0,0.45,55.19244904396784,3,4,development,premium_nextgen,0.002,1.08,1,,,False,False,
+team_01_P2,Team 01,P2,,mid,2,C,0.0,0.0,0.0,0.0,0.0,1,2,concept,,0.0,1.0,1,,,False,False,
+team_02_P1,Team 02,P1,Team 02 NextGen,mid,4,C,18200.0,6000.0,0.0,0.2,31.589976831833866,3,4,development,mid_nextgen,0.002,1.08,1,,,False,False,
+team_02_P2,Team 02,P2,,mid,2,C,0.0,0.0,0.0,0.0,0.0,1,2,concept,,0.0,1.0,1,,,False,False,
+team_03_P1,Team 03,P1,Team 03 NextGen,premium,4,C,19500.0,10000.0,0.0,0.35,47.63265466499682,3,4,development,premium_nextgen,0.002,1.08,1,,,False,False,
+team_03_P2,Team 03,P2,,mid,2,C,0.0,0.0,0.0,0.0,0.0,1,2,concept,,0.0,1.0,1,,,False,False,
+team_04_P1,Team 04,P1,Team 04 NextGen,beginner,4,C,17500.0,36000.0,0.0,0.75,86.87984297699475,3,4,launch_ready,beginner_nextgen,0.002,1.08,1,,,False,False,
+team_04_P2,Team 04,P2,,mid,2,C,0.0,0.0,0.0,0.0,0.0,1,2,concept,,0.0,1.0,1,,,False,False,
+team_05_P1,Team 05,P1,Team 05 NextGen,mid,4,C,18200.0,3000.0,0.0,0.15,14.279252253573503,3,4,development,mid_nextgen,0.002,1.08,1,,,False,False,
+team_05_P2,Team 05,P2,,mid,2,C,0.0,0.0,0.0,0.0,0.0,1,2,concept,,0.0,1.0,1,,,False,False,
+team_06_P1,Team 06,P1,Team 06 NextGen,premium,4,C,19500.0,16000.0,0.0,0.4,63.06282959796904,3,4,pilot,premium_nextgen,0.002,1.08,1,,,False,False,
+team_06_P2,Team 06,P2,,mid,2,C,0.0,0.0,0.0,0.0,0.0,1,2,concept,,0.0,1.0,1,,,False,False,

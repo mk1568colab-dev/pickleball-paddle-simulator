@@ -1,0 +1,672 @@
+run_id,team_count,round_count,market_scenario,team_name,archetype,strategy_key,strategy_label,profit_rank,balanced_rank,balanced_score,profit,revenue,total_cost,sales_units,fill_rate,forecast_wape,ending_cash_balance,short_term_debt_balance,cash_minus_debt,liquidity_stress_flag,reputation_after_round,lost_sales_units,backlog_units_end,ending_inventory
+1,4,4,batch_001,Team 01,Premium Quality,premium_quality,Premium quality,1,1,60.0,12565.32,34192.8,21627.48,182,0.4194,0.5714,78310.88,0.0,78310.88,False,1.06,237,14,0
+1,4,4,batch_001,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,3,53.3,10825.29,32617.0,21791.71,198,0.4276,0.5445,77298.76,4000.0,73298.76,False,0.0,240,24,0
+1,4,4,batch_001,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,3,2,53.3,5378.73,45494.24,40115.51,369,0.5037,0.3611,38845.18,14000.0,24845.18,False,0.0,279,83,0
+1,4,4,batch_001,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,4,25.3,735.76,33976.95,33241.19,323,0.4944,0.4412,64820.3,28000.0,36820.3,True,0.0,301,28,0
+2,6,4,batch_002,Team 05,Community / Club,cash_conservative,Cash conservative,1,2,68.0,9987.78,26589.36,16601.58,210,0.7018,0.3002,57519.93,0.0,57519.93,False,41.41,76,12,9
+2,6,4,batch_002,Team 01,Premium Quality,premium_quality,Premium quality,2,1,68.0,7460.83,33518.88,26058.05,178,0.7903,0.1727,52683.67,0.0,52683.67,False,71.22,32,14,50
+2,6,4,batch_002,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,56.0,5993.88,32319.0,26325.12,196,0.8318,0.1087,52101.33,4000.0,48101.33,True,67.63,15,24,51
+2,6,4,batch_002,Team 06,Premium Quality,aggressive_growth,Aggressive growth,4,4,48.0,-1733.55,37248.0,38981.55,219,0.9928,0.2603,49205.92,40000.0,9205.919999999998,True,83.55,0,0,153
+2,6,4,batch_002,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,5,16.0,-2077.32,37298.52,39375.84,261,0.8654,0.3193,12779.53,28000.0,-15220.47,True,40.55,5,34,171
+2,6,4,batch_002,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,6,6,12.0,-10669.74,37646.4,48316.14,299,0.9236,0.3892,0.0,14841.88,-14841.88,True,29.74,0,23,119
+3,8,4,batch_003,Team 07,Sponsorship Growth,premium_quality,Premium quality,1,1,82.9,15199.1,46809.36,31610.26,313,0.8339,0.1968,73828.07,0.0,73828.07,False,60.57,38,23,26
+3,8,4,batch_003,Team 01,Premium Quality,premium_quality,Premium quality,2,2,71.4,13960.03,36551.52,22591.49,196,0.7938,0.2272,74249.8,0.0,74249.8,False,69.23,36,14,1
+3,8,4,batch_003,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,65.7,10061.31,32617.0,22555.69,198,0.7637,0.1499,60974.62,4000.0,56974.62,False,49.56,36,24,0
+3,8,4,batch_003,Team 05,Community / Club,cash_conservative,Cash conservative,4,6,37.1,8733.95,22996.92,14262.97,179,0.5503,0.3584,52546.65,0.0,52546.65,False,11.29,133,12,0
+3,8,4,batch_003,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,5,4,49.1,7019.26,34957.12,27937.86,241,0.8703,0.179,31205.13,14000.0,17205.13,True,21.88,0,35,0
+3,8,4,batch_003,Team 06,Premium Quality,aggressive_growth,Aggressive growth,6,5,37.7,3443.16,37445.76,34002.6,223,0.7994,0.1882,64606.48,40000.0,24606.480000000003,True,55.7,5,50,20
+3,8,4,batch_003,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,7,25.7,2561.3,43992.96,41431.66,353,0.9202,0.3806,6067.23,14000.0,-7932.77,False,0.0,0,29,15
+3,8,4,batch_003,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,8,8,6.3,1457.3,36836.31,35379.01,262,0.7803,0.3536,29832.37,28000.0,1832.369999999999,True,31.3,38,34,159
+4,7,4,batch_004,Team 07,Sponsorship Growth,premium_quality,Premium quality,1,1,93.3,11959.01,43994.88,32035.87,294,0.7924,0.1869,74402.94,0.0,74402.94,False,54.22,53,23,7
+4,7,4,batch_004,Team 01,Premium Quality,premium_quality,Premium quality,2,3,63.3,11233.26,34192.8,22959.54,182,0.7443,0.2192,72980.7,0.0,72980.7,False,60.36,48,14,0
+4,7,4,batch_004,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,2,70.0,9672.23,32617.0,22944.77,198,0.7704,0.1417,59479.15,4000.0,55479.15,False,42.28,34,24,0
+4,7,4,batch_004,Team 05,Community / Club,cash_conservative,Cash conservative,4,4,36.7,8461.39,22996.92,14535.53,179,0.5678,0.3372,51568.79,0.0,51568.79,False,4.13,123,12,0
+4,7,4,batch_004,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,7,15.3,8126.82,34764.35,26637.53,252,0.7576,0.4741,42481.72,28000.0,14481.720000000001,True,23.61,45,34,119
+4,7,4,batch_004,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,6,5,30.0,2046.9,44267.52,42220.62,356,0.9175,0.3605,5546.9,15345.05,-9798.15,False,0.0,0,31,12
+4,7,4,batch_004,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,6,25.3,2014.53,36547.2,34532.67,217,0.7848,0.2009,62858.86,40000.0,22858.86,True,48.89,9,50,19
+5,8,4,batch_005,Team 07,Sponsorship Growth,premium_quality,Premium quality,1,1,88.6,11825.47,42141.6,30316.13,278,0.8495,0.0974,77829.38,0.0,77829.38,False,62.82,24,23,43
+5,8,4,batch_005,Team 01,Premium Quality,premium_quality,Premium quality,2,2,71.4,11403.24,33181.92,21778.68,176,0.8254,0.1377,75124.8,0.0,75124.8,False,69.91,22,14,17
+5,8,4,batch_005,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,71.4,10776.79,32617.0,21840.21,198,0.8447,0.0573,77082.3,4000.0,73082.3,False,68.11,12,24,0
+5,8,4,batch_005,Team 05,Community / Club,cash_conservative,Cash conservative,4,4,42.9,10093.75,23725.2,13631.45,186,0.6386,0.2872,70857.87,0.0,70857.87,False,28.34,92,12,8
+5,8,4,batch_005,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,7,14.9,8249.55,33513.59,25264.04,221,0.7925,0.5923,41700.96,28000.0,13700.96,True,26.66,22,34,176
+5,8,4,batch_005,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,5,40.6,6701.58,33268.4,26566.82,230,0.9974,0.2595,56793.1,14000.0,42793.1,True,53.28,0,0,12
+5,8,4,batch_005,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,6,29.1,2777.42,35685.12,32907.7,211,0.9976,0.3144,80754.77,40000.0,40754.770000000004,True,84.69,0,0,104
+5,8,4,batch_005,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,9.1,-2942.94,37081.44,40024.38,290,0.9735,0.4988,27442.14,14000.0,13442.14,True,20.64,0,6,118
+6,10,4,batch_006,Team 05,Community / Club,cash_conservative,Cash conservative,1,2,77.8,5671.12,21191.52,15520.4,164,0.8046,0.2786,38087.15,0.0,38087.15,False,48.48,27,12,86
+6,10,4,batch_006,Team 01,Premium Quality,premium_quality,Premium quality,2,1,80.0,2168.59,27125.28,24956.69,142,0.9911,0.2564,22247.14,0.0,22247.14,False,84.65,0,0,245
+6,10,4,batch_006,Team 10,Community / Club,innovation_leap,Innovation leap,3,6,47.6,977.98,31306.8,30328.82,183,0.872,0.3467,25942.96,28000.0,-2057.040000000001,True,66.16,2,24,157
+6,10,4,batch_006,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,5,49.8,-545.94,23976.0,24521.94,144,0.9908,0.3761,24571.89,4000.0,20571.89,True,74.31,0,0,190
+6,10,4,batch_006,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,5,4,52.0,-764.18,28447.76,29211.94,193,0.9974,0.879,20265.15,14000.0,6265.1500000000015,True,59.67,0,0,48
+6,10,4,batch_006,Team 07,Sponsorship Growth,premium_quality,Premium quality,6,3,64.4,-1481.22,33698.16,35179.38,219,0.9961,0.2872,6485.63,0.0,6485.63,False,74.49,0,0,414
+6,10,4,batch_006,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,7,7,27.6,-4175.61,33711.51,37887.12,187,0.9949,0.8355,2824.39,40565.2,-37740.81,True,42.89,0,0,394
+6,10,4,batch_006,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,20.9,-9121.12,34548.8,43669.92,270,0.9953,1.2042,0.0,23636.1,-23636.1,True,14.28,0,0,98
+6,10,4,batch_006,Team 06,Premium Quality,aggressive_growth,Aggressive growth,9,9,18.7,-11601.15,24633.6,36234.75,145,0.9941,0.9059,23982.59,40000.0,-16017.41,True,81.12,0,0,230
+6,10,4,batch_006,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,10,10,5.3,-17514.58,18685.0,36199.58,182,0.9931,1.0953,0.0,31043.68,-31043.68,True,40.31,0,0,520
+7,5,4,batch_007,Team 01,Premium Quality,premium_quality,Premium quality,1,1,70.0,10031.84,34192.8,24160.96,182,0.5514,0.4305,68175.79,0.0,68175.79,False,43.88,133,14,0
+7,5,4,batch_007,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,65.0,8442.71,32617.0,24174.29,198,0.5793,0.3706,54880.19,4000.0,50880.19,False,27.99,119,24,0
+7,5,4,batch_007,Team 05,Community / Club,cash_conservative,Cash conservative,3,5,30.0,7595.75,22996.92,15401.17,179,0.393,0.5468,48278.72,0.0,48278.72,False,0.0,264,12,0
+7,5,4,batch_007,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,3,37.0,1411.99,37971.15,36559.16,335,0.6706,0.2557,46458.37,28000.0,18458.370000000003,True,19.55,129,34,0
+7,5,4,batch_007,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,4,32.0,195.16,45365.76,45170.6,368,0.7048,0.0565,3695.16,19675.93,-15980.77,True,0.0,70,83,0
+8,4,4,batch_008,Team 01,Premium Quality,premium_quality,Premium quality,1,1,60.0,10476.15,34192.8,23716.65,182,0.3771,0.6159,69953.13,0.0,69953.13,False,11.2,285,14,0
+8,4,4,batch_008,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,53.3,8686.03,32617.0,23930.97,198,0.3875,0.5893,68741.72,4000.0,64741.72,False,6.32,287,24,0
+8,4,4,batch_008,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,4,38.7,6932.0,33848.85,26916.85,322,0.4488,0.5096,62910.28,28000.0,34910.28,True,0.0,364,30,0
+8,4,4,batch_008,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,4,3,40.0,1229.97,45494.24,44264.27,369,0.4881,0.3833,24659.77,14000.0,10659.77,False,0.0,302,83,0
+9,4,4,batch_009,Team 01,Premium Quality,premium_quality,Premium quality,1,1,80.0,9972.07,33350.4,23378.33,177,0.8419,0.1197,64327.86,0.0,64327.86,False,77.47,18,14,45
+9,4,4,batch_009,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,73.3,9541.11,32617.0,23075.89,198,0.8946,0.0477,58822.73,4000.0,54822.73,False,61.08,0,22,0
+9,4,4,batch_009,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,3,18.7,7061.84,34220.97,27159.13,225,0.8365,0.5492,31922.67,28000.0,3922.6699999999983,True,33.18,8,34,185
+9,4,4,batch_009,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,4,4,12.0,-1304.24,41141.76,42446.0,327,0.972,0.6375,2195.76,16110.32,-13914.56,True,0.0,0,9,40
+10,5,4,batch_010,Team 01,Premium Quality,premium_quality,Premium quality,1,1,70.0,12218.53,34192.8,21974.27,182,0.4277,0.5626,76929.14,0.0,76929.14,False,16.55,229,14,0
+10,5,4,batch_010,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,65.0,10684.39,32617.0,21932.61,198,0.4547,0.5139,63234.43,4000.0,59234.43,False,3.8,212,24,0
+10,5,4,batch_010,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,3,47.0,10528.97,35391.51,24862.54,336,0.5809,0.3962,70280.91,28000.0,42280.91,True,2.14,207,34,0
+10,5,4,batch_010,Team 05,Community / Club,cash_conservative,Cash conservative,4,5,20.0,9173.51,22996.92,13823.41,179,0.3432,0.6056,54316.95,0.0,54316.95,False,0.0,328,12,0
+10,5,4,batch_010,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,4,40.0,4661.99,45365.76,40703.77,368,0.5831,0.2429,9931.26,14000.0,-4068.74,False,0.0,179,83,0
+11,6,4,batch_011,Team 01,Premium Quality,premium_quality,Premium quality,1,1,68.0,8599.45,34192.8,25593.35,182,0.504,0.4814,62448.27,0.0,62448.27,False,30.51,164,14,0
+11,6,4,batch_011,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,2,2,60.0,7809.01,37227.33,29418.32,312,0.7106,0.3291,44258.89,28000.0,16258.89,True,17.62,92,34,22
+11,6,4,batch_011,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,52.0,6763.93,32617.0,25853.07,198,0.5148,0.4454,61044.08,4000.0,57044.08,False,25.78,162,24,0
+11,6,4,batch_011,Team 05,Community / Club,cash_conservative,Cash conservative,4,6,32.0,6598.93,22996.92,16397.99,179,0.3732,0.5702,59098.79,0.0,59098.79,False,3.64,287,12,0
+11,6,4,batch_011,Team 06,Premium Quality,aggressive_growth,Aggressive growth,5,5,36.0,758.89,39093.12,38334.23,234,0.5607,0.2432,74156.42,40000.0,34156.42,True,43.79,132,50,0
+11,6,4,batch_011,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,6,4,36.0,-2327.64,45677.28,48004.92,371,0.6719,0.1736,11696.95,14000.0,-2303.0499999999993,False,2.72,96,83,0
+12,6,4,batch_012,Team 01,Premium Quality,premium_quality,Premium quality,1,1,80.0,9161.75,32508.0,23346.25,172,0.8418,0.1418,62235.17,0.0,62235.17,False,77.56,17,14,59
+12,6,4,batch_012,Team 05,Community / Club,cash_conservative,Cash conservative,2,3,56.0,7870.21,22476.72,14606.51,174,0.7076,0.2502,50349.27,0.0,50349.27,False,27.43,59,12,9
+12,6,4,batch_012,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,2,72.0,7633.04,30680.0,23046.96,185,0.8916,0.0954,56843.29,4000.0,52843.29,False,63.86,0,21,17
+12,6,4,batch_012,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,5,24.0,6330.09,33687.05,27356.96,198,0.8549,0.7087,22925.11,28000.0,-5074.889999999999,True,40.07,0,32,255
+12,6,4,batch_012,Team 06,Premium Quality,aggressive_growth,Aggressive growth,5,4,32.0,-1002.46,33552.0,34554.46,197,0.904,0.4638,55450.02,40000.0,15450.019999999997,True,63.46,0,20,66
+12,6,4,batch_012,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,6,6,12.0,-3976.2,38329.28,42305.48,300,0.9685,0.8301,0.0,16061.29,-16061.29,True,0.0,0,9,68
+13,8,4,batch_013,Team 07,Sponsorship Growth,premium_quality,Premium quality,1,1,80.0,10631.33,43783.2,33151.87,291,0.8413,0.1236,64729.78,0.0,64729.78,False,65.0,31,23,54
+13,8,4,batch_013,Team 01,Premium Quality,premium_quality,Premium quality,2,2,74.3,10138.28,33855.84,23717.56,180,0.8041,0.1479,66599.77,0.0,66599.77,False,72.28,29,14,22
+13,8,4,batch_013,Team 05,Community / Club,cash_conservative,Cash conservative,3,4,51.4,9096.85,24037.32,14940.47,189,0.6156,0.3187,65977.28,0.0,65977.28,False,34.27,104,12,0
+13,8,4,batch_013,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,3,65.7,9017.12,32915.0,23897.88,200,0.8672,0.0852,66683.5,4000.0,62683.5,False,71.49,6,24,17
+13,8,4,batch_013,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,7,14.9,7830.42,35308.03,27477.61,249,0.7799,0.4714,37006.95,28000.0,9006.949999999997,True,31.8,35,34,142
+13,8,4,batch_013,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,5,40.6,4893.59,33908.16,29014.57,233,0.9925,0.2179,48679.54,14000.0,34679.54,True,59.55,0,1,9
+13,8,4,batch_013,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,6,32.0,1170.92,36952.32,35781.4,218,0.9963,0.2705,64728.57,40000.0,24728.57,True,83.31,0,0,132
+13,8,4,batch_013,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,9.1,-5347.0,38353.92,43700.92,304,0.9627,0.3843,17424.92,14000.0,3424.9199999999983,True,29.16,0,10,96
+14,10,4,batch_014,Team 05,Community / Club,cash_conservative,Cash conservative,1,1,80.0,4353.51,20432.64,16079.13,157,0.8077,0.3198,33169.06,0.0,33169.06,False,64.67,24,12,255
+14,10,4,batch_014,Team 10,Community / Club,innovation_leap,Innovation leap,2,4,56.4,2289.83,31909.18,29619.35,177,0.9634,0.407,25165.23,28000.0,-2834.7700000000004,True,72.48,0,5,170
+14,10,4,batch_014,Team 01,Premium Quality,premium_quality,Premium quality,3,2,71.1,-42.08,24647.76,24689.84,129,0.9878,0.3784,13810.96,0.0,13810.96,False,86.73,0,0,297
+14,10,4,batch_014,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,3,63.1,-2795.73,22276.0,25071.73,134,0.9964,0.4871,10646.38,4000.0,6646.379999999999,True,76.63,0,0,345
+14,10,4,batch_014,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,5,52.0,-4125.05,30633.12,34758.17,198,0.9951,0.4223,0.0,2450.27,-2450.27,True,76.14,0,0,492
+14,10,4,batch_014,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,6,6,32.0,-4779.17,32725.46,37504.63,164,0.9959,1.0951,2220.83,44433.94,-42213.11,True,43.75,0,0,449
+14,10,4,batch_014,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,7,8,32.0,-10476.54,19672.4,30148.94,135,0.9916,0.9392,3225.27,14000.0,-10774.73,True,74.98,0,0,316
+14,10,4,batch_014,Team 06,Premium Quality,aggressive_growth,Aggressive growth,8,7,32.0,-14427.21,22730.88,37158.09,134,0.9969,1.0681,2281.6,40000.0,-37718.4,True,83.91,0,0,489
+14,10,4,batch_014,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,9,9,20.9,-21182.1,23379.84,44561.94,185,0.9959,1.2339,0.0,37342.97,-37342.97,True,50.28,0,0,433
+14,10,4,batch_014,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,10,10,0.0,-22121.0,16345.0,38466.0,158,0.9884,1.4023,0.0,57439.74,-57439.74,True,40.8,0,0,955
+15,4,4,batch_015,Team 01,Premium Quality,premium_quality,Premium quality,1,1,66.7,9898.39,34192.8,24294.41,182,0.6431,0.3309,67646.84,0.0,67646.84,False,40.26,86,14,0
+15,4,4,batch_015,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,60.0,8308.07,32617.0,24308.93,198,0.6654,0.269,54396.01,4000.0,50396.01,False,24.44,75,24,0
+15,4,4,batch_015,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,4,25.3,6604.44,34473.39,27868.95,278,0.7237,0.4087,48223.72,28000.0,20223.72,True,17.53,71,34,37
+15,4,4,batch_015,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,4,3,32.0,-40.57,45365.76,45406.33,368,0.8228,0.1885,3459.43,20598.87,-17139.44,True,0.0,0,78,0
+16,6,4,batch_016,Team 01,Premium Quality,premium_quality,Premium quality,1,1,68.0,10426.47,34192.8,23766.33,182,0.5281,0.4556,69754.41,0.0,69754.41,False,32.45,147,14,0
+16,6,4,batch_016,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,60.0,8634.27,32617.0,23982.73,198,0.5326,0.4249,68536.68,4000.0,64536.67999999999,False,27.83,149,24,0
+16,6,4,batch_016,Team 05,Community / Club,cash_conservative,Cash conservative,3,5,40.0,7915.69,22996.92,15081.23,179,0.3519,0.5953,65364.57,0.0,65364.57,False,0.0,316,12,0
+16,6,4,batch_016,Team 06,Premium Quality,aggressive_growth,Aggressive growth,4,4,44.0,3343.32,39093.12,35749.8,234,0.5777,0.217,84947.26,40000.0,44947.259999999995,True,49.82,120,50,0
+16,6,4,batch_016,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,3,48.0,1133.37,45494.24,44360.87,369,0.6483,0.1464,24674.46,14000.0,10674.46,False,0.0,116,83,0
+16,6,4,batch_016,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,6,6,24.0,1129.39,37125.69,35996.3,332,0.6462,0.2778,50298.03,28000.0,22298.03,True,11.5,145,34,0
+17,5,4,batch_017,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,1,3,47.0,6890.53,35393.72,28503.19,180,0.9609,0.8418,13890.53,31083.81,-17193.28,True,44.02,0,6,287
+17,5,4,batch_017,Team 05,Community / Club,cash_conservative,Cash conservative,2,2,65.0,5195.69,21375.12,16179.43,164,0.7834,0.3046,42855.39,0.0,42855.39,False,49.27,33,12,162
+17,5,4,batch_017,Team 01,Premium Quality,premium_quality,Premium quality,3,1,65.0,3441.81,28218.24,24776.43,148,0.9932,0.2079,38512.83,0.0,38512.83,False,85.03,0,0,160
+17,5,4,batch_017,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,4,42.0,61.84,25238.0,25176.16,152,0.9994,0.315,32271.74,4000.0,28271.74,True,74.94,0,0,207
+17,5,4,batch_017,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,5,7.0,-17808.85,27503.52,45312.37,213,0.9943,1.0831,0.0,21601.9,-21601.9,True,41.31,0,0,270
+18,8,4,batch_018,Team 01,Premium Quality,premium_quality,Premium quality,1,1,80.0,10212.21,32339.52,22127.31,171,0.8389,0.1493,68928.18,0.0,68928.18,False,75.79,18,14,48
+18,8,4,batch_018,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,80.0,9815.61,31574.0,21758.39,191,0.9194,0.0913,62900.26,4000.0,58900.26,False,61.34,0,16,7
+18,8,4,batch_018,Team 05,Community / Club,cash_conservative,Cash conservative,3,4,51.4,9267.79,22996.92,13729.13,179,0.6896,0.2277,54585.2,0.0,54585.2,False,22.59,67,12,0
+18,8,4,batch_018,Team 07,Sponsorship Growth,premium_quality,Premium quality,4,3,65.7,8876.26,39968.64,31092.38,263,0.856,0.1378,63512.6,0.0,63512.6,False,64.0,20,23,126
+18,8,4,batch_018,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,7,17.7,8527.9,34161.86,25633.96,221,0.8291,0.581,37200.93,28000.0,9200.93,True,36.46,11,34,196
+18,8,4,batch_018,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,5,37.7,6951.07,33645.92,26694.85,231,0.9887,0.4615,32870.58,14000.0,18870.58,True,28.38,0,1,10
+18,8,4,batch_018,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,6,26.3,730.22,33552.0,32821.78,197,0.9233,0.468,62820.26,40000.0,22820.260000000002,True,61.89,0,15,57
+18,8,4,batch_018,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,17.1,74.94,39959.04,39884.1,317,0.9752,0.7145,6283.6,14000.0,-7716.4,False,0.12,0,6,51
+19,7,4,batch_019,Team 05,Community / Club,cash_conservative,Cash conservative,1,3,70.0,8128.63,24355.56,16226.93,190,0.7201,0.2279,58201.05,0.0,58201.05,False,40.96,61,12,23
+19,7,4,batch_019,Team 01,Premium Quality,premium_quality,Premium quality,2,2,70.0,6155.94,31665.6,25509.66,167,0.8695,0.1428,54343.1,0.0,54343.1,False,79.02,10,14,55
+19,7,4,batch_019,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,1,72.0,4964.38,30531.0,25566.62,184,0.9957,0.0823,52994.01,4000.0,48994.01,True,75.45,0,0,63
+19,7,4,batch_019,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,6,22.0,4147.9,33827.43,29679.53,220,0.8303,0.5795,22745.07,28000.0,-5254.93,True,36.91,9,34,185
+19,7,4,batch_019,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,4,50.0,3559.35,39463.2,35903.85,259,0.875,0.1403,44794.02,0.0,44794.02,False,68.33,13,23,126
+19,7,4,batch_019,Team 06,Premium Quality,aggressive_growth,Aggressive growth,6,5,28.7,-7513.99,30981.12,38495.11,183,0.9927,0.5081,41796.37,40000.0,1796.3700000000026,True,83.2,0,0,209
+19,7,4,batch_019,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,7,5.3,-14315.44,32797.6,47113.04,259,0.9924,0.6404,0.0,15653.03,-15653.03,True,32.17,0,0,164
+20,4,4,batch_020,Team 01,Premium Quality,premium_quality,Premium quality,1,1,60.0,8433.85,34192.8,25758.95,182,0.4475,0.5416,61790.42,0.0,61790.42,False,22.93,210,14,0
+20,4,4,batch_020,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,53.3,6809.43,32617.0,25807.57,198,0.4627,0.5049,48815.47,4000.0,44815.47,False,7.54,205,24,0
+20,4,4,batch_020,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,3,45.3,-2618.62,35941.5,38560.12,342,0.5926,0.3624,42149.09,28000.0,14149.089999999997,True,4.82,201,33,0
+20,4,4,batch_020,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,4,4,25.3,-3113.53,45365.76,48479.29,368,0.5676,0.2659,386.47,25978.07,-25591.6,True,0.0,195,83,0
+21,9,4,batch_021,Team 07,Sponsorship Growth,premium_quality,Premium quality,1,1,75.0,13859.5,44748.72,30889.22,300,0.6861,0.3168,79968.55,0.0,79968.55,False,53.94,113,23,0
+21,9,4,batch_021,Team 01,Premium Quality,premium_quality,Premium quality,2,2,60.0,11955.41,34192.8,22237.39,182,0.6397,0.3346,75970.66,0.0,75970.66,False,60.12,87,14,0
+21,9,4,batch_021,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,7,39.5,11900.5,37564.59,25664.09,286,0.7257,0.3804,48900.46,28000.0,20900.46,True,25.57,72,34,105
+21,9,4,batch_021,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,3,55.0,10202.21,32617.0,22414.79,198,0.6475,0.2902,74781.55,4000.0,70781.55,False,55.88,83,24,0
+21,9,4,batch_021,Team 05,Community / Club,cash_conservative,Cash conservative,5,8,32.5,9019.53,22996.92,13977.39,179,0.463,0.4634,70064.87,0.0,70064.87,False,22.06,194,12,0
+21,9,4,batch_021,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,4,55.0,7338.75,35088.24,27749.49,242,0.7277,0.0557,55122.25,14000.0,41122.25,False,45.81,36,53,0
+21,9,4,batch_021,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,5,49.5,6437.18,40291.2,33854.02,242,0.8182,0.1298,86703.85,40000.0,46703.850000000006,True,78.29,3,50,45
+21,9,4,batch_021,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,6,40.0,3156.75,44579.04,41422.29,359,0.8178,0.1542,32539.9,14000.0,18539.9,False,21.04,0,78,28
+21,9,4,batch_021,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,9,9,19.5,-2274.38,31646.0,33920.38,313,0.7837,0.2832,16119.58,4000.0,12119.58,True,31.86,40,46,384
+22,8,4,batch_022,Team 07,Sponsorship Growth,premium_quality,Premium quality,1,1,74.3,11999.1,45658.08,33658.98,308,0.742,0.2782,67440.69,0.0,67440.69,False,58.48,83,23,10
+22,8,4,batch_022,Team 01,Premium Quality,premium_quality,Premium quality,2,2,65.7,11611.41,35709.12,24097.71,191,0.694,0.3109,68386.92,0.0,68386.92,False,64.51,70,14,0
+22,8,4,batch_022,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,6,40.6,9382.95,37392.28,28009.33,280,0.7664,0.3713,38005.58,28000.0,10005.580000000002,True,30.24,51,34,115
+22,8,4,batch_022,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,3,48.6,8595.4,32915.0,24319.6,200,0.6747,0.2659,67106.11,4000.0,63106.11,False,61.05,72,24,0
+22,8,4,batch_022,Team 05,Community / Club,cash_conservative,Cash conservative,5,8,31.4,7907.2,23205.0,15297.8,181,0.476,0.4541,64159.62,0.0,64159.62,False,26.77,186,12,0
+22,8,4,batch_022,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,4,48.6,4948.57,35088.24,30139.67,242,0.753,0.0236,46462.63,14000.0,32462.629999999997,False,50.14,25,53,0
+22,8,4,batch_022,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,5,43.4,3740.25,40177.92,36437.67,241,0.8783,0.1058,72735.17,40000.0,32735.17,True,80.5,0,32,67
+22,8,4,batch_022,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,7,31.4,-895.51,44029.92,44925.43,353,0.8549,0.1619,19599.38,14000.0,5599.380000000001,False,24.82,0,58,37
+23,6,4,batch_023,Team 05,Community / Club,cash_conservative,Cash conservative,1,3,60.0,14277.02,27709.32,13432.3,219,0.6809,0.3508,72210.27,0.0,72210.27,False,44.84,90,12,0
+23,6,4,batch_023,Team 01,Premium Quality,premium_quality,Premium quality,2,1,64.0,12770.72,34529.76,21759.04,184,0.7661,0.2042,69965.25,0.0,69965.25,False,72.16,41,14,49
+23,6,4,batch_023,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,2,64.0,11110.28,33064.0,21953.72,201,0.8456,0.1406,69143.19,4000.0,65143.19,False,71.5,11,24,55
+23,6,4,batch_023,Team 06,Premium Quality,aggressive_growth,Aggressive growth,4,4,52.0,6564.64,39523.2,32958.56,232,0.9949,0.1921,71644.62,40000.0,31644.619999999995,True,81.47,0,0,162
+23,6,4,batch_023,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,5,20.0,5316.03,39140.12,33824.09,290,0.8739,0.211,39553.06,28000.0,11553.059999999998,True,43.46,6,34,138
+23,6,4,batch_023,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,6,6,16.0,374.77,40038.24,39663.47,322,0.9137,0.2636,31806.87,14000.0,17806.87,True,37.6,0,30,87
+24,8,4,batch_024,Team 05,Community / Club,cash_conservative,Cash conservative,1,2,80.0,2602.52,19012.8,16410.28,146,0.891,0.369,28725.51,0.0,28725.51,False,68.75,4,12,282
+24,8,4,batch_024,Team 01,Premium Quality,premium_quality,Premium quality,2,1,85.7,-2254.4,22757.76,25012.16,119,0.9946,0.5044,10399.4,0.0,10399.4,False,84.31,0,0,310
+24,8,4,batch_024,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,66.3,-5278.34,20164.0,25442.34,121,0.9959,0.6461,6398.78,4000.0,2398.7799999999997,True,74.26,0,0,365
+24,8,4,batch_024,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,5,26.3,-6637.24,31374.52,38011.76,151,0.9899,1.2617,362.76,47565.55,-47202.79,True,45.01,0,0,475
+24,8,4,batch_024,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,4,49.1,-7102.27,28185.84,35288.11,183,0.9943,0.5377,0.0,8136.77,-8136.77,True,74.4,0,0,518
+24,8,4,batch_024,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,6,23.4,-13260.94,17389.68,30650.62,119,0.9867,1.1889,0.0,16512.31,-16512.31,True,72.56,0,0,347
+24,8,4,batch_024,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,7,14.9,-17054.09,20565.12,37619.21,121,0.9903,1.2753,0.0,42243.65,-42243.65,True,81.29,0,0,508
+24,8,4,batch_024,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,6.3,-24207.73,21100.64,45308.37,168,0.9904,1.4466,0.0,43846.89,-43846.89,True,52.56,0,0,467
+25,5,4,batch_025,Team 01,Premium Quality,premium_quality,Premium quality,1,1,70.0,12268.21,34192.8,21924.59,182,0.5654,0.4154,77127.86,0.0,77127.86,False,36.7,124,14,0
+25,5,4,batch_025,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,2,2,57.0,11565.56,36272.15,24706.59,319,0.6443,0.3358,67999.97,28000.0,39999.97,True,12.66,141,34,0
+25,5,4,batch_025,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,55.0,10524.15,32617.0,22092.85,198,0.5768,0.3735,76088.98,4000.0,72088.98,False,33.38,120,24,0
+25,5,4,batch_025,Team 05,Community / Club,cash_conservative,Cash conservative,4,5,20.0,9243.65,22996.92,13753.27,179,0.4068,0.5304,71177.07,0.0,71177.07,False,1.83,248,12,0
+25,5,4,batch_025,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,4,40.0,4789.41,45494.24,40704.83,369,0.6993,0.0931,36955.37,14000.0,22955.370000000003,False,2.29,74,83,0
+26,8,4,batch_026,Team 01,Premium Quality,premium_quality,Premium quality,1,1,80.0,8708.19,32844.96,24136.77,174,0.8356,0.14,60332.39,0.0,60332.39,False,74.13,19,14,51
+26,8,4,batch_026,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,80.0,7065.51,30978.0,23912.49,187,0.8777,0.0944,54023.55,4000.0,50023.55,False,59.76,1,24,13
+26,8,4,batch_026,Team 05,Community / Club,cash_conservative,Cash conservative,3,3,54.3,6925.67,22164.6,15238.93,171,0.6943,0.2711,47266.79,0.0,47266.79,False,26.59,61,12,14
+26,8,4,batch_026,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,5,34.9,5215.79,33581.63,28365.84,194,0.8906,0.7308,17083.23,28000.0,-10916.77,True,40.53,0,23,264
+26,8,4,batch_026,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,4,48.6,4333.31,38666.16,34332.85,251,0.85,0.1925,43682.91,0.0,43682.91,False,61.33,20,23,180
+26,8,4,batch_026,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,6,34.9,4018.61,33352.88,29334.27,229,0.9765,0.4545,24484.01,14000.0,10484.009999999998,True,26.67,0,5,11
+26,8,4,batch_026,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,7,26.3,-1917.17,33851.52,35768.69,199,0.882,0.4358,51548.82,40000.0,11548.82,True,59.18,0,26,60
+26,8,4,batch_026,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,9.1,-6166.5,37935.04,44101.54,296,0.9544,0.8271,0.0,21532.6,-21532.6,True,0.0,0,12,71
+27,8,4,batch_027,Team 01,Premium Quality,premium_quality,Premium quality,1,1,82.9,8063.75,32339.52,24275.77,171,0.8679,0.1522,57333.69,0.0,57333.69,False,79.91,11,14,66
+27,8,4,batch_027,Team 05,Community / Club,cash_conservative,Cash conservative,2,3,60.0,7797.23,22996.92,15199.69,179,0.6724,0.2413,48922.55,0.0,48922.55,False,23.55,73,12,0
+27,8,4,batch_027,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,2,77.1,7396.4,31276.0,23879.6,189,0.9117,0.0822,54739.44,4000.0,50739.44,False,65.91,0,18,9
+27,8,4,batch_027,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,7,23.4,6404.6,34672.05,28267.45,222,0.809,0.5805,24822.28,28000.0,-3177.720000000001,True,36.74,17,34,209
+27,8,4,batch_027,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,4,51.4,6012.72,40238.64,34225.92,265,0.8649,0.128,47877.84,0.0,47877.84,False,67.42,16,23,151
+27,8,4,batch_027,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,5,37.7,4847.95,34170.4,29322.45,235,0.9872,0.4266,25303.61,14000.0,11303.61,True,31.94,0,2,6
+27,8,4,batch_027,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,6,26.3,-1828.34,33851.52,35679.86,199,0.9384,0.455,52509.27,40000.0,12509.269999999997,True,66.95,0,12,57
+27,8,4,batch_027,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,9.1,-3673.64,40381.44,44055.08,320,0.971,0.6832,0.0,18970.32,-18970.32,True,0.0,0,9,48
+28,5,4,batch_028,Team 01,Premium Quality,premium_quality,Premium quality,1,1,90.0,12903.51,35372.16,22468.65,189,0.7804,0.2112,70153.42,0.0,70153.42,False,73.68,38,14,30
+28,5,4,batch_028,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,70.0,10364.61,32617.0,22252.39,198,0.7752,0.1357,62053.56,4000.0,58053.56,False,56.72,32,24,0
+28,5,4,batch_028,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,4,27.0,9231.81,35515.72,26283.91,233,0.7775,0.5455,33115.21,28000.0,5115.209999999999,True,33.94,32,34,208
+28,5,4,batch_028,Team 05,Community / Club,cash_conservative,Cash conservative,4,3,30.0,8947.11,22996.92,14049.81,179,0.5887,0.3118,53310.46,0.0,53310.46,False,17.34,112,12,0
+28,5,4,batch_028,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,5,25.0,2040.78,42894.72,40853.94,341,0.9275,0.458,6531.23,14000.0,-7468.77,False,0.0,0,25,27
+29,5,4,batch_029,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,1,1,67.0,11656.83,37509.47,25852.64,307,0.7453,0.3083,57410.59,28000.0,29410.589999999997,True,22.95,69,34,29
+29,5,4,batch_029,Team 01,Premium Quality,premium_quality,Premium quality,2,2,60.0,11446.7,34192.8,22746.1,182,0.614,0.3626,73835.33,0.0,73835.33,False,49.52,99,14,0
+29,5,4,batch_029,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,55.0,9680.65,32617.0,22936.35,198,0.6239,0.3182,72706.21,4000.0,68706.21,False,46.25,94,24,0
+29,5,4,batch_029,Team 05,Community / Club,cash_conservative,Cash conservative,4,5,20.0,8673.08,22996.92,14323.84,179,0.4333,0.4989,68604.57,0.0,68604.57,False,12.11,221,12,0
+29,5,4,batch_029,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,4,40.0,2976.44,45311.2,42334.76,367,0.7906,0.108,31340.83,14000.0,17340.83,False,13.21,13,83,6
+30,8,4,batch_030,Team 05,Community / Club,cash_conservative,Cash conservative,1,1,80.0,2864.8,19012.8,16148.0,146,0.861,0.3631,31671.64,0.0,31671.64,False,66.92,10,12,266
+30,8,4,batch_030,Team 01,Premium Quality,premium_quality,Premium quality,2,2,69.1,-4347.61,20617.2,24964.81,108,0.9907,0.6512,4853.51,0.0,4853.51,True,83.48,0,0,341
+30,8,4,batch_030,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,5,37.7,-6216.84,31271.94,37488.78,153,0.9874,1.2265,783.16,43207.22,-42424.06,True,44.75,0,0,451
+30,8,4,batch_030,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,3,54.9,-6730.43,18613.0,25343.43,112,0.992,0.7715,2983.71,4000.0,-1016.29,True,74.22,0,0,388
+30,8,4,batch_030,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,4,46.3,-8716.9,26334.72,35051.62,172,0.9899,0.6288,0.0,10185.29,-10185.29,True,74.66,0,0,534
+30,8,4,batch_030,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,6,37.7,-13647.67,16742.0,30389.67,115,0.9961,1.2867,0.0,16623.21,-16623.21,True,73.09,0,0,353
+30,8,4,batch_030,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,8,3.4,-18628.83,18812.16,37440.99,111,0.9872,1.4724,0.0,45774.73,-45774.73,True,81.58,0,0,533
+30,8,4,batch_030,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,7,14.9,-24136.61,20630.72,44767.33,165,0.9945,1.5012,0.0,41797.81,-41797.81,True,52.62,0,0,461
+31,8,4,batch_031,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,1,4,49.1,11157.17,38209.19,27052.02,177,0.9605,0.8726,18157.17,36011.86,-17854.690000000002,True,42.74,0,7,318
+31,8,4,batch_031,Team 05,Community / Club,cash_conservative,Cash conservative,2,1,74.3,4774.37,20328.6,15554.23,156,0.8029,0.3293,38691.73,0.0,38691.73,False,59.33,25,12,227
+31,8,4,batch_031,Team 01,Premium Quality,premium_quality,Premium quality,3,2,71.4,1195.71,25194.24,23998.53,132,0.9897,0.3495,22463.29,0.0,22463.29,False,86.56,0,0,264
+31,8,4,batch_031,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,3,57.7,-1932.88,22460.0,24392.88,135,0.9918,0.4694,17919.31,4000.0,13919.310000000001,True,76.4,0,0,316
+31,8,4,batch_031,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,5,48.6,-3350.83,30453.84,33804.67,196,0.9882,0.4268,7047.43,0.0,7047.43,False,77.02,0,0,454
+31,8,4,batch_031,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,6,37.7,-9511.06,19834.32,29345.38,136,0.996,0.9334,10090.62,14000.0,-3909.379999999999,True,74.79,0,0,288
+31,8,4,batch_031,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,7,14.9,-13403.6,22880.64,36284.24,135,0.9907,1.0401,10405.56,40000.0,-29594.440000000002,True,83.51,0,0,460
+31,8,4,batch_031,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,6.3,-19968.39,23251.36,43219.75,184,0.9905,1.2339,0.0,28689.81,-28689.81,True,48.33,0,0,393
+32,6,4,batch_032,Team 01,Premium Quality,premium_quality,Premium quality,1,1,68.0,11527.66,34192.8,22665.14,182,0.5039,0.4816,74164.69,0.0,74164.69,False,31.92,164,14,0
+32,6,4,batch_032,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,60.0,9764.43,32617.0,22852.57,198,0.5147,0.4455,73055.52,4000.0,69055.52,False,28.31,161,24,0
+32,6,4,batch_032,Team 05,Community / Club,cash_conservative,Cash conservative,3,5,40.0,8733.2,22996.92,14263.72,179,0.3484,0.5995,69089.96,0.0,69089.96,False,2.17,322,12,0
+32,6,4,batch_032,Team 06,Premium Quality,aggressive_growth,Aggressive growth,4,4,44.0,4904.07,39093.12,34189.05,234,0.5572,0.2485,91266.54,40000.0,51266.53999999999,True,49.84,135,50,0
+32,6,4,batch_032,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,3,44.0,3620.07,45742.4,42122.33,371,0.6307,0.1785,32868.49,14000.0,18868.489999999998,False,2.51,132,83,0
+32,6,4,batch_032,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,6,6,28.0,3170.17,37763.67,34593.5,340,0.6425,0.3004,56396.22,28000.0,28396.22,True,16.44,154,34,0
+33,7,4,batch_033,Team 07,Sponsorship Growth,premium_quality,Premium quality,1,1,80.0,13763.99,43433.28,29669.29,289,0.6869,0.2885,84724.06,0.0,84724.06,False,46.02,108,23,0
+33,7,4,batch_033,Team 01,Premium Quality,premium_quality,Premium quality,2,2,60.0,12794.45,34192.8,21398.35,182,0.6346,0.3401,79231.75,0.0,79231.75,False,48.09,90,14,0
+33,7,4,batch_033,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,4,42.0,11137.65,35712.6,24574.95,266,0.7741,0.4106,53167.49,28000.0,25167.489999999998,True,25.52,42,34,105
+33,7,4,batch_033,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,3,53.3,11063.45,32617.0,21553.55,198,0.6511,0.286,78212.93,4000.0,74212.93,False,45.12,81,24,0
+33,7,4,batch_033,Team 05,Community / Club,cash_conservative,Cash conservative,5,7,23.3,9624.17,22996.92,13372.75,179,0.4832,0.4392,72300.39,0.0,72300.39,False,19.07,178,12,0
+33,7,4,batch_033,Team 06,Premium Quality,aggressive_growth,Aggressive growth,6,5,38.7,8128.71,40590.72,32462.01,244,0.7217,0.1243,96660.79,40000.0,56660.78999999999,True,67.1,43,50,11
+33,7,4,batch_033,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,6,36.7,3586.46,43389.28,39802.82,346,0.8214,0.1964,36170.64,14000.0,22170.64,False,15.81,0,74,43
+34,6,4,batch_034,Team 05,Community / Club,cash_conservative,Cash conservative,1,2,72.0,10651.01,26730.12,16079.11,209,0.7394,0.2574,54302.52,0.0,54302.52,False,46.7,59,12,61
+34,6,4,batch_034,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,1,72.0,9310.26,34483.0,25172.74,207,0.9946,0.1021,49397.12,4000.0,45397.12,True,73.67,0,0,95
+34,6,4,batch_034,Team 01,Premium Quality,premium_quality,Premium quality,3,3,64.0,8504.67,33518.88,25014.21,178,0.8618,0.1518,53908.22,0.0,53908.22,False,80.21,14,14,68
+34,6,4,batch_034,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,5,16.0,7233.67,36396.26,29162.59,235,0.8101,0.5121,21118.22,28000.0,-6881.779999999999,True,41.13,19,34,210
+34,6,4,batch_034,Team 06,Premium Quality,aggressive_growth,Aggressive growth,5,4,36.0,-2497.13,35345.28,37842.41,208,0.9951,0.33,40154.12,40000.0,154.12000000000262,True,80.98,0,0,235
+34,6,4,batch_034,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,6,6,8.0,-9711.81,36363.36,46075.17,287,0.9486,0.474,3572.28,14000.0,-10427.72,True,40.55,0,14,145
+35,4,4,batch_035,Team 01,Premium Quality,premium_quality,Premium quality,1,1,60.0,8500.09,34192.8,25692.71,182,0.4578,0.5307,62054.51,0.0,62054.51,False,24.37,200,14,0
+35,4,4,batch_035,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,53.3,6663.67,32617.0,25953.33,198,0.4715,0.4949,60650.12,4000.0,56650.12,False,20.73,196,24,0
+35,4,4,batch_035,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,3,3,46.7,-2386.71,45742.4,48129.11,371,0.5776,0.2579,12265.35,14000.0,-1734.6499999999996,False,0.0,187,83,0
+35,4,4,batch_035,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,4,32.0,-2638.39,35726.25,38364.64,340,0.586,0.3661,43855.69,28000.0,15855.690000000002,True,9.87,207,32,0
+36,5,4,batch_036,Team 01,Premium Quality,premium_quality,Premium quality,1,1,90.0,12274.37,35318.16,23043.79,186,0.9379,0.1437,59826.7,0.0,59826.7,False,82.65,0,11,79
+36,5,4,batch_036,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,75.0,9204.8,31872.0,22667.2,193,0.8936,0.074,57798.42,4000.0,53798.42,False,69.36,0,22,19
+36,5,4,batch_036,Team 05,Community / Club,cash_conservative,Cash conservative,3,3,40.0,8927.35,23205.0,14277.65,181,0.6596,0.2719,52346.79,0.0,52346.79,False,29.56,81,12,0
+36,5,4,batch_036,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,4,17.0,8288.92,35157.47,26868.55,216,0.8033,0.6125,25908.04,28000.0,-2091.959999999999,True,38.9,17,34,246
+36,5,4,batch_036,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,5,12.0,-1014.78,40437.76,41452.54,319,0.9568,0.6572,2485.22,14325.34,-11840.12,True,0.0,0,13,49
+37,5,4,batch_037,Team 05,Community / Club,cash_conservative,Cash conservative,1,2,70.0,10607.0,26968.8,16361.8,211,0.7474,0.2564,56392.92,0.0,56392.92,False,47.71,57,12,33
+37,5,4,batch_037,Team 01,Premium Quality,premium_quality,Premium quality,2,1,70.0,8012.81,33637.68,25624.87,177,0.9842,0.1109,48935.58,0.0,48935.58,False,83.49,0,1,82
+37,5,4,batch_037,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,62.0,4784.16,30759.0,25974.84,186,0.9976,0.0727,42630.73,4000.0,38630.73,True,73.5,0,0,117
+37,5,4,batch_037,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,5,12.0,-2176.65,36570.66,38747.31,245,0.9096,0.3912,11915.53,28000.0,-16084.47,True,44.94,0,23,197
+37,5,4,batch_037,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,4,12.0,-12237.18,34990.56,47227.74,278,0.9963,0.5425,0.0,14670.66,-14670.66,True,41.98,0,0,151
+38,7,4,batch_038,Team 05,Community / Club,cash_conservative,Cash conservative,1,1,70.0,7982.18,24429.0,16446.82,191,0.7741,0.1776,46390.14,0.0,46390.14,False,51.38,42,12,117
+38,7,4,batch_038,Team 01,Premium Quality,premium_quality,Premium quality,2,3,66.7,6559.77,31952.88,25393.11,167,0.9934,0.1751,38951.01,0.0,38951.01,False,84.56,0,0,144
+38,7,4,batch_038,Team 07,Sponsorship Growth,premium_quality,Premium quality,3,2,70.0,4720.56,40428.72,35708.16,263,0.9954,0.162,28446.13,0.0,28446.13,False,76.14,0,0,251
+38,7,4,batch_038,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,4,45.3,2670.13,28489.0,25818.87,171,0.9936,0.1621,31736.01,4000.0,27736.01,True,74.22,0,0,193
+38,7,4,batch_038,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,5,28.7,-1563.11,36652.25,38215.36,233,0.9973,0.4767,5436.89,28941.07,-23504.18,True,45.97,0,0,266
+38,7,4,batch_038,Team 06,Premium Quality,aggressive_growth,Aggressive growth,6,6,25.3,-9303.23,29224.32,38527.55,172,0.9994,0.6152,21656.34,40000.0,-18343.66,True,81.64,0,0,335
+38,7,4,batch_038,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,7,12.0,-12919.99,33454.08,46374.07,263,0.9958,0.6863,0.0,17767.69,-17767.69,True,45.11,0,0,202
+39,8,4,batch_039,Team 01,Premium Quality,premium_quality,Premium quality,1,2,77.1,9265.42,34024.32,24758.9,181,0.7891,0.1643,60899.02,0.0,60899.02,False,68.92,33,14,31
+39,8,4,batch_039,Team 07,Sponsorship Growth,premium_quality,Premium quality,2,1,82.9,9099.68,43882.56,34782.88,293,0.833,0.1391,54980.88,0.0,54980.88,False,60.33,35,23,72
+39,8,4,batch_039,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,71.4,8021.41,32617.0,24595.59,198,0.8203,0.0987,53345.07,4000.0,49345.07,False,54.06,18,24,0
+39,8,4,batch_039,Team 05,Community / Club,cash_conservative,Cash conservative,4,4,45.7,7298.75,22996.92,15698.17,179,0.6151,0.2796,47057.89,0.0,47057.89,False,17.68,98,12,0
+39,8,4,batch_039,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,5,5,40.6,4634.18,34957.12,30322.94,241,0.9342,0.2879,23543.77,14000.0,9543.77,True,25.52,0,16,0
+39,8,4,batch_039,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,6,6,20.6,-1131.27,36732.57,37863.84,260,0.8251,0.3309,19823.4,28000.0,-8176.5999999999985,True,36.38,20,34,158
+39,8,4,batch_039,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,7,17.7,-1924.26,35049.6,36973.86,207,0.7998,0.2881,50504.03,40000.0,10504.029999999999,True,56.47,1,50,46
+39,8,4,batch_039,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,12.0,-3018.5,42488.16,45506.66,341,0.9406,0.4845,481.5,21263.66,-20782.16,True,0.0,0,20,27
+40,9,4,batch_040,Team 07,Sponsorship Growth,premium_quality,Premium quality,1,1,87.5,12864.88,44400.96,31536.08,296,0.8283,0.1536,67924.41,0.0,67924.41,False,64.21,37,23,76
+40,9,4,batch_040,Team 01,Premium Quality,premium_quality,Premium quality,2,2,75.0,11814.31,34361.28,22546.97,183,0.7848,0.1788,69085.26,0.0,69085.26,False,74.3,35,14,35
+40,9,4,batch_040,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,72.5,10313.95,32617.0,22303.05,198,0.7961,0.1099,61884.29,4000.0,57884.29,False,56.58,26,24,0
+40,9,4,batch_040,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,8,24.5,9318.0,35585.13,26267.13,238,0.7613,0.5277,34919.54,28000.0,6919.540000000001,True,31.67,39,34,193
+40,9,4,batch_040,Team 05,Community / Club,cash_conservative,Cash conservative,5,5,40.0,8911.43,22996.92,14085.49,179,0.587,0.3138,53198.41,0.0,53198.41,False,17.06,113,12,0
+40,9,4,batch_040,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,4,44.5,7407.7,34957.12,27549.42,241,0.8936,0.2183,31995.72,14000.0,17995.72,True,25.69,0,28,0
+40,9,4,batch_040,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,6,35.0,2335.28,43260.8,40925.52,345,0.9307,0.4426,6713.26,14000.0,-7286.74,False,0.0,0,24,23
+40,9,4,batch_040,Team 06,Premium Quality,aggressive_growth,Aggressive growth,8,7,32.0,2211.63,35798.4,33586.77,212,0.8466,0.2556,64126.18,40000.0,24126.18,True,61.43,0,37,31
+40,9,4,batch_040,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,9,9,7.0,-6863.67,26366.0,33229.67,256,0.814,0.4824,5888.73,4000.0,1888.7299999999996,True,25.09,12,46,276
+41,5,4,batch_041,Team 01,Premium Quality,premium_quality,Premium quality,1,1,70.0,12450.37,34192.8,21742.43,182,0.4972,0.4887,77849.04,0.0,77849.04,False,21.43,169,14,0
+41,5,4,batch_041,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,65.0,10708.39,32617.0,21908.61,198,0.5134,0.4469,76830.26,4000.0,72830.26,False,17.29,163,24,0
+41,5,4,batch_041,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,3,47.0,10214.0,34682.34,24468.34,313,0.6551,0.3356,70481.74,28000.0,42481.740000000005,True,10.01,129,34,0
+41,5,4,batch_041,Team 05,Community / Club,cash_conservative,Cash conservative,4,5,20.0,9375.29,22996.92,13621.63,179,0.38,0.5622,71746.44,0.0,71746.44,False,0.0,278,12,0
+41,5,4,batch_041,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,4,40.0,5150.09,45494.24,40344.15,369,0.6608,0.1411,37885.33,14000.0,23885.33,False,0.0,105,83,0
+42,8,4,batch_042,Team 01,Premium Quality,premium_quality,Premium quality,1,2,80.0,9336.21,33013.44,23677.23,175,0.8436,0.1314,63893.66,0.0,63893.66,False,72.38,18,14,40
+42,8,4,batch_042,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,1,85.7,8915.14,32319.0,23403.86,196,0.9039,0.0707,57255.17,4000.0,53255.17,False,57.09,0,20,2
+42,8,4,batch_042,Team 05,Community / Club,cash_conservative,Cash conservative,3,4,51.4,7791.21,22684.8,14893.59,176,0.6748,0.2763,49638.91,0.0,49638.91,False,20.31,71,12,3
+42,8,4,batch_042,Team 07,Sponsorship Growth,premium_quality,Premium quality,4,3,57.1,6352.19,39813.12,33460.93,260,0.8565,0.1503,53249.03,0.0,53249.03,False,60.74,19,23,130
+42,8,4,batch_042,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,6,23.4,5758.54,33500.88,27742.34,207,0.8615,0.6455,24983.08,28000.0,-3016.9199999999983,True,36.44,0,32,223
+42,8,4,batch_042,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,5,37.7,5377.76,34139.6,28761.84,235,0.9886,0.4293,26962.09,14000.0,12962.09,True,23.03,0,2,5
+42,8,4,batch_042,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,7,23.4,-977.51,34151.04,35128.55,201,0.8995,0.437,54778.03,40000.0,14778.029999999999,True,57.29,0,22,53
+42,8,4,batch_042,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,9.1,-3535.86,39658.08,43193.94,312,0.9663,0.73,0.0,17408.19,-17408.19,True,0.0,0,10,55
+43,9,4,batch_043,Team 05,Community / Club,cash_conservative,Cash conservative,1,2,70.0,8120.65,24459.6,16338.95,191,0.6917,0.2571,57715.39,0.0,57715.39,False,37.64,72,12,16
+43,9,4,batch_043,Team 01,Premium Quality,premium_quality,Premium quality,2,1,75.0,7850.17,33350.4,25500.23,177,0.8396,0.119,59314.13,0.0,59314.13,False,71.07,19,14,23
+43,9,4,batch_043,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,67.0,5899.44,31723.0,25823.56,192,0.8723,0.0705,56315.02,4000.0,52315.02,True,67.31,3,24,35
+43,9,4,batch_043,Team 07,Sponsorship Growth,premium_quality,Premium quality,4,4,57.5,4651.91,40690.08,36038.17,267,0.8571,0.1272,47676.66,0.0,47676.66,False,61.95,21,23,97
+43,9,4,batch_043,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,7,29.5,4162.2,33990.29,29828.09,226,0.8574,0.5331,23950.75,28000.0,-4049.25,True,36.71,2,34,166
+43,9,4,batch_043,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,5,47.0,-1817.64,29697.36,31515.0,203,0.9966,0.349,34907.81,14000.0,20907.809999999998,True,57.22,0,0,44
+43,9,4,batch_043,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,6,32.0,-4185.7,34191.36,38377.06,202,0.9925,0.366,52271.11,40000.0,12271.11,True,81.34,0,0,146
+43,9,4,batch_043,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,17.0,-12509.82,34904.32,47414.14,274,0.9936,0.5794,0.0,15025.71,-15025.71,True,28.15,0,0,141
+43,9,4,batch_043,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,9,9,7.0,-13305.29,25342.0,38647.29,245,0.9766,0.5491,0.0,17320.79,-17320.79,True,42.37,0,4,498
+44,9,4,batch_044,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,1,4,52.0,11219.88,39570.72,28350.84,170,0.9845,0.998,18219.88,46194.34,-27974.459999999995,True,45.56,0,1,348
+44,9,4,batch_044,Team 05,Community / Club,cash_conservative,Cash conservative,2,2,75.0,2638.63,19043.4,16404.77,146,0.8417,0.3724,29412.8,0.0,29412.8,False,67.36,14,12,278
+44,9,4,batch_044,Team 01,Premium Quality,premium_quality,Premium quality,3,1,77.5,-1489.94,23554.8,25044.74,123,0.9915,0.4509,10605.37,0.0,10605.37,False,84.86,0,0,307
+44,9,4,batch_044,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,3,59.5,-4617.1,20865.0,25482.1,125,0.9919,0.587,6319.46,4000.0,2319.46,True,74.58,0,0,363
+44,9,4,batch_044,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,5,52.0,-6770.07,28628.64,35398.71,184,0.9915,0.5249,0.0,8985.54,-8985.54,True,75.39,0,0,523
+44,9,4,batch_044,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,6,42.0,-12366.25,18299.6,30665.85,125,0.9933,1.0979,0.0,15627.72,-15627.72,True,74.0,0,0,340
+44,9,4,batch_044,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,7,32.0,-16217.66,21459.84,37677.5,126,0.9961,1.1978,0.0,42372.7,-42372.7,True,81.77,0,0,506
+44,9,4,batch_044,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,7.0,-23617.4,21764.16,45381.56,172,0.9876,1.3829,0.0,43415.57,-43415.57,True,54.13,0,0,465
+44,9,4,batch_044,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,9,9,0.0,-23629.42,15361.0,38990.42,149,0.9885,1.5476,0.0,60660.5,-60660.5,True,43.73,0,0,970
+45,8,4,batch_045,Team 01,Premium Quality,premium_quality,Premium quality,1,2,77.1,12297.07,34024.32,21727.25,181,0.8019,0.1498,76256.56,0.0,76256.56,False,68.06,29,14,11
+45,8,4,batch_045,Team 07,Sponsorship Growth,premium_quality,Premium quality,2,1,80.0,12007.98,42456.96,30448.98,280,0.8343,0.1124,73976.56,0.0,73976.56,False,61.05,31,23,69
+45,8,4,batch_045,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,71.4,10541.4,32468.0,21926.6,197,0.8161,0.0897,74280.22,4000.0,70280.22,False,65.52,19,24,17
+45,8,4,batch_045,Team 05,Community / Club,cash_conservative,Cash conservative,4,5,40.0,10281.71,23933.28,13651.57,188,0.6509,0.2739,70253.12,0.0,70253.12,False,33.82,87,12,13
+45,8,4,batch_045,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,7,17.7,9201.68,34429.29,25227.61,230,0.8074,0.5383,42455.1,28000.0,14455.099999999999,True,32.59,19,34,170
+45,8,4,batch_045,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,4,43.4,5814.75,32465.84,26651.09,222,0.9669,0.2476,55902.86,14000.0,41902.86,True,56.47,0,6,20
+45,8,4,batch_045,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,6,29.1,3249.99,36207.36,32957.37,214,0.9668,0.2559,81171.47,40000.0,41171.47,True,83.74,0,7,104
+45,8,4,batch_045,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,9.1,-3714.05,36382.72,40096.77,286,0.9513,0.4788,26207.7,14000.0,12207.7,True,23.5,0,13,125
+46,5,4,batch_046,Team 01,Premium Quality,premium_quality,Premium quality,1,1,80.0,8566.33,34192.8,25626.47,182,0.7578,0.2041,62336.66,0.0,62336.66,False,63.17,44,14,0
+46,5,4,batch_046,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,80.0,6941.91,32617.0,25675.09,198,0.791,0.1163,49314.57,4000.0,45314.57,False,45.19,28,24,0
+46,5,4,batch_046,Team 05,Community / Club,cash_conservative,Cash conservative,3,3,40.0,6539.27,22996.92,16457.65,179,0.5932,0.3063,44195.71,0.0,44195.71,False,6.35,109,12,0
+46,5,4,batch_046,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,5,17.0,4648.13,34694.94,30046.81,247,0.7781,0.4795,26827.21,28000.0,-1172.7900000000009,True,26.06,35,34,133
+46,5,4,batch_046,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,4,17.0,-4064.23,43607.52,47671.75,350,0.9351,0.4246,0.0,25629.25,-25629.25,True,0.0,0,23,18
+47,4,4,batch_047,Team 01,Premium Quality,premium_quality,Premium quality,1,1,60.0,8450.41,34192.8,25742.39,182,0.3295,0.6657,61857.63,0.0,61857.63,False,0.0,355,14,0
+47,4,4,batch_047,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,53.3,6825.01,32617.0,25791.99,198,0.3428,0.6387,48681.96,4000.0,44681.96,False,0.0,355,24,0
+47,4,4,batch_047,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,3,38.7,4154.04,33652.5,29498.46,320,0.3985,0.5611,51335.93,28000.0,23335.93,True,0.0,453,29,0
+47,4,4,batch_047,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,4,4,32.0,-3257.55,45209.12,48466.67,367,0.4147,0.4825,242.45,26125.03,-25882.579999999998,True,0.0,433,83,0
+48,7,4,batch_048,Team 01,Premium Quality,premium_quality,Premium quality,1,1,66.7,9785.28,34192.8,24407.52,182,0.5938,0.3846,67188.68,0.0,67188.68,False,42.81,110,14,0
+48,7,4,batch_048,Team 07,Sponsorship Growth,premium_quality,Premium quality,2,2,63.3,8640.7,42759.36,34118.66,283,0.6097,0.3585,66226.25,0.0,66226.25,False,35.17,157,23,0
+48,7,4,batch_048,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,3,55.3,8213.43,36065.5,27852.07,307,0.7123,0.2932,52685.85,28000.0,24685.85,True,18.59,88,34,0
+48,7,4,batch_048,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,4,53.3,8190.07,32617.0,24426.93,198,0.6181,0.3251,53758.9,4000.0,49758.9,False,26.32,97,24,0
+48,7,4,batch_048,Team 05,Community / Club,cash_conservative,Cash conservative,5,7,23.3,7417.19,22996.92,15579.73,179,0.4277,0.5056,47392.8,0.0,47392.8,False,0.0,226,12,0
+48,7,4,batch_048,Team 06,Premium Quality,aggressive_growth,Aggressive growth,6,5,35.3,2620.81,39093.12,36472.31,234,0.6799,0.0941,58046.05,40000.0,18046.050000000003,True,34.61,59,50,0
+48,7,4,batch_048,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,6,28.7,-499.17,45209.12,45708.29,367,0.7562,0.0981,3000.83,20924.27,-17923.440000000002,True,0.0,34,83,0
+49,4,4,batch_049,Team 01,Premium Quality,premium_quality,Premium quality,1,1,60.0,9009.77,34192.8,25183.03,182,0.2903,0.7063,64093.13,0.0,64093.13,False,0.0,430,14,0
+49,4,4,batch_049,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,53.3,7185.23,32617.0,25431.77,198,0.2987,0.687,62741.82,4000.0,58741.82,False,0.0,440,24,0
+49,4,4,batch_049,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,4,38.7,5108.3,33848.85,28740.55,322,0.3627,0.6043,55456.14,28000.0,27456.14,True,0.0,535,29,0
+49,4,4,batch_049,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,4,3,40.0,-1674.65,45494.24,47168.89,369,0.3776,0.536,14847.43,14000.0,847.4300000000003,False,0.0,524,83,0
+50,4,4,batch_050,Team 01,Premium Quality,premium_quality,Premium quality,1,1,60.0,9175.37,34192.8,25017.43,182,0.4241,0.5665,64752.72,0.0,64752.72,False,3.3,232,14,0
+50,4,4,batch_050,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,53.3,7566.99,32617.0,25050.01,198,0.4411,0.5293,51639.19,4000.0,47639.19,False,0.0,226,24,0
+50,4,4,batch_050,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,3,38.7,5041.15,33652.5,28611.35,320,0.5205,0.4258,55318.03,28000.0,27318.03,True,0.0,263,31,0
+50,4,4,batch_050,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,4,4,32.0,-1586.32,45365.76,46952.08,368,0.5371,0.3108,1913.68,23301.43,-21387.75,True,0.0,233,83,0
+51,10,4,batch_051,Team 10,Community / Club,innovation_leap,Innovation leap,1,4,56.4,10234.92,32345.78,22110.86,203,0.8125,0.304,44846.62,28000.0,16846.620000000003,True,48.86,21,24,68
+51,10,4,batch_051,Team 01,Premium Quality,premium_quality,Premium quality,2,1,88.9,7815.48,33173.28,25357.8,174,0.9911,0.1345,47992.03,0.0,47992.03,False,85.84,0,0,94
+51,10,4,batch_051,Team 05,Community / Club,cash_conservative,Cash conservative,3,3,62.2,6228.85,22268.64,16039.79,172,0.7118,0.2469,44057.41,0.0,44057.41,False,28.41,56,12,15
+51,10,4,batch_051,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,2,73.3,5051.6,30084.0,25032.4,181,0.9576,0.1173,45618.13,4000.0,41618.13,False,70.54,0,7,40
+51,10,4,batch_051,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,8,29.8,4594.14,34311.59,29717.45,199,0.8897,0.6926,11682.33,28000.0,-16317.67,True,39.85,0,23,258
+51,10,4,batch_051,Team 07,Sponsorship Growth,premium_quality,Premium quality,6,5,55.6,1597.32,37720.08,36122.76,245,0.9389,0.1887,30675.05,0.0,30675.05,False,71.2,0,15,224
+51,10,4,batch_051,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,7,6,43.1,1289.92,32049.6,30759.68,220,0.9935,0.5673,18980.08,14000.0,4980.080000000002,True,32.48,0,0,20
+51,10,4,batch_051,Team 06,Premium Quality,aggressive_growth,Aggressive growth,8,7,32.0,-4203.65,32952.96,37156.61,193,0.9922,0.5749,43884.44,40000.0,3884.4400000000023,True,71.57,0,0,75
+51,10,4,batch_051,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,9,9,9.8,-8748.75,37567.2,46315.95,294,0.9794,0.9109,0.0,28187.85,-28187.85,True,0.0,0,5,73
+51,10,4,batch_051,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,10,10,0.9,-15243.46,22288.0,37531.46,212,0.8864,0.89,0.0,23220.34,-23220.34,True,28.61,0,26,389
+52,9,4,batch_052,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,1,3,64.5,10679.3,36670.41,25991.11,144,0.9943,1.3823,17679.3,38586.39,-20907.09,True,45.16,0,0,371
+52,9,4,batch_052,Team 05,Community / Club,cash_conservative,Cash conservative,2,1,75.0,3122.19,18180.48,15058.29,138,0.8399,0.4359,36303.39,0.0,36303.39,False,63.72,13,12,272
+52,9,4,batch_052,Team 01,Premium Quality,premium_quality,Premium quality,3,2,67.5,-3550.25,19820.16,23370.41,104,0.988,0.7101,12625.24,0.0,12625.24,False,83.23,0,0,333
+52,9,4,batch_052,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,4,59.5,-5631.17,18061.0,23692.17,109,0.9928,0.8217,11204.5,4000.0,7204.5,True,73.07,0,0,377
+52,9,4,batch_052,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,5,59.5,-8045.86,24747.12,32792.98,160,0.9952,0.7603,0.0,1765.81,-1765.81,True,74.2,0,0,541
+52,9,4,batch_052,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,6,39.5,-12053.16,16256.24,28309.4,112,0.9919,1.3379,6550.51,14000.0,-7449.49,True,71.7,0,0,340
+52,9,4,batch_052,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,7,17.0,-16949.58,18253.44,35203.02,108,0.9894,1.5467,4348.05,40000.0,-35651.95,True,80.1,0,0,525
+52,9,4,batch_052,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,14.5,-22416.15,19154.08,41570.23,151,0.9896,1.7199,0.0,31757.52,-31757.52,True,52.27,0,0,470
+52,9,4,batch_052,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,9,9,0.0,-22875.25,13330.0,36205.25,128,0.9892,1.9675,0.0,51248.06,-51248.06,True,43.54,0,0,989
+53,4,4,batch_053,Team 01,Premium Quality,premium_quality,Premium quality,1,1,60.0,11774.22,34192.8,22418.58,182,0.5569,0.4246,75151.8,0.0,75151.8,False,33.99,129,14,0
+53,4,4,batch_053,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,53.3,10017.07,32617.0,22599.93,198,0.566,0.3862,74064.62,4000.0,70064.62,False,29.99,127,24,0
+53,4,4,batch_053,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,3,45.3,4471.68,38784.69,34313.01,336,0.7293,0.2262,55191.94,28000.0,27191.940000000002,True,17.97,89,34,0
+53,4,4,batch_053,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,4,4,33.3,3810.39,45494.24,41683.85,369,0.698,0.0891,33789.26,14000.0,19789.260000000002,False,2.69,75,83,0
+54,6,4,batch_054,Team 01,Premium Quality,premium_quality,Premium quality,1,1,72.0,10557.11,34192.8,23635.69,182,0.6264,0.3491,70279.78,0.0,70279.78,False,47.61,93,14,0
+54,6,4,batch_054,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,64.0,8770.91,32617.0,23846.09,198,0.6359,0.304,69069.24,4000.0,65069.240000000005,False,43.8,88,24,0
+54,6,4,batch_054,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,3,40.0,8528.73,35954.42,27425.69,267,0.7281,0.4408,40500.92,28000.0,12500.919999999998,True,22.69,64,34,118
+54,6,4,batch_054,Team 05,Community / Club,cash_conservative,Cash conservative,4,6,32.0,8032.76,22996.92,14964.16,179,0.4689,0.4564,65988.07,0.0,65988.07,False,17.38,189,12,0
+54,6,4,batch_054,Team 06,Premium Quality,aggressive_growth,Aggressive growth,5,4,40.0,5325.36,40890.24,35564.88,246,0.7114,0.1342,86063.52,40000.0,46063.520000000004,True,68.89,49,50,0
+54,6,4,batch_054,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,6,5,36.0,-362.0,43912.0,44274.0,351,0.7785,0.1823,22093.65,14000.0,8093.6500000000015,False,15.67,16,83,43
+55,7,4,batch_055,Team 07,Sponsorship Growth,premium_quality,Premium quality,1,1,80.0,13524.39,45310.32,31785.93,305,0.7253,0.2881,76342.22,0.0,76342.22,False,55.74,91,23,0
+55,7,4,batch_055,Team 01,Premium Quality,premium_quality,Premium quality,2,2,60.0,11345.5,34192.8,22847.3,182,0.661,0.3113,73537.88,0.0,73537.88,False,61.52,78,14,0
+55,7,4,batch_055,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,5,38.7,10354.39,36858.15,26503.76,273,0.7376,0.4103,43318.88,28000.0,15318.879999999997,True,26.11,61,34,122
+55,7,4,batch_055,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,3,53.3,9580.39,32617.0,23036.61,198,0.6688,0.2648,72283.6,4000.0,68283.6,False,57.44,73,24,0
+55,7,4,batch_055,Team 05,Community / Club,cash_conservative,Cash conservative,5,7,23.3,8579.37,22996.92,14417.55,179,0.4807,0.4422,68122.18,0.0,68122.18,False,23.49,180,12,0
+55,7,4,batch_055,Team 06,Premium Quality,aggressive_growth,Aggressive growth,6,4,42.0,4988.55,39692.16,34703.61,238,0.8414,0.1252,82078.6,40000.0,42078.600000000006,True,79.44,0,44,53
+55,7,4,batch_055,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,6,36.7,1413.61,43938.4,42524.79,352,0.8486,0.1778,27607.18,14000.0,13607.18,False,21.66,0,62,39
+56,7,4,batch_056,Team 01,Premium Quality,premium_quality,Premium quality,1,1,80.0,7231.41,32844.96,25613.55,174,0.8113,0.1696,55857.32,0.0,55857.32,False,73.71,26,14,42
+56,7,4,batch_056,Team 05,Community / Club,cash_conservative,Cash conservative,2,3,56.7,6391.13,22684.8,16293.67,176,0.7008,0.2479,44269.27,0.0,44269.27,False,20.62,61,12,5
+56,7,4,batch_056,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,2,80.0,6285.44,31723.0,25437.56,192,0.8585,0.1194,49455.1,4000.0,45455.1,False,59.35,6,24,6
+56,7,4,batch_056,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,5,25.3,3561.53,33859.35,30297.82,204,0.8285,0.6818,12324.56,28000.0,-15675.44,True,35.98,7,34,245
+56,7,4,batch_056,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,4,46.7,3352.39,39722.4,36370.01,260,0.8359,0.176,40094.72,0.0,40094.72,False,61.97,27,23,148
+56,7,4,batch_056,Team 06,Premium Quality,aggressive_growth,Aggressive growth,6,6,25.3,-4150.39,33851.52,38001.91,199,0.8499,0.389,44666.07,40000.0,4666.07,True,59.51,0,34,58
+56,7,4,batch_056,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,7,12.0,-8254.63,38989.28,47243.91,306,0.9465,0.7269,0.0,28952.55,-28952.55,True,0.0,0,16,62
+57,8,4,batch_057,Team 07,Sponsorship Growth,premium_quality,Premium quality,1,1,91.4,13593.51,43545.6,29952.09,290,0.7955,0.1714,81229.53,0.0,81229.53,False,55.7,50,23,21
+57,8,4,batch_057,Team 01,Premium Quality,premium_quality,Premium quality,2,3,65.7,12712.52,34192.8,21480.28,182,0.7455,0.2178,78904.23,0.0,78904.23,False,61.72,47,14,0
+57,8,4,batch_057,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,2,71.4,11190.57,32617.0,21426.43,198,0.7799,0.13,65102.99,4000.0,61102.99,False,44.34,31,24,0
+57,8,4,batch_057,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,7,26.3,9908.44,34742.09,24833.65,248,0.7799,0.4714,48533.23,28000.0,20533.230000000003,True,26.9,34,34,129
+57,8,4,batch_057,Team 05,Community / Club,cash_conservative,Cash conservative,5,5,34.3,9529.87,22996.92,13467.05,179,0.5837,0.3179,55637.3,0.0,55637.3,False,7.4,114,12,0
+57,8,4,batch_057,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,4,34.9,8525.16,34957.12,26431.96,241,0.8978,0.2255,35562.48,14000.0,21562.480000000003,True,16.61,0,27,0
+57,8,4,batch_057,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,6,28.6,4637.49,43827.52,39190.03,352,0.9336,0.4115,12164.81,14000.0,-1835.1900000000005,False,0.0,0,23,16
+57,8,4,batch_057,Team 06,Premium Quality,aggressive_growth,Aggressive growth,8,8,26.3,3932.2,36397.44,32465.24,216,0.7815,0.212,69452.03,40000.0,29452.03,True,49.82,10,50,24
+58,6,4,batch_058,Team 01,Premium Quality,premium_quality,Premium quality,1,1,68.0,10310.55,34192.8,23882.25,182,0.6029,0.3747,69294.51,0.0,69294.51,False,33.84,105,14,0
+58,6,4,batch_058,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,64.0,8729.37,32617.0,23887.63,198,0.6253,0.3166,55964.41,4000.0,51964.41,False,18.37,93,24,0
+58,6,4,batch_058,Team 05,Community / Club,cash_conservative,Cash conservative,3,5,36.0,7797.23,22996.92,15199.69,179,0.4145,0.5212,49048.56,0.0,49048.56,False,0.0,240,12,0
+58,6,4,batch_058,Team 06,Premium Quality,aggressive_growth,Aggressive growth,4,4,40.0,3365.98,39093.12,35727.14,234,0.6832,0.0681,61122.58,40000.0,21122.58,True,29.26,58,50,0
+58,6,4,batch_058,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,3,40.0,760.39,45365.76,44605.37,368,0.7299,0.0352,4260.39,19160.01,-14899.619999999999,True,0.0,52,83,0
+58,6,4,batch_058,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,6,6,28.0,-506.28,35684.25,36190.53,326,0.6907,0.2221,50086.86,28000.0,22086.86,True,9.8,111,34,0
+59,4,4,batch_059,Team 01,Premium Quality,premium_quality,Premium quality,1,1,60.0,9849.68,34192.8,24343.12,182,0.3555,0.6385,67450.93,0.0,67450.93,False,3.04,315,14,0
+59,4,4,batch_059,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,3,53.3,8046.47,32617.0,24570.53,198,0.3623,0.6172,66177.9,4000.0,62177.899999999994,False,0.0,324,24,0
+59,4,4,batch_059,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,3,2,53.3,-9.71,45494.24,45503.95,369,0.4426,0.4471,20660.32,14000.0,6660.32,False,0.0,380,83,0
+59,4,4,batch_059,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,4,25.3,-2662.07,33976.95,36639.02,323,0.4371,0.5092,50930.9,28000.0,22930.9,True,0.0,387,28,0
+60,8,4,batch_060,Team 01,Premium Quality,premium_quality,Premium quality,1,1,68.6,10144.95,34192.8,24047.85,182,0.6164,0.36,68633.95,0.0,68633.95,False,49.7,98,14,0
+60,8,4,batch_060,Team 07,Sponsorship Growth,premium_quality,Premium quality,2,2,60.0,9609.53,43109.28,33499.75,285,0.6117,0.361,70619.96,0.0,70619.96,False,44.65,156,23,0
+60,8,4,batch_060,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,57.1,8348.51,32617.0,24268.49,198,0.6249,0.317,67374.06,4000.0,63374.06,False,46.27,94,24,0
+60,8,4,batch_060,Team 05,Community / Club,cash_conservative,Cash conservative,4,7,37.1,7735.32,22996.92,15261.6,179,0.4311,0.5015,64726.69,0.0,64726.69,False,13.61,223,12,0
+60,8,4,batch_060,Team 06,Premium Quality,aggressive_growth,Aggressive growth,5,5,46.3,5579.83,41788.8,36208.97,252,0.7184,0.1038,82002.19,40000.0,42002.19,True,71.78,48,50,10
+60,8,4,batch_060,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,4,48.6,5010.0,35088.24,30078.24,242,0.7024,0.0944,47071.37,14000.0,33071.37,False,39.27,48,53,0
+60,8,4,batch_060,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,7,8,29.1,3068.08,39637.08,36569.0,327,0.7652,0.1976,39948.75,28000.0,11948.75,True,24.89,65,34,45
+60,8,4,batch_060,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,6,37.1,1029.77,45925.44,44895.67,373,0.785,0.0945,23366.82,14000.0,9366.82,False,15.3,18,83,5
+61,5,4,batch_061,Team 01,Premium Quality,premium_quality,Premium quality,1,1,85.0,12806.11,34866.72,22060.61,186,0.7892,0.1881,73942.07,0.0,73942.07,False,72.33,34,14,17
+61,5,4,batch_061,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,80.0,11763.11,33958.0,22194.89,207,0.8381,0.1342,74204.04,4000.0,70204.04,False,71.31,15,24,11
+61,5,4,batch_061,Team 05,Community / Club,cash_conservative,Cash conservative,3,3,40.0,10360.57,24245.4,13884.83,191,0.6134,0.3286,68888.91,0.0,68888.91,False,32.45,106,12,16
+61,5,4,batch_061,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,5,7.0,9569.37,35249.87,25680.5,236,0.7818,0.5293,39208.93,28000.0,11208.93,True,31.59,31,34,182
+61,5,4,batch_061,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,4,22.0,-2109.58,38547.52,40657.1,304,0.9352,0.3784,26901.82,14000.0,12901.82,True,25.75,0,20,104
+62,5,4,batch_062,Team 01,Premium Quality,premium_quality,Premium quality,1,1,70.0,8450.41,34192.8,25742.39,182,0.4036,0.5881,61857.63,0.0,61857.63,False,15.08,254,14,0
+62,5,4,batch_062,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,60.0,6613.01,32617.0,26003.99,198,0.4055,0.5693,60450.54,4000.0,56450.54,False,8.81,265,24,0
+62,5,4,batch_062,Team 05,Community / Club,cash_conservative,Cash conservative,3,5,35.0,6493.25,22996.92,16503.67,179,0.2752,0.6851,59139.76,0.0,59139.76,False,0.0,458,12,0
+62,5,4,batch_062,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,4,37.0,4476.94,33951.75,29474.81,323,0.5129,0.4468,52305.4,28000.0,24305.4,True,0.0,273,32,0
+62,5,4,batch_062,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,3,40.0,-2785.71,45494.24,48279.95,369,0.5149,0.3451,11102.41,14000.0,-2897.59,False,0.0,263,83,0
+63,7,4,batch_063,Team 01,Premium Quality,premium_quality,Premium quality,1,1,80.0,12311.95,35190.72,22878.77,185,0.9729,0.1354,60671.53,0.0,60671.53,False,86.22,0,4,77
+63,7,4,batch_063,Team 05,Community / Club,cash_conservative,Cash conservative,2,3,63.3,12218.25,26687.28,14469.03,208,0.7438,0.2492,63469.86,0.0,63469.86,False,44.41,58,12,44
+63,7,4,batch_063,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,2,65.3,9212.22,32345.0,23132.78,195,0.994,0.0677,54622.98,4000.0,50622.98,True,76.53,0,0,112
+63,7,4,batch_063,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,6,18.7,8893.75,35436.03,26542.28,227,0.8147,0.5501,31970.63,28000.0,3970.630000000001,True,38.89,16,34,212
+63,7,4,batch_063,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,4,50.0,8855.71,41128.56,32272.85,271,0.9252,0.1101,53700.49,0.0,53700.49,False,75.38,0,20,170
+63,7,4,batch_063,Team 06,Premium Quality,aggressive_growth,Aggressive growth,6,5,25.3,-2205.47,32810.88,35016.35,194,0.9923,0.422,47415.82,40000.0,7415.82,True,83.79,0,0,258
+63,7,4,batch_063,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,7,15.3,-6078.1,35720.96,41799.06,281,0.9965,0.5428,17663.6,14000.0,3663.5999999999985,True,36.94,0,0,148
+64,7,4,batch_064,Team 01,Premium Quality,premium_quality,Premium quality,1,1,90.0,9714.36,31497.12,21782.76,166,0.9388,0.1336,65556.76,0.0,65556.76,False,85.4,0,10,77
+64,7,4,batch_064,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,2,5,38.7,8543.33,33788.37,25245.04,187,0.9196,0.7754,27485.83,28000.0,-514.1699999999983,True,39.75,0,15,275
+64,7,4,batch_064,Team 05,Community / Club,cash_conservative,Cash conservative,3,3,50.0,8350.17,21852.48,13502.31,168,0.7399,0.2711,53155.42,0.0,53155.42,False,27.42,46,12,22
+64,7,4,batch_064,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,2,66.7,8299.08,29637.0,21337.92,178,0.9535,0.1384,60312.93,4000.0,56312.93,False,68.91,0,7,34
+64,7,4,batch_064,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,4,40.0,5722.15,36685.44,30963.29,237,0.9013,0.2206,51903.68,0.0,51903.68,False,68.52,1,23,222
+64,7,4,batch_064,Team 06,Premium Quality,aggressive_growth,Aggressive growth,6,6,32.0,541.25,32653.44,32112.19,191,0.9896,0.5977,61893.31,40000.0,21893.309999999998,True,68.58,0,1,75
+64,7,4,batch_064,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,7,8.7,-2513.86,36541.12,39054.98,284,0.9824,1.0136,5088.39,14000.0,-8911.61,True,0.0,0,3,83
+65,7,4,batch_065,Team 07,Sponsorship Growth,premium_quality,Premium quality,1,1,86.7,12311.59,43590.96,31279.37,290,0.7714,0.1982,78092.69,0.0,78092.69,False,49.64,62,23,4
+65,7,4,batch_065,Team 01,Premium Quality,premium_quality,Premium quality,2,2,63.3,11693.26,34192.8,22499.54,182,0.7127,0.2543,74820.6,0.0,74820.6,False,50.79,59,14,0
+65,7,4,batch_065,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,63.3,9933.29,32617.0,22683.71,198,0.7306,0.1903,73729.5,4000.0,69729.5,False,48.09,48,24,0
+65,7,4,batch_065,Team 05,Community / Club,cash_conservative,Cash conservative,4,5,33.3,8851.64,22996.92,14145.28,179,0.54,0.3708,69384.17,0.0,69384.17,False,23.84,139,12,0
+65,7,4,batch_065,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,6,25.3,8397.67,34254.99,25857.32,252,0.8017,0.4423,48974.29,28000.0,20974.29,True,28.58,27,34,98
+65,7,4,batch_065,Team 06,Premium Quality,aggressive_growth,Aggressive growth,6,4,35.3,3889.11,38044.8,34155.69,227,0.7482,0.1374,86915.73,40000.0,46915.729999999996,True,66.26,26,50,34
+65,7,4,batch_065,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,7,18.7,-710.37,40986.88,41697.25,325,0.8869,0.2871,27206.84,14000.0,13206.84,True,19.41,0,39,66
+66,4,4,batch_066,Team 01,Premium Quality,premium_quality,Premium quality,1,1,66.7,8978.49,34192.8,25214.31,182,0.6913,0.2779,63961.52,0.0,63961.52,False,49.32,67,14,0
+66,4,4,batch_066,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,66.7,7364.11,32617.0,25252.89,198,0.7167,0.2071,50886.17,4000.0,46886.17,False,32.15,53,24,0
+66,4,4,batch_066,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,4,25.3,5202.27,34566.21,29363.94,258,0.7485,0.4559,33867.28,28000.0,5867.279999999999,True,18.65,51,34,101
+66,4,4,batch_066,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,4,3,25.3,-2330.01,44725.12,47055.13,361,0.8746,0.2584,1169.99,23552.97,-22382.98,True,0.0,0,51,7
+67,10,4,batch_067,Team 10,Community / Club,innovation_leap,Innovation leap,1,4,56.4,11360.6,31942.26,20581.66,215,0.7608,0.3027,57768.27,28000.0,29768.269999999997,True,47.87,42,24,44
+67,10,4,batch_067,Team 05,Community / Club,cash_conservative,Cash conservative,2,2,66.7,10381.71,25536.72,15155.01,199,0.7463,0.2333,61163.62,0.0,61163.62,False,43.91,54,12,39
+67,10,4,batch_067,Team 01,Premium Quality,premium_quality,Premium quality,3,1,75.6,9011.87,32844.96,23833.09,174,0.8302,0.1476,62220.02,0.0,62220.02,False,77.81,21,14,47
+67,10,4,batch_067,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,3,65.3,8103.82,32047.0,23943.18,193,0.9689,0.1022,59889.25,4000.0,55889.25,True,75.91,0,5,62
+67,10,4,batch_067,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,8,27.6,6844.21,34579.44,27735.23,222,0.8299,0.5678,28949.95,28000.0,949.9500000000007,True,40.44,10,34,200
+67,10,4,batch_067,Team 07,Sponsorship Growth,premium_quality,Premium quality,6,5,55.6,6490.06,40139.28,33649.22,263,0.8475,0.1506,51369.07,0.0,51369.07,False,67.64,22,23,147
+67,10,4,batch_067,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,7,6,40.9,738.81,29951.68,29212.87,204,0.9973,0.357,42690.9,14000.0,28690.9,True,66.88,0,0,52
+67,10,4,batch_067,Team 06,Premium Quality,aggressive_growth,Aggressive growth,8,7,34.2,-2151.46,33964.8,36116.26,200,0.9986,0.3881,53516.91,40000.0,13516.910000000003,True,83.89,0,0,196
+67,10,4,batch_067,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,9,9,16.4,-9015.67,34832.16,43847.83,273,0.9939,0.5859,10457.92,14000.0,-3542.08,True,35.0,0,0,156
+67,10,4,batch_067,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,10,10,5.3,-11790.96,24578.0,36368.96,238,0.9932,0.6024,0.0,15151.31,-15151.31,True,43.44,0,0,578
+68,9,4,batch_068,Team 05,Community / Club,cash_conservative,Cash conservative,1,1,80.0,5675.19,19832.88,14157.69,153,0.8222,0.326,41068.97,0.0,41068.97,False,49.86,19,12,106
+68,9,4,batch_068,Team 01,Premium Quality,premium_quality,Premium quality,2,2,75.0,1164.9,24269.76,23104.86,127,0.9902,0.4034,23985.03,0.0,23985.03,False,84.77,0,0,277
+68,9,4,batch_068,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,4,52.0,-1124.9,21496.0,22620.9,129,0.9889,0.5332,26676.83,4000.0,22676.83,True,74.34,0,0,222
+68,9,4,batch_068,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,4,5,47.0,-1713.44,24992.88,26706.32,169,0.993,1.0756,24772.05,14000.0,10772.05,True,61.92,0,0,72
+68,9,4,batch_068,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,3,62.5,-2121.0,30304.8,32425.8,197,0.9943,0.4284,11559.18,0.0,11559.18,False,74.66,0,0,455
+68,9,4,batch_068,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,6,8,24.5,-2962.66,32294.75,35257.41,171,0.9916,1.0006,4037.34,33703.09,-29665.749999999996,True,42.62,0,0,412
+68,9,4,batch_068,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,7,27.0,-7196.29,32408.64,39604.93,253,0.9947,1.4221,0.0,14254.85,-14254.85,True,14.97,0,0,115
+68,9,4,batch_068,Team 06,Premium Quality,aggressive_growth,Aggressive growth,8,6,29.5,-11440.18,22095.36,33535.54,130,0.9947,1.1272,28465.78,40000.0,-11534.220000000001,True,81.28,0,0,262
+68,9,4,batch_068,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,9,9,7.0,-16027.17,17116.0,33143.17,167,0.9917,1.2804,0.0,22596.1,-22596.1,True,40.13,0,0,542
+69,8,4,batch_069,Team 07,Sponsorship Growth,premium_quality,Premium quality,1,1,80.0,13955.77,43882.56,29926.79,293,0.7626,0.2165,83592.0,0.0,83592.0,False,52.64,67,23,0
+69,8,4,batch_069,Team 01,Premium Quality,premium_quality,Premium quality,2,3,62.9,12647.25,34192.8,21545.55,182,0.7373,0.2269,78641.11,0.0,78641.11,False,58.7,50,14,0
+69,8,4,batch_069,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,2,68.6,11122.17,32617.0,21494.83,198,0.7601,0.1543,64831.11,4000.0,60831.11,False,40.7,38,24,0
+69,8,4,batch_069,Team 05,Community / Club,cash_conservative,Cash conservative,4,6,34.3,9481.43,22996.92,13515.49,179,0.5421,0.3684,55474.03,0.0,55474.03,False,5.82,138,12,0
+69,8,4,batch_069,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,5,4,49.1,8330.75,34957.12,26626.37,241,0.8596,0.1611,35436.73,14000.0,21436.730000000003,True,14.99,0,38,0
+69,8,4,batch_069,Team 06,Premium Quality,aggressive_growth,Aggressive growth,6,5,37.7,4944.3,37445.76,32501.46,223,0.781,0.1803,70934.19,40000.0,30934.190000000002,True,47.91,12,50,14
+69,8,4,batch_069,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,7,28.6,4931.08,44359.04,39427.96,357,0.9047,0.3318,12192.48,14000.0,-1807.5200000000004,False,0.0,0,36,11
+69,8,4,batch_069,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,8,8,14.9,2363.29,36267.73,33904.44,268,0.782,0.3291,39982.74,28000.0,11982.739999999998,True,26.49,39,34,127
+70,6,4,batch_070,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,1,4,48.0,6110.64,36063.2,29952.56,185,0.9197,0.8001,13110.64,37138.28,-24027.64,True,43.09,0,15,301
+70,6,4,batch_070,Team 05,Community / Club,cash_conservative,Cash conservative,2,2,68.0,6081.5,22899.0,16817.5,176,0.7674,0.2575,40550.26,0.0,40550.26,False,50.42,41,12,158
+70,6,4,batch_070,Team 01,Premium Quality,premium_quality,Premium quality,3,1,72.0,2806.43,28723.68,25917.25,151,0.9926,0.1833,26393.88,0.0,26393.88,False,83.98,0,0,199
+70,6,4,batch_070,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,3,52.0,-144.83,26132.0,26276.83,158,0.9968,0.2618,22580.3,4000.0,18580.3,True,73.78,0,0,236
+70,6,4,batch_070,Team 06,Premium Quality,aggressive_growth,Aggressive growth,5,5,16.0,-12790.32,26317.44,39107.76,156,0.9912,0.7664,10386.09,40000.0,-29613.91,True,80.27,0,0,386
+70,6,4,batch_070,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,6,6,12.0,-19996.16,27183.2,47179.36,214,0.993,0.9257,0.0,29176.22,-29176.22,True,46.12,0,0,282
+71,6,4,batch_071,Team 01,Premium Quality,premium_quality,Premium quality,1,1,72.0,10902.06,34192.8,23290.74,182,0.631,0.344,71716.39,0.0,71716.39,False,58.05,91,14,0
+71,6,4,batch_071,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,72.0,9337.97,32617.0,23279.03,198,0.6685,0.2652,58028.96,4000.0,54028.96,False,39.39,73,24,0
+71,6,4,batch_071,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,4,36.0,8805.65,36198.12,27392.47,250,0.7857,0.461,32077.16,28000.0,4077.16,True,29.14,32,34,177
+71,6,4,batch_071,Team 05,Community / Club,cash_conservative,Cash conservative,4,5,32.0,8224.07,22996.92,14772.85,179,0.5252,0.3887,50362.33,0.0,50362.33,False,5.63,149,12,0
+71,6,4,batch_071,Team 06,Premium Quality,aggressive_growth,Aggressive growth,5,3,40.0,4199.64,39093.12,34893.48,234,0.7252,0.1421,63261.54,40000.0,23261.54,True,46.53,37,50,1
+71,6,4,batch_071,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,6,6,24.0,524.72,43744.8,43220.08,351,0.8546,0.2673,4024.72,16865.65,-12840.930000000002,True,0.0,0,59,16
+72,10,4,batch_072,Team 10,Community / Club,innovation_leap,Innovation leap,1,4,56.4,12456.39,31502.52,19046.13,185,0.8106,0.3992,49638.14,28000.0,21638.14,True,60.07,18,24,118
+72,10,4,batch_072,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,2,6,40.9,11328.89,36905.41,25576.52,183,0.9116,0.8167,19393.28,28000.0,-8606.720000000001,True,41.62,0,16,308
+72,10,4,batch_072,Team 05,Community / Club,cash_conservative,Cash conservative,3,2,64.4,7438.84,21956.52,14517.68,169,0.7788,0.2747,48435.73,0.0,48435.73,False,52.48,35,12,181
+72,10,4,batch_072,Team 01,Premium Quality,premium_quality,Premium quality,4,1,75.6,6753.45,29224.8,22471.35,153,0.9911,0.166,42577.33,0.0,42577.33,False,86.93,0,0,187
+72,10,4,batch_072,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,3,60.0,3656.31,35268.48,31612.17,227,0.9898,0.2601,31835.79,0.0,31835.79,False,77.24,0,0,346
+72,10,4,batch_072,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,6,5,54.2,3305.15,26123.0,22817.85,157,0.9919,0.2636,36998.28,4000.0,32998.28,True,76.69,0,0,235
+72,10,4,batch_072,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,7,8,32.0,-4446.69,23026.96,27473.65,158,0.991,0.6559,28137.82,14000.0,14137.82,True,75.63,0,0,206
+72,10,4,batch_072,Team 06,Premium Quality,aggressive_growth,Aggressive growth,8,7,34.2,-7477.63,26799.36,34276.99,158,0.9967,0.7536,31754.74,40000.0,-8245.259999999998,True,84.0,0,0,377
+72,10,4,batch_072,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,9,9,16.4,-14054.35,26532.0,40586.35,209,0.9937,0.9732,5380.37,14000.0,-8619.630000000001,True,45.39,0,0,302
+72,10,4,batch_072,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,10,10,9.8,-16644.91,18491.0,35135.91,178,0.9957,1.1481,0.0,33862.1,-33862.1,True,41.19,0,0,842
+73,7,4,batch_073,Team 01,Premium Quality,premium_quality,Premium quality,1,1,80.0,8084.2,33687.36,25603.16,179,0.8095,0.1439,59684.31,0.0,59684.31,False,71.12,27,14,18
+73,7,4,batch_073,Team 05,Community / Club,cash_conservative,Cash conservative,2,4,56.7,7898.05,24245.4,16347.35,191,0.6468,0.2906,59576.67,0.0,59576.67,False,32.65,92,12,1
+73,7,4,batch_073,Team 07,Sponsorship Growth,premium_quality,Premium quality,3,2,66.7,6772.44,42793.92,36021.48,283,0.8446,0.0995,52223.69,0.0,52223.69,False,63.2,28,23,63
+73,7,4,batch_073,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,3,63.3,6609.78,32468.0,25858.22,197,0.8324,0.0788,58515.87,4000.0,54515.87,False,68.98,14,24,18
+73,7,4,batch_073,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,7,12.0,4785.74,34696.73,29910.99,239,0.7922,0.5053,25899.96,28000.0,-2100.040000000001,True,30.28,27,34,148
+73,7,4,batch_073,Team 06,Premium Quality,aggressive_growth,Aggressive growth,6,5,35.3,-1807.5,36616.32,38423.82,216,0.9987,0.2854,55937.93,40000.0,15937.93,True,84.26,0,0,122
+73,7,4,batch_073,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,6,12.0,-10466.66,37097.28,47563.94,293,0.9738,0.4517,2455.08,14000.0,-11544.92,True,24.27,0,7,109
+74,4,4,batch_074,Team 01,Premium Quality,premium_quality,Premium quality,1,1,73.3,7790.0,33181.92,25391.92,176,0.8229,0.1426,59559.89,0.0,59559.89,False,69.25,23,14,24
+74,4,4,batch_074,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,73.3,7330.99,32617.0,25286.01,198,0.8828,0.0932,50767.08,4000.0,46767.08,False,54.3,1,24,0
+74,4,4,batch_074,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,3,25.3,3800.11,33686.0,29885.89,217,0.831,0.5972,19855.35,28000.0,-8144.6500000000015,True,34.49,9,34,196
+74,4,4,batch_074,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,4,4,12.0,-6743.45,40161.44,46904.89,318,0.9617,0.6755,0.0,26975.53,-26975.53,True,0.0,0,11,50
+75,9,4,batch_075,Team 07,Sponsorship Growth,premium_quality,Premium quality,1,1,70.0,10442.87,44219.52,33776.65,296,0.6384,0.3578,67920.36,0.0,67920.36,False,46.77,143,23,0
+75,9,4,batch_075,Team 01,Premium Quality,premium_quality,Premium quality,2,2,60.0,10013.44,34192.8,24179.36,182,0.5973,0.3809,68094.68,0.0,68094.68,False,50.98,108,14,0
+75,9,4,batch_075,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,57.5,8424.97,32617.0,24192.03,198,0.6306,0.3103,54751.49,4000.0,50751.49,False,34.66,91,24,0
+75,9,4,batch_075,Team 05,Community / Club,cash_conservative,Cash conservative,4,6,37.5,7583.47,22996.92,15413.45,179,0.4821,0.4405,48153.72,0.0,48153.72,False,5.97,179,12,0
+75,9,4,batch_075,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,5,4,52.0,4774.31,34957.12,30182.81,241,0.7405,0.0834,24817.99,14000.0,10817.990000000002,True,13.37,30,53,0
+75,9,4,batch_075,Team 06,Premium Quality,aggressive_growth,Aggressive growth,6,5,44.5,2946.77,39093.12,36146.35,234,0.6848,0.1712,59795.66,40000.0,19795.660000000003,True,43.05,56,50,0
+75,9,4,batch_075,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,7,8,32.0,2404.98,39565.26,37160.28,309,0.7845,0.199,29414.99,28000.0,1414.9900000000016,True,30.43,50,34,106
+75,9,4,batch_075,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,7,32.0,152.03,45365.76,45213.73,368,0.8121,0.1903,3652.03,19898.0,-16245.97,True,0.0,0,83,0
+75,9,4,batch_075,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,9,9,24.5,-4000.68,31370.0,35370.68,310,0.7986,0.2706,8021.74,4000.0,4021.74,True,21.37,30,46,160
+76,4,4,batch_076,Team 01,Premium Quality,premium_quality,Premium quality,1,1,60.0,11330.78,34192.8,22862.02,182,0.292,0.7045,73375.33,0.0,73375.33,False,0.0,426,14,0
+76,4,4,batch_076,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,3,53.3,9562.65,32617.0,23054.35,198,0.3066,0.6784,72245.14,4000.0,68245.14,False,0.0,423,24,0
+76,4,4,batch_076,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,3,2,53.3,2932.73,45494.24,42561.51,369,0.3856,0.5252,30581.18,14000.0,16581.18,False,0.0,503,83,0
+76,4,4,batch_076,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,4,25.3,-799.84,33976.95,34776.79,323,0.3827,0.573,58511.58,28000.0,30511.58,True,0.0,493,27,0
+77,4,4,batch_077,Team 01,Premium Quality,premium_quality,Premium quality,1,1,60.0,8566.33,34192.8,25626.47,182,0.4038,0.5878,62316.66,0.0,62316.66,False,3.73,254,14,0
+77,4,4,batch_077,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,53.3,6729.91,32617.0,25887.09,198,0.4153,0.5582,60919.24,4000.0,56919.24,False,0.0,254,24,0
+77,4,4,batch_077,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,4,38.7,4531.31,33848.85,29317.54,322,0.5185,0.4326,53156.16,28000.0,25156.160000000003,True,0.0,266,31,0
+77,4,4,batch_077,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,4,3,40.0,-2557.07,45494.24,48051.31,369,0.526,0.3291,11875.59,14000.0,-2124.41,False,0.0,248,83,0
+78,6,4,batch_078,Team 01,Premium Quality,premium_quality,Premium quality,1,1,68.0,11461.42,34192.8,22731.38,182,0.5449,0.4375,73900.7,0.0,73900.7,False,40.04,137,14,0
+78,6,4,batch_078,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,2,3,56.0,11095.32,36807.23,25711.91,317,0.6552,0.3356,62806.81,28000.0,34806.81,True,19.13,131,34,0
+78,6,4,batch_078,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,2,56.0,9697.29,32617.0,22919.71,198,0.5568,0.3968,72781.18,4000.0,68781.18,False,35.97,133,24,0
+78,6,4,batch_078,Team 05,Community / Club,cash_conservative,Cash conservative,4,6,28.0,8663.17,22996.92,14333.75,179,0.3891,0.5513,68635.23,0.0,68635.23,False,9.11,267,12,0
+78,6,4,batch_078,Team 06,Premium Quality,aggressive_growth,Aggressive growth,5,5,36.0,4810.82,39093.12,34282.3,234,0.6001,0.1822,91031.75,40000.0,51031.75,True,57.17,105,50,0
+78,6,4,batch_078,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,6,4,40.0,3193.81,45494.24,42300.43,369,0.6838,0.0912,31685.87,14000.0,17685.87,False,9.12,86,83,0
+79,8,4,batch_079,Team 05,Community / Club,cash_conservative,Cash conservative,1,2,68.6,8953.92,25230.72,16276.8,199,0.6642,0.3012,58498.77,0.0,58498.77,False,40.78,87,12,16
+79,8,4,batch_079,Team 07,Sponsorship Growth,premium_quality,Premium quality,2,1,71.4,7834.62,43714.08,35879.46,292,0.8542,0.1307,49157.29,0.0,49157.29,False,67.56,26,23,91
+79,8,4,batch_079,Team 01,Premium Quality,premium_quality,Premium quality,3,3,62.9,7562.16,33181.92,25619.76,176,0.8213,0.1487,53889.21,0.0,53889.21,False,75.69,24,14,54
+79,8,4,batch_079,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,4,60.6,6588.78,32319.0,25730.22,196,0.9255,0.0702,55032.49,4000.0,51032.49,True,74.51,0,14,47
+79,8,4,batch_079,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,5,5,46.3,1122.91,32404.24,31281.33,222,0.9945,0.244,39189.69,14000.0,25189.690000000002,True,63.48,0,0,20
+79,8,4,batch_079,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,6,7,12.0,-2268.71,36603.21,38871.92,250,0.8246,0.3807,12662.92,28000.0,-15337.08,True,39.02,18,34,191
+79,8,4,batch_079,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,6,29.1,-3091.78,35385.6,38477.38,209,0.9968,0.3258,46721.07,40000.0,6721.07,True,83.08,0,0,178
+79,8,4,batch_079,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,9.1,-9371.27,37859.36,47230.63,299,0.9602,0.4193,3633.89,14000.0,-10366.11,True,34.29,0,11,118
+80,7,4,batch_080,Team 01,Premium Quality,premium_quality,Premium quality,1,2,66.7,11083.35,34192.8,23109.45,182,0.6625,0.3096,72387.35,0.0,72387.35,False,47.26,77,14,0
+80,7,4,batch_080,Team 07,Sponsorship Growth,premium_quality,Premium quality,2,1,73.3,10980.63,43109.28,32128.65,285,0.6754,0.2907,75558.04,0.0,75558.04,False,43.61,113,23,0
+80,7,4,batch_080,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,56.7,9309.11,32617.0,23307.89,198,0.6676,0.2663,71234.94,4000.0,67234.94,False,43.24,74,24,0
+80,7,4,batch_080,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,6,35.3,8675.04,35270.97,26595.93,269,0.7367,0.4275,47604.48,28000.0,19604.480000000003,True,20.42,61,34,89
+80,7,4,batch_080,Team 05,Community / Club,cash_conservative,Cash conservative,5,7,26.7,8411.0,22996.92,14585.92,179,0.4756,0.4483,67689.28,0.0,67689.28,False,12.29,184,12,0
+80,7,4,batch_080,Team 06,Premium Quality,aggressive_growth,Aggressive growth,6,4,38.7,4725.96,39542.4,34816.44,237,0.7172,0.1122,89043.44,40000.0,49043.44,True,68.66,42,50,0
+80,7,4,batch_080,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,5,36.7,625.26,43820.48,43195.22,350,0.8068,0.1739,26148.76,14000.0,12148.759999999998,False,12.76,0,82,39
+81,9,4,batch_081,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,1,3,62.0,7092.92,36104.57,29011.65,112,0.9902,2.0501,14092.92,55824.38,-41731.46,True,42.67,0,0,418
+81,9,4,batch_081,Team 05,Community / Club,cash_conservative,Cash conservative,2,1,75.0,-1039.7,15059.28,16098.98,113,0.92,0.8138,21164.94,0.0,21164.94,False,60.81,0,9,219
+81,9,4,batch_081,Team 01,Premium Quality,premium_quality,Premium quality,3,2,67.0,-9610.28,16081.2,25691.48,84,0.9874,1.1159,0.0,8639.05,-8639.05,True,82.56,0,0,400
+81,9,4,batch_081,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,4,52.0,-11113.37,14170.0,25283.37,85,0.9832,1.3135,0.0,7449.46,-7449.46,True,73.27,0,0,350
+81,9,4,batch_081,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,5,47.0,-17525.15,19157.04,36682.19,123,0.9854,1.2673,0.0,33659.14,-33659.14,True,71.2,0,0,661
+81,9,4,batch_081,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,6,34.5,-17526.13,12276.88,29803.01,84,0.9853,2.0968,0.0,15291.45,-15291.45,True,68.54,0,0,193
+81,9,4,batch_081,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,8,27.0,-22288.32,14630.4,36918.72,86,0.992,2.2068,0.0,44371.47,-44371.47,True,79.91,0,0,389
+81,9,4,batch_081,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,7,27.0,-24710.07,19203.36,43913.43,145,0.9923,2.7014,0.0,39459.65,-39459.65,True,33.25,0,0,235
+81,9,4,batch_081,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,9,9,0.0,-27223.01,10135.0,37358.01,98,0.9832,2.8527,0.0,54906.69,-54906.69,True,40.27,0,0,739
+82,6,4,batch_082,Team 01,Premium Quality,premium_quality,Premium quality,1,1,68.0,10047.43,34192.8,24145.37,182,0.6077,0.3695,68240.19,0.0,68240.19,False,36.96,102,14,0
+82,6,4,batch_082,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,64.0,8248.25,32617.0,24368.75,198,0.6111,0.3334,66985.22,4000.0,62985.22,False,31.22,101,24,0
+82,6,4,batch_082,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,3,44.0,7926.06,35400.12,27474.06,299,0.6995,0.3691,54576.45,28000.0,26576.449999999997,True,17.34,93,34,10
+82,6,4,batch_082,Team 05,Community / Club,cash_conservative,Cash conservative,4,6,32.0,7664.72,22996.92,15332.2,179,0.4236,0.5104,64419.82,0.0,64419.82,False,6.44,230,12,0
+82,6,4,batch_082,Team 06,Premium Quality,aggressive_growth,Aggressive growth,5,5,36.0,2806.78,39093.12,36286.34,234,0.6609,0.1114,82490.69,40000.0,42490.69,True,49.69,69,50,0
+82,6,4,batch_082,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,6,4,40.0,395.66,45467.84,45072.18,368,0.7354,0.1078,22153.1,14000.0,8153.0999999999985,False,8.95,48,83,3
+83,6,4,batch_083,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,1,3,52.0,9944.85,36007.13,26062.28,197,0.9063,0.7001,25133.19,28000.0,-2866.8100000000013,True,42.86,0,19,256
+83,6,4,batch_083,Team 05,Community / Club,cash_conservative,Cash conservative,2,2,68.0,7249.21,21999.36,14750.15,170,0.7855,0.2597,50755.93,0.0,50755.93,False,51.19,33,12,148
+83,6,4,batch_083,Team 01,Premium Quality,premium_quality,Premium quality,3,1,80.0,4123.31,27252.72,23129.41,143,0.9976,0.2558,37892.41,0.0,37892.41,False,86.09,0,0,198
+83,6,4,batch_083,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,4,40.0,545.41,24055.0,23509.59,145,0.9891,0.3643,31819.58,4000.0,27819.58,True,75.58,0,0,250
+83,6,4,batch_083,Team 06,Premium Quality,aggressive_growth,Aggressive growth,5,5,16.0,-10691.44,24524.16,35215.6,145,0.9906,0.8993,25156.03,40000.0,-14843.970000000001,True,82.89,0,0,394
+83,6,4,batch_083,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,6,6,12.0,-15968.45,25627.36,41595.81,205,0.9908,1.0057,3668.05,14000.0,-10331.95,True,44.71,0,0,275
+84,8,4,batch_084,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,1,5,43.4,9240.66,37530.47,28289.81,188,0.8751,0.7787,16240.66,35866.44,-19625.780000000002,True,41.56,0,25,313
+84,8,4,batch_084,Team 05,Community / Club,cash_conservative,Cash conservative,2,2,65.7,6912.37,22807.2,15894.83,176,0.7681,0.2416,42718.97,0.0,42718.97,False,53.96,39,12,178
+84,8,4,batch_084,Team 01,Premium Quality,premium_quality,Premium quality,3,1,74.3,5934.77,30399.84,24465.07,159,0.9937,0.1739,32485.45,0.0,32485.45,False,85.98,0,0,198
+84,8,4,batch_084,Team 07,Sponsorship Growth,premium_quality,Premium quality,4,4,54.3,2799.17,37264.32,34465.15,240,0.9921,0.2298,19169.18,0.0,19169.18,False,76.68,0,0,351
+84,8,4,batch_084,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,5,3,57.7,2640.75,27455.0,24814.25,165,0.9957,0.2069,28099.27,4000.0,24099.27,True,75.88,0,0,239
+84,8,4,batch_084,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,6,34.9,-5474.71,24492.16,29966.87,168,0.9954,0.5642,18887.38,14000.0,4887.380000000001,True,74.61,0,0,206
+84,8,4,batch_084,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,7,26.3,-9061.17,27993.6,37054.77,165,0.9981,0.6817,19097.85,40000.0,-20902.15,True,83.01,0,0,385
+84,8,4,batch_084,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,3.4,-16026.64,28388.8,44415.44,223,0.9942,0.8503,0.0,21168.72,-21168.72,True,47.63,0,0,300
+85,9,4,batch_085,Team 05,Community / Club,cash_conservative,Cash conservative,1,3,70.0,8225.84,24673.8,16447.96,191,0.75,0.25,51520.05,0.0,51520.05,False,43.79,50,12,78
+85,9,4,batch_085,Team 01,Premium Quality,premium_quality,Premium quality,2,1,80.0,6577.64,32002.56,25424.92,169,0.8889,0.1586,52007.88,0.0,52007.88,False,83.34,6,14,71
+85,9,4,batch_085,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,2,72.0,6228.2,31784.0,25555.8,191,0.9918,0.0999,48471.38,4000.0,44471.38,True,76.3,0,0,92
+85,9,4,batch_085,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,7,27.0,4230.65,34114.92,29884.27,200,0.8344,0.6966,12707.18,28000.0,-15292.82,True,40.51,3,34,259
+85,9,4,batch_085,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,4,52.5,3029.98,39059.28,36029.3,255,0.8716,0.1733,36965.84,0.0,36965.84,False,70.72,13,23,187
+85,9,4,batch_085,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,5,39.5,-3157.93,28008.64,31166.57,192,0.9916,0.3705,33877.7,14000.0,19877.699999999997,True,70.0,0,0,64
+85,9,4,batch_085,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,6,37.0,-5818.02,32584.32,38402.34,192,0.9951,0.4408,37755.5,40000.0,-2244.5,True,84.15,0,0,236
+85,9,4,batch_085,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,22.0,-12912.69,33982.08,46894.77,263,0.9946,0.6704,0.0,16263.09,-16263.09,True,34.9,0,0,181
+85,9,4,batch_085,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,9,9,2.0,-17783.06,21775.0,39558.06,209,0.989,0.8171,0.0,37949.76,-37949.76,True,41.46,0,0,699
+86,5,4,batch_086,Team 01,Premium Quality,premium_quality,Premium quality,1,1,70.0,12054.77,34192.8,22138.03,182,0.5683,0.4122,76270.42,0.0,76270.42,False,41.27,124,14,0
+86,5,4,batch_086,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,2,3,57.0,10927.19,36407.07,25479.88,276,0.7475,0.3946,50347.15,28000.0,22347.15,True,22.95,57,34,98
+86,5,4,batch_086,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,2,60.0,10303.73,32617.0,22313.27,198,0.5843,0.3648,75188.02,4000.0,71188.02,False,38.3,116,24,0
+86,5,4,batch_086,Team 05,Community / Club,cash_conservative,Cash conservative,4,5,20.0,9089.25,22996.92,13907.67,179,0.4391,0.492,69965.76,0.0,69965.76,False,14.13,215,12,0
+86,5,4,batch_086,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,4,35.0,2710.59,44029.92,41319.33,353,0.7338,0.157,31752.54,14000.0,17752.54,False,10.44,44,83,34
+87,9,4,batch_087,Team 01,Premium Quality,premium_quality,Premium quality,1,1,85.0,11406.95,33847.2,22440.25,178,0.9907,0.1118,49787.18,0.0,49787.18,False,85.74,0,0,145
+87,9,4,batch_087,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,2,6,39.5,10543.33,36290.1,25746.77,220,0.8514,0.5734,29379.73,28000.0,1379.7299999999996,True,39.0,3,34,243
+87,9,4,batch_087,Team 07,Sponsorship Growth,premium_quality,Premium quality,3,3,70.0,10149.51,41599.44,31449.93,270,0.9915,0.1198,43379.82,0.0,43379.82,False,73.29,0,0,253
+87,9,4,batch_087,Team 05,Community / Club,cash_conservative,Cash conservative,4,4,57.5,9538.99,23205.0,13666.01,181,0.6722,0.2635,53977.28,0.0,53977.28,False,30.84,75,12,5
+87,9,4,batch_087,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,5,2,75.0,8871.21,30724.0,21852.79,186,0.9943,0.0692,52026.57,4000.0,48026.57,False,76.65,0,0,72
+87,9,4,batch_087,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,5,44.5,6902.55,33430.32,26527.77,231,0.9932,0.47,33110.78,14000.0,19110.78,True,40.85,0,0,9
+87,9,4,batch_087,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,8,17.5,-39.16,39601.76,39640.92,313,0.9812,0.7585,6234.61,14000.0,-7765.39,False,0.0,0,5,54
+87,9,4,batch_087,Team 06,Premium Quality,aggressive_growth,Aggressive growth,8,7,27.0,-2023.93,30835.2,32859.13,183,0.9926,0.5078,52116.05,40000.0,12116.050000000003,True,79.86,0,0,120
+87,9,4,batch_087,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,9,9,2.0,-8173.31,24416.0,32589.31,235,0.8889,0.6315,548.4,4000.0,-3451.6,True,30.74,0,28,361
+88,6,4,batch_088,Team 01,Premium Quality,premium_quality,Premium quality,1,1,68.0,10113.67,34192.8,24079.13,182,0.4743,0.5132,68503.31,0.0,68503.31,False,28.45,187,14,0
+88,6,4,batch_088,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,2,2,56.0,8435.42,35870.84,27435.42,334,0.5747,0.4002,59523.76,28000.0,31523.760000000002,True,6.32,212,34,0
+88,6,4,batch_088,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,52.0,8314.49,32617.0,24302.51,198,0.4789,0.4864,67259.76,4000.0,63259.759999999995,False,23.2,190,24,0
+88,6,4,batch_088,Team 05,Community / Club,cash_conservative,Cash conservative,4,6,32.0,7691.09,22996.92,15305.83,179,0.3217,0.6308,64381.01,0.0,64381.01,False,0.0,364,12,0
+88,6,4,batch_088,Team 06,Premium Quality,aggressive_growth,Aggressive growth,5,5,36.0,2900.03,39093.12,36193.09,234,0.5252,0.2972,83076.91,40000.0,43076.91,True,43.06,161,50,0
+88,6,4,batch_088,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,6,4,40.0,513.07,45494.24,44981.17,369,0.5879,0.238,22238.13,14000.0,8238.130000000001,False,0.0,174,83,0
+89,8,4,batch_089,Team 05,Community / Club,cash_conservative,Cash conservative,1,2,74.3,8615.81,23370.24,14754.43,182,0.7843,0.2098,52169.64,0.0,52169.64,False,51.82,37,12,133
+89,8,4,batch_089,Team 01,Premium Quality,premium_quality,Premium quality,2,1,74.3,7009.2,30062.88,23053.68,157,0.9888,0.1826,44357.55,0.0,44357.55,False,85.04,0,0,166
+89,8,4,batch_089,Team 07,Sponsorship Growth,premium_quality,Premium quality,3,3,74.3,5612.08,37892.88,32280.8,246,0.9955,0.2049,37760.27,0.0,37760.27,False,76.66,0,0,283
+89,8,4,batch_089,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,4,49.1,3610.59,27008.0,23397.41,162,0.9953,0.2288,38641.65,4000.0,34641.65,True,75.08,0,0,211
+89,8,4,batch_089,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,6,23.4,81.58,35259.84,35178.26,216,0.9926,0.5855,14564.24,28000.0,-13435.76,True,45.57,0,0,284
+89,8,4,batch_089,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,5,26.3,-4448.47,23805.76,28254.23,163,0.9938,0.6096,28654.02,14000.0,14654.02,True,72.91,0,0,183
+89,8,4,batch_089,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,7,23.4,-7615.53,27544.32,35159.85,162,0.9964,0.7098,31639.9,40000.0,-8360.099999999999,True,82.16,0,0,357
+89,8,4,batch_089,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,14.9,-10913.67,30696.16,41609.83,242,0.9956,0.7959,9193.57,14000.0,-4806.43,True,45.04,0,0,230
+90,4,4,batch_090,Team 01,Premium Quality,premium_quality,Premium quality,1,1,60.0,10967.43,34192.8,23225.37,182,0.4382,0.5515,71924.64,0.0,71924.64,False,16.72,219,14,0
+90,4,4,batch_090,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,53.3,9192.21,32617.0,23424.79,198,0.4512,0.5179,70765.18,4000.0,66765.18,False,12.78,216,24,0
+90,4,4,batch_090,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,3,45.3,8852.69,35212.28,26359.59,333,0.5846,0.3879,64750.66,28000.0,36750.66,True,3.9,201,34,0
+90,4,4,batch_090,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,4,4,33.3,2210.03,45494.24,43284.21,369,0.5801,0.2498,27966.97,14000.0,13966.970000000001,False,0.0,183,83,0
+91,4,4,batch_091,Team 01,Premium Quality,premium_quality,Premium quality,1,1,60.0,9322.57,34192.8,24870.23,182,0.6592,0.3132,65392.23,0.0,65392.23,False,57.73,79,14,0
+91,4,4,batch_091,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,60.0,7507.17,32617.0,25109.83,198,0.6617,0.2733,64004.91,4000.0,60004.91,False,52.93,76,24,0
+91,4,4,batch_091,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,4,25.3,152.34,38130.86,37978.52,290,0.7593,0.2782,25413.12,28000.0,-2586.880000000001,True,24.97,56,34,114
+91,4,4,batch_091,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,4,3,46.7,-2583.56,44121.44,46705.0,354,0.8162,0.1458,13947.32,14000.0,-52.68000000000029,False,17.39,0,78,39
+92,10,4,batch_092,Team 10,Community / Club,innovation_leap,Innovation leap,1,3,63.1,9946.12,29737.57,19791.45,144,0.9233,0.6482,32763.95,28000.0,4763.950000000001,True,69.92,0,11,189
+92,10,4,batch_092,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,2,6,45.3,9550.48,36349.95,26799.47,130,0.9872,1.6198,16550.48,44297.63,-27747.149999999998,True,44.6,0,0,394
+92,10,4,batch_092,Team 05,Community / Club,cash_conservative,Cash conservative,3,2,71.1,1498.32,17060.52,15562.2,129,0.8849,0.5036,30791.32,0.0,30791.32,False,67.87,3,12,302
+92,10,4,batch_092,Team 01,Premium Quality,premium_quality,Premium quality,4,1,73.3,-3053.94,20658.24,23712.18,108,0.9878,0.6464,15086.34,0.0,15086.34,False,84.33,0,0,313
+92,10,4,batch_092,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,5,4,56.4,-5760.35,18350.0,24110.35,110,0.9896,0.7992,11337.69,4000.0,7337.6900000000005,True,74.16,0,0,368
+92,10,4,batch_092,Team 07,Sponsorship Growth,premium_quality,Premium quality,6,5,52.0,-8922.09,24559.2,33481.29,157,0.9906,0.7856,0.0,3839.03,-3839.03,True,74.91,0,0,544
+92,10,4,batch_092,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,7,8,32.0,-13015.35,15924.48,28939.83,109,0.9874,1.3915,3844.55,14000.0,-10155.45,True,72.67,0,0,346
+92,10,4,batch_092,Team 06,Premium Quality,aggressive_growth,Aggressive growth,8,7,32.0,-16879.38,18885.12,35764.5,111,0.9926,1.4859,4905.28,40000.0,-35094.72,True,81.26,0,0,510
+92,10,4,batch_092,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,9,9,14.2,-24434.35,18265.28,42699.63,143,0.9894,1.8714,0.0,38111.64,-38111.64,True,50.79,0,0,496
+92,10,4,batch_092,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,10,10,0.0,-25268.41,11981.0,37249.41,115,0.9842,2.2863,0.0,59421.74,-59421.74,True,42.7,0,0,1034
+93,7,4,batch_093,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,1,3,65.3,9942.61,36597.23,26654.62,160,0.9936,1.1425,16942.61,34909.11,-17966.5,True,46.28,0,0,335
+93,7,4,batch_093,Team 05,Community / Club,cash_conservative,Cash conservative,2,2,73.3,3086.82,18492.6,15405.78,141,0.8345,0.4074,38174.12,0.0,38174.12,False,60.91,14,12,241
+93,7,4,batch_093,Team 01,Premium Quality,premium_quality,Premium quality,3,1,73.3,-2654.37,21204.72,23859.09,111,0.9931,0.6105,18991.31,0.0,18991.31,False,83.53,0,0,288
+93,7,4,batch_093,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,4,4,42.0,-5287.49,18946.0,24233.49,114,0.9915,0.7394,15412.86,4000.0,11412.86,True,73.19,0,0,338
+93,7,4,batch_093,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,5,32.0,-7526.45,26010.72,33537.17,168,0.9858,0.6606,4215.35,0.0,4215.35,True,75.23,0,0,483
+93,7,4,batch_093,Team 06,Premium Quality,aggressive_growth,Aggressive growth,6,7,15.3,-16687.98,19334.4,36022.38,114,0.9931,1.4218,8033.16,40000.0,-31966.84,True,80.44,0,0,483
+93,7,4,batch_093,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,6,15.3,-22401.34,20329.76,42731.1,161,0.9936,1.5611,0.0,28724.93,-28724.93,True,53.07,0,0,414
+94,4,4,batch_094,Team 01,Premium Quality,premium_quality,Premium quality,1,1,60.0,12778.76,34192.8,21414.04,182,0.3823,0.6105,79167.35,0.0,79167.35,False,5.39,279,14,0
+94,4,4,batch_094,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,53.3,11256.81,32617.0,21360.19,198,0.3995,0.576,65366.57,4000.0,61366.57,False,0.0,273,24,0
+94,4,4,batch_094,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,3,4,38.7,9553.24,33652.5,24099.26,320,0.5024,0.4497,73610.59,28000.0,45610.59,True,0.0,284,31,0
+94,4,4,batch_094,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,4,3,40.0,5773.05,45365.76,39592.71,368,0.5088,0.3519,13080.94,14000.0,-919.0599999999995,False,0.0,271,83,0
+95,7,4,batch_095,Team 07,Sponsorship Growth,premium_quality,Premium quality,1,1,83.3,12588.34,43141.68,30553.34,286,0.7749,0.1823,81433.12,0.0,81433.12,False,51.46,59,23,0
+95,7,4,batch_095,Team 01,Premium Quality,premium_quality,Premium quality,2,2,66.7,12168.85,34192.8,22023.95,182,0.7569,0.2051,76730.42,0.0,76730.42,False,57.49,43,14,0
+95,7,4,batch_095,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,3,3,60.0,10421.73,32617.0,22195.27,198,0.7528,0.1632,75684.52,4000.0,71684.52,False,51.88,40,24,0
+95,7,4,batch_095,Team 05,Community / Club,cash_conservative,Cash conservative,4,5,33.3,9194.64,22996.92,13802.28,179,0.5259,0.3879,70888.66,0.0,70888.66,False,16.4,148,12,0
+95,7,4,batch_095,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,6,22.0,8454.55,33848.64,25394.09,243,0.7835,0.4943,48036.29,28000.0,20036.29,True,22.56,32,34,123
+95,7,4,batch_095,Team 06,Premium Quality,aggressive_growth,Aggressive growth,6,4,42.0,5015.11,38344.32,33329.21,229,0.8465,0.1368,91762.23,40000.0,51762.229999999996,True,78.34,0,40,25
+95,7,4,batch_095,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,7,7,18.7,1486.11,42199.52,40713.41,333,0.9014,0.2993,31010.91,14000.0,17010.91,True,14.07,0,35,65
+96,10,4,batch_096,Team 10,Community / Club,innovation_leap,Innovation leap,1,5,56.4,11877.0,32311.44,20434.44,201,0.7932,0.3319,47148.6,28000.0,19148.6,True,59.49,27,24,108
+96,10,4,batch_096,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,2,6,45.3,10150.9,37511.36,27360.46,208,0.868,0.6371,18990.19,28000.0,-9009.810000000001,True,42.58,0,30,262
+96,10,4,batch_096,Team 05,Community / Club,cash_conservative,Cash conservative,3,2,64.4,8599.84,23970.0,15370.16,186,0.7646,0.2115,48768.54,0.0,48768.54,False,53.62,44,12,142
+96,10,4,batch_096,Team 01,Premium Quality,premium_quality,Premium quality,4,1,75.6,7133.94,31073.76,23939.82,163,0.9941,0.1385,37920.43,0.0,37920.43,False,85.81,0,0,179
+96,10,4,batch_096,Team 07,Sponsorship Growth,premium_quality,Premium quality,5,3,62.2,4565.09,38197.44,33632.35,247,0.9933,0.1917,27402.87,0.0,27402.87,False,77.86,0,0,316
+96,10,4,batch_096,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,6,4,58.7,3385.5,27718.0,24332.5,167,0.9968,0.1938,31574.96,4000.0,27574.96,True,75.54,0,0,229
+96,10,4,batch_096,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,7,7,40.9,-4785.84,24592.48,29378.32,169,0.9968,0.5572,22363.18,14000.0,8363.18,True,75.79,0,0,198
+96,10,4,batch_096,Team 06,Premium Quality,aggressive_growth,Aggressive growth,8,8,27.6,-8137.7,28256.64,36394.34,167,0.997,0.6596,23821.47,40000.0,-16178.529999999999,True,82.96,0,0,372
+96,10,4,batch_096,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,9,9,12.0,-13918.74,29404.32,43323.06,234,0.9933,0.7616,1047.92,14000.0,-12952.08,True,49.8,0,0,256
+96,10,4,batch_096,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,10,10,5.3,-14623.76,22213.0,36836.76,215,0.9959,0.7787,0.0,32044.28,-32044.28,True,43.52,0,0,745
+97,10,4,batch_097,Team 10,Community / Club,innovation_leap,Innovation leap,1,1,80.9,8874.95,30282.42,21407.47,130,0.9919,0.8389,18185.94,28000.0,-9814.060000000001,True,70.87,0,0,222
+97,10,4,batch_097,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,2,5,52.0,7247.48,36349.53,29102.05,116,0.988,1.9384,14247.48,54824.25,-40576.770000000004,True,44.41,0,0,411
+97,10,4,batch_097,Team 05,Community / Club,cash_conservative,Cash conservative,3,2,77.8,-1292.2,15671.28,16963.48,118,0.9861,0.6798,16531.2,0.0,16531.2,False,71.26,0,0,365
+97,10,4,batch_097,Team 01,Premium Quality,premium_quality,Premium quality,4,4,56.4,-8944.7,16796.16,25740.86,88,0.9859,1.0166,0.0,6370.5,-6370.5,True,82.87,0,0,386
+97,10,4,batch_097,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,5,3,58.7,-11204.12,14985.0,26189.12,90,0.9948,1.2107,0.0,12781.67,-12781.67,True,74.38,0,0,443
+97,10,4,batch_097,Team 07,Sponsorship Growth,premium_quality,Premium quality,6,6,45.3,-16442.4,20239.2,36681.6,130,0.9899,1.155,0.0,30330.35,-30330.35,True,73.41,0,0,640
+97,10,4,batch_097,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,7,7,40.9,-18487.58,12994.08,31481.66,89,0.9931,1.9458,0.0,29917.91,-29917.91,True,72.67,0,0,423
+97,10,4,batch_097,Team 06,Premium Quality,aggressive_growth,Aggressive growth,8,8,20.9,-23330.07,15265.92,38595.99,90,0.9894,2.0563,0.0,58483.77,-58483.77,True,81.26,0,0,587
+97,10,4,batch_097,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,9,10,0.0,-29309.21,10753.0,40062.21,104,0.9831,2.6298,0.0,74506.04,-74506.04,True,42.39,0,0,1075
+97,10,4,batch_097,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,10,9,0.0,-31497.99,15176.48,46674.47,120,0.9798,2.3886,0.0,60999.9,-60999.9,True,53.41,0,0,578
+98,9,4,batch_098,Team 01,Premium Quality,premium_quality,Premium quality,1,2,77.5,10551.16,34024.32,23473.16,181,0.8189,0.1305,63480.16,0.0,63480.16,False,77.51,25,14,47
+98,9,4,batch_098,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,1,85.0,9127.78,32319.0,23191.22,196,0.8617,0.0717,58136.22,4000.0,54136.22,False,63.27,7,24,2
+98,9,4,batch_098,Team 05,Community / Club,cash_conservative,Cash conservative,3,4,55.0,8295.11,22996.92,14701.81,179,0.6566,0.2689,50610.35,0.0,50610.35,False,21.89,80,12,0
+98,9,4,batch_098,Team 07,Sponsorship Growth,premium_quality,Premium quality,4,3,65.0,8046.24,41275.44,33229.2,271,0.8452,0.1221,51458.18,0.0,51458.18,False,63.87,25,23,150
+98,9,4,batch_098,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,5,7,32.0,7459.16,34903.58,27444.42,222,0.8534,0.5598,27008.82,28000.0,-991.1800000000003,True,38.13,3,34,216
+98,9,4,batch_098,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,5,42.0,5628.13,34139.6,28511.47,235,0.9588,0.3744,27749.48,14000.0,13749.48,True,28.63,0,9,5
+98,9,4,batch_098,Team 06,Premium Quality,aggressive_growth,Aggressive growth,7,6,37.0,42.12,34899.84,34857.72,206,0.8682,0.3543,56060.88,40000.0,16060.879999999997,True,62.9,0,31,51
+98,9,4,batch_098,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,8,8,14.5,-2437.27,40261.76,42699.03,319,0.9562,0.656,1062.73,16515.62,-15452.89,True,0.0,0,14,48
+98,9,4,batch_098,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,9,9,2.0,-10286.2,24416.0,34702.2,235,0.8269,0.6189,0.0,7268.96,-7268.96,True,26.88,1,46,321
+99,10,4,batch_099,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,1,1,93.3,12221.17,35868.0,23646.83,217,0.9985,0.0797,62433.04,4000.0,58433.04,False,76.45,0,0,48
+99,10,4,batch_099,Team 07,Sponsorship Growth,premium_quality,Premium quality,2,2,77.8,12105.81,45245.52,33139.71,302,0.8597,0.138,59453.57,0.0,59453.57,False,69.71,25,23,94
+99,10,4,batch_099,Team 05,Community / Club,cash_conservative,Cash conservative,3,4,55.6,11390.67,26258.88,14868.21,208,0.6428,0.3549,65450.97,0.0,65450.97,False,39.45,102,12,5
+99,10,4,batch_099,Team 01,Premium Quality,premium_quality,Premium quality,4,3,66.7,11021.31,34698.24,23676.93,185,0.8294,0.1431,62395.52,0.0,62395.52,False,79.28,23,14,48
+99,10,4,batch_099,Team 10,Community / Club,innovation_leap,Innovation leap,5,6,36.4,5838.17,35087.11,29248.94,252,0.7443,0.2315,55280.12,28000.0,27280.120000000003,True,47.2,61,24,15
+99,10,4,batch_099,Team 08,Engineering Challenger,low_cost_volume,Low-cost volume,6,5,49.8,4580.83,33383.68,28802.85,229,0.9951,0.2048,48356.0,14000.0,34356.0,True,68.53,0,0,16
+99,10,4,batch_099,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,7,8,18.7,1636.45,37938.08,36301.63,272,0.8159,0.2967,27588.42,28000.0,-411.58000000000175,True,37.94,25,34,149
+99,10,4,batch_099,Team 06,Premium Quality,aggressive_growth,Aggressive growth,8,7,34.2,513.36,36397.44,35884.08,216,0.9967,0.2828,53726.52,40000.0,13726.519999999997,True,83.57,0,0,196
+99,10,4,batch_099,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,9,9,14.2,-4058.89,39260.32,43319.21,313,0.9714,0.3552,18337.18,14000.0,4337.18,True,33.82,0,7,93
+99,10,4,batch_099,Team 09,Low-Cost Volume,balanced_sop,Balanced S&OP,10,10,5.3,-5484.43,30234.0,35718.43,294,0.9843,0.3599,43.71,4000.0,-3956.29,True,41.83,0,4,479
+100,5,4,batch_100,Team 01,Premium Quality,premium_quality,Premium quality,1,1,70.0,11676.7,34192.8,22516.1,182,0.4835,0.5033,74757.17,0.0,74757.17,False,30.68,180,14,0
+100,5,4,batch_100,Team 03,Engineering Challenger,balanced_sop,Balanced S&OP,2,2,65.0,9915.55,32617.0,22701.45,198,0.4944,0.4687,73659.8,4000.0,69659.8,False,26.17,177,24,0
+100,5,4,batch_100,Team 05,Community / Club,cash_conservative,Cash conservative,3,5,30.0,8817.29,22996.92,14179.63,179,0.3486,0.5992,69307.72,0.0,69307.72,False,5.21,320,12,0
+100,5,4,batch_100,Team 04,Low-Cost Volume,innovation_leap,Innovation leap,4,3,42.0,3919.61,38362.91,34443.3,339,0.6746,0.2605,55687.26,28000.0,27687.260000000002,True,18.67,128,34,0
+100,5,4,batch_100,Team 02,Sponsorship Growth,low_cost_volume,Low-cost volume,5,4,35.0,3613.89,45494.24,41880.35,369,0.6242,0.1833,33083.88,14000.0,19083.879999999997,False,4.9,138,83,0
