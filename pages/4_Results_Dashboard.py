@@ -135,6 +135,45 @@ FORECAST_ACCURACY_COLUMNS = [
     "mape_or_wape_value",
 ]
 
+ROUND_TREND_METRICS = {
+    "Round profit": "profit",
+    "Cumulative profit": "cumulative_profit",
+    "Revenue": "revenue",
+    "Total cost": "total_cost",
+    "Demand allocated": "demand_allocated",
+    "Sales units": "sales_units",
+    "Service level %": "service_level_pct",
+    "Forecast accuracy %": "forecast_accuracy_pct",
+    "Ending cash": "ending_cash_balance",
+    "Short-term debt": "short_term_debt_balance",
+    "Ending inventory": "ending_inventory",
+    "Ending backlog": "backlog_units_end",
+    "Reputation": "reputation_after_round",
+    "Capacity utilization %": "utilization_pct",
+    "Innovation investment": "innovation_investment",
+}
+
+ROUND_TREND_TABLE_COLUMNS = [
+    "round_number",
+    "team_name",
+    "archetype",
+    "profit",
+    "cumulative_profit",
+    "revenue",
+    "total_cost",
+    "demand_allocated",
+    "sales_units",
+    "service_level_pct",
+    "forecast_accuracy_pct",
+    "ending_cash_balance",
+    "short_term_debt_balance",
+    "ending_inventory",
+    "backlog_units_end",
+    "reputation_after_round",
+    "utilization_pct",
+    "innovation_investment",
+]
+
 
 def _frame(records: list[dict[str, object]]) -> pd.DataFrame:
     """Convert a list of dictionaries into a DataFrame."""
@@ -232,6 +271,122 @@ def _team_rankings(
         defect_ranking,
         utilization_ranking,
         forecast_accuracy_ranking,
+    )
+
+
+def _round_trend_frame(team_results_frame: pd.DataFrame) -> pd.DataFrame:
+    """Add derived metrics that make round-by-round charts easier to read."""
+    if team_results_frame.empty:
+        return team_results_frame
+
+    trend_frame = team_results_frame.copy()
+    trend_frame = trend_frame.sort_values(by=["team_name", "round_number"])
+    trend_frame["cumulative_profit"] = trend_frame.groupby("team_name")["profit"].cumsum()
+    trend_frame["service_level_pct"] = trend_frame["fill_rate"] * 100.0
+    trend_frame["forecast_accuracy_pct"] = (
+        (1.0 - trend_frame["forecast_wape"]).clip(lower=0.0, upper=1.0) * 100.0
+    )
+    return trend_frame
+
+
+def _render_metric_trend_chart(
+    trend_frame: pd.DataFrame,
+    metric_label: str,
+    metric_column: str,
+) -> None:
+    """Render one round-by-round line chart with teams as separate lines."""
+    chart_data = (
+        trend_frame.pivot_table(
+            index="round_number",
+            columns="team_name",
+            values=metric_column,
+            aggfunc="sum",
+        )
+        .sort_index()
+        .apply(pd.to_numeric, errors="coerce")
+    )
+    st.markdown(f"#### {metric_label}")
+    st.line_chart(chart_data, use_container_width=True)
+
+
+def _render_round_trends(
+    team_results_frame: pd.DataFrame,
+    *,
+    key_prefix: str,
+    team_selector_enabled: bool,
+) -> None:
+    """Render multi-round performance charts and an exportable trend table."""
+    if team_results_frame.empty:
+        st.info("Round trends will appear after at least one round has been run.")
+        return
+
+    trend_frame = _round_trend_frame(team_results_frame)
+    available_teams = sorted(trend_frame["team_name"].dropna().unique().tolist())
+    if team_selector_enabled:
+        selected_teams = st.multiselect(
+            "Teams to show",
+            options=available_teams,
+            default=available_teams,
+            key=f"{key_prefix}_teams",
+        )
+    else:
+        selected_teams = available_teams
+
+    if not selected_teams:
+        st.info("Select at least one team to show round trends.")
+        return
+
+    trend_frame = trend_frame[trend_frame["team_name"].isin(selected_teams)].copy()
+    latest_round = int(trend_frame["round_number"].max())
+    latest_frame = trend_frame[trend_frame["round_number"] == latest_round].copy()
+    cumulative_leader = (
+        latest_frame.sort_values(by="cumulative_profit", ascending=False)["team_name"].iloc[0]
+        if not latest_frame.empty
+        else "-"
+    )
+
+    metric_row = st.columns(4)
+    metric_row[0].metric("Rounds Tracked", int(trend_frame["round_number"].nunique()))
+    metric_row[1].metric("Teams Tracked", int(trend_frame["team_name"].nunique()))
+    metric_row[2].metric("Latest Round", latest_round)
+    metric_row[3].metric("Cumulative Profit Leader", cumulative_leader)
+
+    st.caption(
+        "Use these charts to discuss whether teams are improving, burning cash, "
+        "building inventory, missing forecasts, or changing competitive position over time."
+    )
+
+    metric_labels = list(ROUND_TREND_METRICS.keys())
+    default_metrics = [
+        "Round profit",
+        "Cumulative profit",
+        "Service level %",
+        "Ending cash",
+    ]
+    selected_metrics = st.multiselect(
+        "Performance metrics to chart",
+        options=metric_labels,
+        default=default_metrics,
+        key=f"{key_prefix}_metrics",
+    )
+
+    for metric_label in selected_metrics:
+        metric_column = ROUND_TREND_METRICS[metric_label]
+        _render_metric_trend_chart(trend_frame, metric_label, metric_column)
+
+    st.markdown("#### Round-by-Round Performance Table")
+    available_columns = [
+        column for column in ROUND_TREND_TABLE_COLUMNS if column in trend_frame.columns
+    ]
+    table_frame = trend_frame[available_columns].sort_values(
+        by=["round_number", "team_name"],
+        ascending=[True, True],
+    )
+    st.dataframe(table_frame, use_container_width=True, hide_index=True)
+    _download_frame(
+        "Download Round Trend CSV",
+        table_frame,
+        f"{key_prefix}_round_trends.csv",
     )
 
 
@@ -371,6 +526,7 @@ def main() -> None:
     if user.role == "admin":
         (
             team_summary_tab,
+            round_trends_tab,
             teaching_debrief_tab,
             forecast_accuracy_tab,
             product_detail_tab,
@@ -381,6 +537,7 @@ def main() -> None:
         ) = st.tabs(
             [
                 "Team Summary",
+                "Round Trends",
                 "Teaching Debrief",
                 "Forecast Accuracy",
                 "Product Detail",
@@ -430,6 +587,14 @@ def main() -> None:
                         state_frame,
                         "persistent_team_state.csv",
                     )
+
+        with round_trends_tab:
+            st.subheader("Round-by-Round Team Performance")
+            _render_round_trends(
+                team_results_frame,
+                key_prefix="admin",
+                team_selector_enabled=True,
+            )
 
         with teaching_debrief_tab:
             debrief_frame = _frame(build_debrief_rows(team_results, product_results))
@@ -601,6 +766,7 @@ def main() -> None:
 
     (
         team_summary_tab,
+        round_trends_tab,
         forecast_accuracy_tab,
         active_portfolio_tab,
         pipeline_tab,
@@ -609,6 +775,7 @@ def main() -> None:
     ) = st.tabs(
         [
             "Team Summary",
+            "Round Trends",
             "Forecast Accuracy",
             "Active Portfolio",
             "Development Pipeline",
@@ -637,6 +804,14 @@ def main() -> None:
             latest_team_frame = _latest_round_frame(team_results_frame)
             rankings = _team_rankings(latest_team_frame, market_report.total_demand)
             st.dataframe(rankings[0], use_container_width=True, hide_index=True)
+
+    with round_trends_tab:
+        st.subheader("Your Round-by-Round Performance")
+        _render_round_trends(
+            own_team_results_frame,
+            key_prefix="team_leader",
+            team_selector_enabled=False,
+        )
 
     with forecast_accuracy_tab:
         st.subheader("Your Forecast Accuracy")

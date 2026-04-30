@@ -221,12 +221,8 @@ def _load_decisions_into_session(
     firm_decision: TeamDecision,
     product_decisions: list[ProductDecision],
     projects: list[ProductDevelopmentProject],
-    *,
-    update_archetype_widget: bool = True,
 ) -> None:
-    """Push the current decision objects into Streamlit widget state."""
-    if update_archetype_widget:
-        st.session_state[ARCHETYPE_KEY] = firm_decision.archetype
+    """Push non-archetype decision objects into Streamlit widget state."""
     for field_name, widget_key in FIRM_WIDGET_KEYS.items():
         st.session_state[widget_key] = getattr(firm_decision, field_name)
 
@@ -762,6 +758,9 @@ def main() -> None:
             else _suggested_product_decisions(team_name, archetype_lookup[default_archetype_name], product_lines)
         )
         seed_projects = saved_projects if saved_projects else _seed_projects(team_name, current_round)
+        # This is safe here because the archetype widget has not been created
+        # yet in this page run. Button callbacks below must not mutate it.
+        st.session_state[ARCHETYPE_KEY] = seed_firm_decision.archetype
         _load_decisions_into_session(seed_firm_decision, seed_product_decisions, seed_projects)
         st.session_state[SESSION_CONTEXT_KEY] = current_context
 
@@ -784,7 +783,6 @@ def main() -> None:
             _suggested_firm_decision(team_name, selected_archetype),
             _suggested_product_decisions(team_name, selected_archetype, product_lines),
             saved_projects,
-            update_archetype_widget=False,
         )
         st.rerun()
     if saved_product_decisions and existing_firm_decision and identity_actions[1].button("Load Saved Round Submission"):
@@ -792,7 +790,6 @@ def main() -> None:
             existing_firm_decision,
             saved_product_decisions,
             saved_projects,
-            update_archetype_widget=False,
         )
         st.rerun()
 
