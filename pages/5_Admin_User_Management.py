@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import secrets
+import string
+
 import pandas as pd
 import streamlit as st
 
@@ -11,7 +14,9 @@ from utils.repository import (
     create_user,
     get_user_by_id,
     get_user_by_username,
+    load_team_names,
     load_users,
+    remove_team_data,
     update_user,
 )
 from utils.security import hash_password, validate_password_strength
@@ -19,6 +24,9 @@ from utils.security import hash_password, validate_password_strength
 
 CREDENTIAL_NOTICE_KEY = "admin_credentials_notice"
 BULK_IMPORT_SUMMARY_KEY = "bulk_import_summary"
+TEAM_GENERATION_SUMMARY_KEY = "team_generation_summary"
+REMOVE_TEAM_SUMMARY_KEY = "remove_team_summary"
+PASSWORD_WORDS = ["Paddle", "Rally", "Volley", "Court", "Dink", "Serve"]
 
 
 def _frame(records: list[dict[str, object]]) -> pd.DataFrame:
@@ -90,6 +98,57 @@ def _show_bulk_import_summary() -> None:
         st.rerun()
 
 
+def _show_team_generation_summary() -> None:
+    """Render the latest generated team-account credentials."""
+    summary = st.session_state.get(TEAM_GENERATION_SUMMARY_KEY)
+    if not summary:
+        return
+
+    st.subheader("Latest Generated Team Accounts")
+    st.write(
+        f"Created: `{summary['created_count']}` | "
+        f"Updated: `{summary['updated_count']}` | "
+        f"Skipped: `{summary['skipped_count']}` | "
+        f"Errors: `{len(summary['error_rows'])}`"
+    )
+
+    if summary["error_rows"]:
+        st.dataframe(_frame(summary["error_rows"]), use_container_width=True)
+
+    if summary["credential_rows"]:
+        st.warning(
+            "Download or copy these passwords now. They are not stored in plain text "
+            "and cannot be viewed later."
+        )
+        credential_frame = _frame(summary["credential_rows"])
+        st.dataframe(credential_frame, use_container_width=True)
+        st.download_button(
+            "Download Generated Team Credentials CSV",
+            data=_credential_rows_to_csv(summary["credential_rows"]),
+            file_name="generated_team_leader_credentials.csv",
+            mime="text/csv",
+        )
+
+    if st.button("Clear Generated Team Account Summary"):
+        st.session_state.pop(TEAM_GENERATION_SUMMARY_KEY, None)
+        st.rerun()
+
+
+def _show_remove_team_summary() -> None:
+    """Render the latest team-removal summary."""
+    summary = st.session_state.get(REMOVE_TEAM_SUMMARY_KEY)
+    if not summary:
+        return
+
+    st.subheader("Latest Team Removal Summary")
+    st.success(f"`{summary['team_name']}` was removed from the game.")
+    st.dataframe(_frame(summary["rows_changed"]), use_container_width=True)
+
+    if st.button("Clear Team Removal Summary"):
+        st.session_state.pop(REMOVE_TEAM_SUMMARY_KEY, None)
+        st.rerun()
+
+
 def _parse_is_active(value: object) -> bool:
     """Parse the CSV active flag into a boolean."""
     text = str(value).strip().lower()
@@ -115,6 +174,37 @@ def _template_csv_bytes() -> bytes:
     return template_frame.to_csv(index=False).encode("utf-8")
 
 
+def _slugify_username(value: str) -> str:
+    """Convert instructor-entered text into a simple username prefix."""
+    slug = "".join(
+        character.lower() if character.isalnum() else "_"
+        for character in value.strip()
+    )
+    return "_".join(part for part in slug.split("_") if part)
+
+
+def _slugify_username_suffix(value: str) -> str:
+    """Convert text into a username suffix while preserving a leading underscore."""
+    slug = "".join(
+        character.lower() if character.isalnum() else "_"
+        for character in value.strip()
+    )
+    while "__" in slug:
+        slug = slug.replace("__", "_")
+    return slug.rstrip("_")
+
+
+def _generate_temporary_password(team_number: int) -> str:
+    """Generate a readable one-time password that passes local strength rules."""
+    word = secrets.choice(PASSWORD_WORDS)
+    random_digits = secrets.randbelow(900) + 100
+    random_tail = "".join(
+        secrets.choice(string.ascii_letters + string.digits)
+        for _ in range(4)
+    )
+    return f"Team{team_number:02d}-{word}{random_digits}{random_tail}"
+
+
 def main() -> None:
     """Render the admin user management page."""
     ensure_app_storage()
@@ -126,6 +216,8 @@ def main() -> None:
 
     _show_credential_notice()
     _show_bulk_import_summary()
+    _show_team_generation_summary()
+    _show_remove_team_summary()
 
     users = load_users()
     role_filter = st.selectbox("Role Filter", options=["All", "admin", "team_leader"])
@@ -151,8 +243,14 @@ def main() -> None:
     ]
     st.dataframe(_frame(public_users), use_container_width=True)
 
-    single_user_tab, edit_user_tab, bulk_import_tab = st.tabs(
-        ["Create User", "Edit Existing User", "Bulk Import Team Leaders"]
+    single_user_tab, generate_teams_tab, edit_user_tab, bulk_import_tab, remove_team_tab = st.tabs(
+        [
+            "Create User",
+            "Generate Team Accounts",
+            "Edit Existing User",
+            "Bulk Import Team Leaders",
+            "Remove Team",
+        ]
     )
 
     with single_user_tab:
@@ -189,6 +287,59 @@ def main() -> None:
                     }
                     st.success(f"User `{created_user.username}` created.")
                     st.rerun()
+
+    with generate_teams_tab:
+        st.subheader("Quick Team Account Generator")
+        st.caption(
+            "Use this when you want to start a class quickly, for example with "
+            "`Team 1` through `Team 6` and matching team-leader logins."
+        )
+
+        with st.form("generate_team_accounts_form"):
+            team_count = st.number_input(
+                "Number of Teams",
+                min_value=1,
+                max_value=50,
+                value=6,
+                step=1,
+            )
+            start_number = st.number_input(
+                "Start Number",
+                min_value=1,
+                max_value=999,
+                value=1,
+                step=1,
+            )
+            team_name_prefix = st.text_input("Team Name Prefix", value="Team")
+            username_prefix = st.text_input("Username Prefix", value="team")
+            username_suffix = st.text_input("Username Suffix", value="_lead")
+            is_active = st.checkbox("Create accounts as active", value=True)
+            update_existing = st.checkbox(
+                "Reset/update matching existing team-leader usernames",
+                value=False,
+                help=(
+                    "Leave off for safest classroom setup. Existing usernames will be "
+                    "skipped instead of overwritten."
+                ),
+            )
+            submitted = st.form_submit_button(
+                "Generate Team Leader Accounts",
+                type="primary",
+            )
+
+        if submitted:
+            summary = _run_team_account_generation(
+                team_count=int(team_count),
+                start_number=int(start_number),
+                team_name_prefix=team_name_prefix,
+                username_prefix=username_prefix,
+                username_suffix=username_suffix,
+                is_active=is_active,
+                update_existing=update_existing,
+            )
+            st.session_state[TEAM_GENERATION_SUMMARY_KEY] = summary
+            st.success("Team account generation finished.")
+            st.rerun()
 
     with edit_user_tab:
         user_options = [account.user_id for account in users]
@@ -300,6 +451,68 @@ def main() -> None:
                         st.success("Bulk import finished.")
                         st.rerun()
 
+    with remove_team_tab:
+        st.subheader("Remove a Team")
+        st.warning(
+            "This removes simulator data for the selected team. By default, the "
+            "team-leader account is deactivated instead of permanently deleted."
+        )
+
+        team_names = load_team_names(include_inactive_users=True)
+        if not team_names:
+            st.info("No teams are available to remove yet.")
+        else:
+            selected_team_name = st.selectbox("Team to Remove", options=team_names)
+            linked_accounts = [
+                {
+                    "user_id": account.user_id,
+                    "username": account.username,
+                    "role": account.role,
+                    "team_name": account.team_name,
+                    "is_active": account.is_active,
+                }
+                for account in load_users(role="team_leader")
+                if (account.team_name or "").strip().lower()
+                == selected_team_name.strip().lower()
+            ]
+
+            st.write("Linked team-leader accounts")
+            st.dataframe(_frame(linked_accounts), use_container_width=True)
+
+            delete_accounts = st.checkbox(
+                "Permanently delete linked team-leader account(s)",
+                value=False,
+                help=(
+                    "Most classes should leave this off. Deactivation is safer because "
+                    "it prevents login while keeping an account record."
+                ),
+            )
+            confirmation = st.text_input(
+                f'Type "{selected_team_name}" to confirm team removal'
+            )
+
+            if st.button("Remove Selected Team", type="primary"):
+                if confirmation.strip() != selected_team_name:
+                    st.error("Confirmation text does not match the selected team name.")
+                else:
+                    try:
+                        summary = remove_team_data(
+                            selected_team_name,
+                            deactivate_team_leaders=not delete_accounts,
+                            delete_team_leader_accounts=delete_accounts,
+                        )
+                    except ValueError as error:
+                        st.error(str(error))
+                    else:
+                        st.session_state[REMOVE_TEAM_SUMMARY_KEY] = {
+                            "team_name": selected_team_name,
+                            "rows_changed": [
+                                {"record_type": key, "rows_changed": value}
+                                for key, value in summary.items()
+                            ],
+                        }
+                        st.rerun()
+
 
 def _run_bulk_import(import_frame: pd.DataFrame, update_existing: bool) -> dict[str, object]:
     """Create or update team leader accounts from a CSV upload."""
@@ -393,6 +606,128 @@ def _run_bulk_import(import_frame: pd.DataFrame, update_existing: bool) -> dict[
             )
         except ValueError as error:
             error_rows.append({"row": row_number, "username": username, "error": str(error)})
+
+    return {
+        "created_count": created_count,
+        "updated_count": updated_count,
+        "skipped_count": skipped_count,
+        "error_rows": error_rows,
+        "credential_rows": credential_rows,
+    }
+
+
+def _run_team_account_generation(
+    *,
+    team_count: int,
+    start_number: int,
+    team_name_prefix: str,
+    username_prefix: str,
+    username_suffix: str,
+    is_active: bool,
+    update_existing: bool,
+) -> dict[str, object]:
+    """Generate a numbered set of team-leader accounts."""
+    created_count = 0
+    updated_count = 0
+    skipped_count = 0
+    error_rows: list[dict[str, object]] = []
+    credential_rows: list[dict[str, object]] = []
+
+    normalized_username_prefix = _slugify_username(username_prefix) or "team"
+    normalized_username_suffix = _slugify_username_suffix(username_suffix)
+    existing_team_users = {
+        (account.team_name or "").strip().lower(): account
+        for account in load_users(role="team_leader")
+        if (account.team_name or "").strip()
+    }
+
+    for offset in range(team_count):
+        team_number = start_number + offset
+        team_name = f"{team_name_prefix.strip() or 'Team'} {team_number}"
+        username = f"{normalized_username_prefix}{team_number}{normalized_username_suffix}"
+        password = _generate_temporary_password(team_number)
+
+        password_errors = validate_password_strength(password)
+        if password_errors:
+            error_rows.append(
+                {
+                    "team_name": team_name,
+                    "username": username,
+                    "error": " ".join(password_errors),
+                }
+            )
+            continue
+
+        existing_user = get_user_by_username(username)
+        existing_team_user = existing_team_users.get(team_name.strip().lower())
+        if (
+            existing_team_user is not None
+            and existing_team_user.username.strip().lower() != username.strip().lower()
+        ):
+            error_rows.append(
+                {
+                    "team_name": team_name,
+                    "username": username,
+                    "error": (
+                        "Team name is already assigned to "
+                        f"`{existing_team_user.username}`."
+                    ),
+                }
+            )
+            continue
+
+        try:
+            if existing_user is None:
+                create_user(
+                    username=username,
+                    password_hash=hash_password(password),
+                    role="team_leader",
+                    team_name=team_name,
+                    is_active=is_active,
+                )
+                created_count += 1
+                existing_team_users[team_name.strip().lower()] = get_user_by_username(username)
+            elif existing_user.role != "team_leader":
+                error_rows.append(
+                    {
+                        "team_name": team_name,
+                        "username": username,
+                        "error": "Existing admin/non-team account was not changed.",
+                    }
+                )
+                continue
+            elif update_existing:
+                update_user(
+                    user_id=existing_user.user_id,
+                    username=username,
+                    role="team_leader",
+                    team_name=team_name,
+                    is_active=is_active,
+                    password_hash=hash_password(password),
+                )
+                updated_count += 1
+                existing_team_users[team_name.strip().lower()] = get_user_by_username(username)
+            else:
+                skipped_count += 1
+                continue
+
+            credential_rows.append(
+                {
+                    "team_name": team_name,
+                    "username": username,
+                    "temporary_password": password,
+                    "role": "team_leader",
+                    "is_active": is_active,
+                }
+            )
+        except ValueError as error:
+            error_rows.append(
+                {
+                    "team_name": team_name,
+                    "username": username,
+                    "error": str(error),
+                }
+            )
 
     return {
         "created_count": created_count,

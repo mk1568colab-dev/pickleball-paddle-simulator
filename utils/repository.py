@@ -2060,6 +2060,107 @@ def update_user_password(user_id: int, password_hash: str) -> AppUser:
     return updated_user
 
 
+def load_team_names(include_inactive_users: bool = True) -> list[str]:
+    """Return every team name known through accounts or simulator records."""
+    ensure_app_storage()
+    active_clause = "" if include_inactive_users else "AND is_active = 1"
+    queries = [
+        f"""
+        SELECT team_name
+        FROM users
+        WHERE role = 'team_leader'
+          AND team_name IS NOT NULL
+          AND TRIM(team_name) <> ''
+          {active_clause}
+        """,
+        "SELECT team_name FROM team_states",
+        "SELECT team_name FROM product_lines",
+        "SELECT team_name FROM team_decisions",
+        "SELECT team_name FROM product_decisions",
+        "SELECT team_name FROM product_forecasts",
+        "SELECT team_name FROM product_development_projects",
+        "SELECT team_name FROM round_results",
+        "SELECT team_name FROM product_round_results",
+        "SELECT team_name FROM forecast_accuracy_results",
+    ]
+
+    team_names: set[str] = set()
+    with get_connection() as connection:
+        for query in queries:
+            rows = connection.execute(query).fetchall()
+            for row in rows:
+                team_name = str(row["team_name"] or "").strip()
+                if team_name:
+                    team_names.add(team_name)
+
+    return sorted(team_names, key=str.lower)
+
+
+def remove_team_data(
+    team_name: str,
+    *,
+    deactivate_team_leaders: bool = True,
+    delete_team_leader_accounts: bool = False,
+) -> dict[str, int]:
+    """Remove one team's simulator records and optionally deactivate its accounts."""
+    ensure_app_storage()
+    normalized_team_name = team_name.strip()
+    if not normalized_team_name:
+        raise ValueError("Team name is required.")
+
+    team_tables = [
+        "product_decisions",
+        "product_forecasts",
+        "product_development_projects",
+        "forecast_accuracy_results",
+        "product_round_results",
+        "team_decisions",
+        "round_results",
+        "team_states",
+        "product_lines",
+    ]
+    deleted_counts: dict[str, int] = {}
+
+    with get_connection() as connection:
+        for table_name in team_tables:
+            cursor = connection.execute(
+                f"DELETE FROM {table_name} WHERE LOWER(team_name) = LOWER(?)",
+                (normalized_team_name,),
+            )
+            deleted_counts[table_name] = max(cursor.rowcount, 0)
+
+        if delete_team_leader_accounts:
+            cursor = connection.execute(
+                """
+                DELETE FROM users
+                WHERE role = 'team_leader'
+                  AND LOWER(team_name) = LOWER(?)
+                """,
+                (normalized_team_name,),
+            )
+            deleted_counts["deleted_team_leader_accounts"] = max(cursor.rowcount, 0)
+            deleted_counts["deactivated_team_leader_accounts"] = 0
+        elif deactivate_team_leaders:
+            cursor = connection.execute(
+                """
+                UPDATE users
+                SET is_active = 0,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE role = 'team_leader'
+                  AND LOWER(team_name) = LOWER(?)
+                  AND is_active = 1
+                """,
+                (normalized_team_name,),
+            )
+            deleted_counts["deactivated_team_leader_accounts"] = max(cursor.rowcount, 0)
+            deleted_counts["deleted_team_leader_accounts"] = 0
+        else:
+            deleted_counts["deactivated_team_leader_accounts"] = 0
+            deleted_counts["deleted_team_leader_accounts"] = 0
+
+    return deleted_counts
+
+
 def _normalize_username(username: str) -> str:
     """Normalize and validate a username."""
     normalized_username = username.strip()
