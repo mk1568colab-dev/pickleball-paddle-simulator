@@ -85,6 +85,17 @@ PROJECT_FIELDS = (
     "projected_demand_fit_modifier",
 )
 
+PROJECT_FIXED_FIELDS = (
+    "project_name",
+    "target_segment",
+    "target_tech_generation",
+    "intended_slot_name",
+    "planned_launch_round",
+    "cannibalization_group",
+    "projected_base_defect_modifier",
+    "projected_demand_fit_modifier",
+)
+
 
 def _product_widget_key(slot_name: str, field_name: str) -> str:
     """Return the widget key for a product slot field."""
@@ -94,6 +105,29 @@ def _product_widget_key(slot_name: str, field_name: str) -> str:
 def _project_widget_key(project_slot_name: str, field_name: str) -> str:
     """Return the widget key for a development-project field."""
     return f"stage_b_project_{project_slot_name}_{field_name}"
+
+
+def _project_fixed_settings_locked(project: ProductDevelopmentProject) -> bool:
+    """Return whether project-charter fields should be locked in the UI."""
+    return (
+        project.is_pipeline_active()
+        and (
+            project.cumulative_investment > 0
+            or project.investment_this_round > 0
+            or project.testing_intensity > 0
+            or project.launch_readiness_score > 0
+            or project.status in {"development", "pilot", "launch_ready"}
+        )
+    )
+
+
+def _sync_locked_project_fields(project: ProductDevelopmentProject) -> None:
+    """Keep disabled project-charter widgets aligned with persisted values."""
+    for field_name in PROJECT_FIXED_FIELDS:
+        st.session_state[_project_widget_key(project.project_slot_name, field_name)] = getattr(
+            project,
+            field_name,
+        )
 
 
 def _build_team_options(current_round: int) -> list[str]:
@@ -154,28 +188,39 @@ def _suggested_product_decisions(
     for slot_name in PRODUCT_SLOT_NAMES:
         product_line = line_by_slot[slot_name]
         template = template_by_slot.get(slot_name)
+        is_retired_slot = product_line.retirement_flag and not product_line.is_active
         product_decisions.append(
             ProductDecision(
                 product_id=product_line.product_id,
                 team_name=team_name,
                 slot_name=slot_name,
                 product_name=product_line.product_name,
-                is_active=product_line.is_active,
+                is_active=False if is_retired_slot else product_line.is_active,
                 target_segment=product_line.target_segment,
                 selling_price_per_unit=(
-                    template.suggested_selling_price_per_unit if template else 130.0
+                    0.0
+                    if is_retired_slot
+                    else template.suggested_selling_price_per_unit if template else 130.0
                 ),
                 forecast_units=(
-                    template.suggested_planned_production_units if template else 0
+                    0
+                    if is_retired_slot
+                    else template.suggested_planned_production_units if template else 0
                 ),
                 planned_production_units=(
-                    template.suggested_planned_production_units if template else 0
+                    0
+                    if is_retired_slot
+                    else template.suggested_planned_production_units if template else 0
                 ),
                 qc_budget_per_unit=(
-                    template.suggested_qc_budget_per_unit if template else 0.0
+                    0.0
+                    if is_retired_slot
+                    else template.suggested_qc_budget_per_unit if template else 0.0
                 ),
                 target_finished_goods_inventory=(
-                    template.suggested_target_finished_goods_inventory
+                    0
+                    if is_retired_slot
+                    else template.suggested_target_finished_goods_inventory
                     if template
                     else 0
                 ),
@@ -271,15 +316,21 @@ def _current_product_decisions(
     decisions: list[ProductDecision] = []
 
     for slot_name in PRODUCT_SLOT_NAMES:
+        product_line = line_by_slot[slot_name]
+        is_retired_slot = product_line.retirement_flag and not product_line.is_active
         product_name = str(
             st.session_state.get(_product_widget_key(slot_name, "product_name"), "")
-        ).strip() or line_by_slot[slot_name].product_name
-        is_active = bool(
-            st.session_state.get(_product_widget_key(slot_name, "is_active"), False)
+        ).strip() or product_line.product_name
+        is_active = (
+            False
+            if is_retired_slot
+            else bool(
+                st.session_state.get(_product_widget_key(slot_name, "is_active"), False)
+            )
         )
         decisions.append(
             ProductDecision(
-                product_id=line_by_slot[slot_name].product_id,
+                product_id=product_line.product_id,
                 team_name=team_name.strip(),
                 slot_name=slot_name,
                 product_name=product_name,
@@ -287,7 +338,7 @@ def _current_product_decisions(
                 target_segment=str(
                     st.session_state.get(
                         _product_widget_key(slot_name, "target_segment"),
-                        line_by_slot[slot_name].target_segment,
+                        product_line.target_segment,
                     )
                 ).lower(),
                 selling_price_per_unit=float(
@@ -330,7 +381,9 @@ def _current_product_decisions(
                 ),
                 retire_flag=bool(
                     st.session_state.get(_product_widget_key(slot_name, "retire_flag"), False)
-                ),
+                )
+                if not is_retired_slot
+                else False,
             )
         )
 
@@ -366,51 +419,62 @@ def _current_projects(
 
     for project_slot_name in PROJECT_SLOT_NAMES:
         existing_project = existing_by_slot[project_slot_name]
-        project_name = str(
-            st.session_state.get(_project_widget_key(project_slot_name, "project_name"), "")
-        ).strip()
-        target_segment = str(
-            st.session_state.get(
-                _project_widget_key(project_slot_name, "target_segment"),
-                existing_project.target_segment,
+        fixed_settings_locked = _project_fixed_settings_locked(existing_project)
+        if fixed_settings_locked:
+            project_name = existing_project.project_name
+            target_segment = existing_project.target_segment
+            target_tech_generation = existing_project.target_tech_generation
+            intended_slot_name = existing_project.intended_slot_name
+            planned_launch_round = existing_project.planned_launch_round
+            cannibalization_group = existing_project.cannibalization_group
+            projected_base_defect_modifier = existing_project.projected_base_defect_modifier
+            projected_demand_fit_modifier = existing_project.projected_demand_fit_modifier
+        else:
+            project_name = str(
+                st.session_state.get(_project_widget_key(project_slot_name, "project_name"), "")
+            ).strip()
+            target_segment = str(
+                st.session_state.get(
+                    _project_widget_key(project_slot_name, "target_segment"),
+                    existing_project.target_segment,
+                )
+            ).lower()
+            target_tech_generation = int(
+                st.session_state.get(
+                    _project_widget_key(project_slot_name, "target_tech_generation"),
+                    existing_project.target_tech_generation,
+                )
             )
-        ).lower()
-        target_tech_generation = int(
-            st.session_state.get(
-                _project_widget_key(project_slot_name, "target_tech_generation"),
-                existing_project.target_tech_generation,
+            intended_slot_name = str(
+                st.session_state.get(
+                    _project_widget_key(project_slot_name, "intended_slot_name"),
+                    existing_project.intended_slot_name,
+                )
+            ).upper()
+            planned_launch_round = int(
+                st.session_state.get(
+                    _project_widget_key(project_slot_name, "planned_launch_round"),
+                    existing_project.planned_launch_round,
+                )
             )
-        )
-        intended_slot_name = str(
-            st.session_state.get(
-                _project_widget_key(project_slot_name, "intended_slot_name"),
-                existing_project.intended_slot_name,
+            cannibalization_group = str(
+                st.session_state.get(
+                    _project_widget_key(project_slot_name, "cannibalization_group"),
+                    existing_project.cannibalization_group,
+                )
+            ).strip()
+            projected_base_defect_modifier = float(
+                st.session_state.get(
+                    _project_widget_key(project_slot_name, "projected_base_defect_modifier"),
+                    existing_project.projected_base_defect_modifier,
+                )
             )
-        ).upper()
-        planned_launch_round = int(
-            st.session_state.get(
-                _project_widget_key(project_slot_name, "planned_launch_round"),
-                existing_project.planned_launch_round,
+            projected_demand_fit_modifier = float(
+                st.session_state.get(
+                    _project_widget_key(project_slot_name, "projected_demand_fit_modifier"),
+                    existing_project.projected_demand_fit_modifier,
+                )
             )
-        )
-        cannibalization_group = str(
-            st.session_state.get(
-                _project_widget_key(project_slot_name, "cannibalization_group"),
-                existing_project.cannibalization_group,
-            )
-        ).strip()
-        projected_base_defect_modifier = float(
-            st.session_state.get(
-                _project_widget_key(project_slot_name, "projected_base_defect_modifier"),
-                existing_project.projected_base_defect_modifier,
-            )
-        )
-        projected_demand_fit_modifier = float(
-            st.session_state.get(
-                _project_widget_key(project_slot_name, "projected_demand_fit_modifier"),
-                existing_project.projected_demand_fit_modifier,
-            )
-        )
         investment_this_round = float(
             st.session_state.get(
                 _project_widget_key(project_slot_name, "investment_this_round"),
@@ -657,7 +721,17 @@ def _validation_messages(
 
     launch_requests = 0
     for project in candidate_projects:
+        project_controls_used = (
+            project.investment_this_round > 0
+            or project.testing_intensity > 0
+            or project.launch_now
+            or project.cancel_now
+        )
         if not project.project_name.strip():
+            if project_controls_used:
+                messages.append(
+                    f"Project {project.project_slot_name} needs a project name before investment, testing, launch, or cancellation controls can be used."
+                )
             continue
         if project.target_segment not in TARGET_SEGMENTS:
             messages.append(f"Project {project.project_slot_name} has an invalid target segment.")
@@ -821,8 +895,16 @@ def main() -> None:
     line_by_slot = {line.slot_name: line for line in product_lines}
     for slot_name in PRODUCT_SLOT_NAMES:
         product_line = line_by_slot[slot_name]
+        is_retired_slot = product_line.retirement_flag and not product_line.is_active
         with st.container(border=True):
-            st.markdown(f"#### Product {slot_name}")
+            heading_suffix = " - Retired / Empty Slot" if is_retired_slot else ""
+            st.markdown(f"#### Product {slot_name}{heading_suffix}")
+            if is_retired_slot:
+                st.info(
+                    f"This product was retired after round {product_line.retired_round}. "
+                    "It no longer receives demand, production, backlog, or inventory. "
+                    "Launch a development project into this slot to replace it."
+                )
             meta_cols = st.columns(5)
             meta_cols[0].metric("Lifecycle", product_line.lifecycle_stage.title())
             meta_cols[1].metric("Age (Rounds)", f"{product_line.age_in_rounds}")
@@ -831,24 +913,48 @@ def main() -> None:
             meta_cols[4].metric("Backlog", f"{product_line.backlog_units:,}")
 
             top_row = st.columns([2, 1, 1, 1])
-            top_row[0].text_input("Product Name", key=_product_widget_key(slot_name, "product_name"))
+            top_row[0].text_input(
+                "Product Name",
+                key=_product_widget_key(slot_name, "product_name"),
+                disabled=is_retired_slot,
+            )
             active_value = bool(st.session_state.get(_product_widget_key(slot_name, "is_active"), product_line.is_active))
-            top_row[1].checkbox("Active", key=_product_widget_key(slot_name, "is_active"), value=active_value)
+            top_row[1].checkbox(
+                "Active",
+                key=_product_widget_key(slot_name, "is_active"),
+                value=False if is_retired_slot else active_value,
+                disabled=is_retired_slot,
+                help=(
+                    "Retired slots stay inactive until a development project launches into this slot."
+                    if is_retired_slot
+                    else None
+                ),
+            )
             current_segment = str(st.session_state.get(_product_widget_key(slot_name, "target_segment"), product_line.target_segment))
             top_row[2].selectbox(
                 "Target Segment",
                 options=list(TARGET_SEGMENTS),
                 index=list(TARGET_SEGMENTS).index(current_segment),
                 key=_product_widget_key(slot_name, "target_segment"),
+                disabled=is_retired_slot,
             )
-            top_row[3].checkbox("Retire After Round", key=_product_widget_key(slot_name, "retire_flag"))
+            top_row[3].checkbox(
+                "Retire After Round",
+                key=_product_widget_key(slot_name, "retire_flag"),
+                disabled=is_retired_slot,
+                help=(
+                    "This slot has already been retired."
+                    if is_retired_slot
+                    else "If checked, the product sells through this round, then any remaining inventory is liquidated and the slot becomes inactive."
+                ),
+            )
 
             numeric_row = st.columns(5)
-            numeric_row[0].number_input("Selling Price / Unit", min_value=0.0, step=1.0, key=_product_widget_key(slot_name, "selling_price_per_unit"))
-            numeric_row[1].number_input("Forecast Units", min_value=0, step=10, key=_product_widget_key(slot_name, "forecast_units"))
-            numeric_row[2].number_input("Planned Production Units", min_value=0, step=10, key=_product_widget_key(slot_name, "planned_production_units"))
-            numeric_row[3].number_input("QC Budget / Unit", min_value=0.0, step=0.25, key=_product_widget_key(slot_name, "qc_budget_per_unit"))
-            numeric_row[4].number_input("Target FG Inventory", min_value=0, step=5, key=_product_widget_key(slot_name, "target_finished_goods_inventory"))
+            numeric_row[0].number_input("Selling Price / Unit", min_value=0.0, step=1.0, key=_product_widget_key(slot_name, "selling_price_per_unit"), disabled=is_retired_slot)
+            numeric_row[1].number_input("Forecast Units", min_value=0, step=10, key=_product_widget_key(slot_name, "forecast_units"), disabled=is_retired_slot)
+            numeric_row[2].number_input("Planned Production Units", min_value=0, step=10, key=_product_widget_key(slot_name, "planned_production_units"), disabled=is_retired_slot)
+            numeric_row[3].number_input("QC Budget / Unit", min_value=0.0, step=0.25, key=_product_widget_key(slot_name, "qc_budget_per_unit"), disabled=is_retired_slot)
+            numeric_row[4].number_input("Target FG Inventory", min_value=0, step=5, key=_product_widget_key(slot_name, "target_finished_goods_inventory"), disabled=is_retired_slot)
 
     st.markdown("### 5. Development Pipeline")
     st.caption(
@@ -858,6 +964,9 @@ def main() -> None:
     existing_project_by_slot = {project.project_slot_name: project for project in existing_projects}
     for project_slot_name in PROJECT_SLOT_NAMES:
         project = existing_project_by_slot[project_slot_name]
+        fixed_settings_locked = _project_fixed_settings_locked(project)
+        if fixed_settings_locked:
+            _sync_locked_project_fields(project)
         with st.container(border=True):
             st.markdown(f"#### Project {project_slot_name}")
             project_meta = st.columns(5)
@@ -867,14 +976,25 @@ def main() -> None:
             project_meta[3].metric("Earliest Launch", f"Round {project.earliest_launch_round}")
             project_meta[4].metric("Last Launch", f"{project.launched_round or '-'}")
 
+            st.caption(
+                "Fixed project settings are locked after investment/testing begins. "
+                "Round decisions remain adjustable so teams can speed up or stabilize the project."
+                if fixed_settings_locked
+                else "Set the fixed project charter before starting investment/testing."
+            )
             project_top = st.columns([2, 1, 1, 1])
-            project_top[0].text_input("Project Name", key=_project_widget_key(project_slot_name, "project_name"))
+            project_top[0].text_input(
+                "Project Name",
+                key=_project_widget_key(project_slot_name, "project_name"),
+                disabled=fixed_settings_locked,
+            )
             current_segment = str(st.session_state.get(_project_widget_key(project_slot_name, "target_segment"), project.target_segment))
             project_top[1].selectbox(
                 "Target Segment",
                 options=list(TARGET_SEGMENTS),
                 index=list(TARGET_SEGMENTS).index(current_segment),
                 key=_project_widget_key(project_slot_name, "target_segment"),
+                disabled=fixed_settings_locked,
             )
             project_top[2].number_input(
                 "Target Tech Generation",
@@ -882,6 +1002,7 @@ def main() -> None:
                 max_value=MAX_TECH_GENERATION,
                 step=1,
                 key=_project_widget_key(project_slot_name, "target_tech_generation"),
+                disabled=fixed_settings_locked,
             )
             current_slot = str(st.session_state.get(_project_widget_key(project_slot_name, "intended_slot_name"), project.intended_slot_name))
             project_top[3].selectbox(
@@ -889,17 +1010,39 @@ def main() -> None:
                 options=list(PRODUCT_SLOT_NAMES),
                 index=list(PRODUCT_SLOT_NAMES).index(current_slot),
                 key=_project_widget_key(project_slot_name, "intended_slot_name"),
+                disabled=fixed_settings_locked,
             )
 
             project_mid = st.columns(4)
-            project_mid[0].number_input("Planned Launch Round", min_value=current_round, step=1, key=_project_widget_key(project_slot_name, "planned_launch_round"))
+            project_mid[0].number_input(
+                "Planned Launch Round",
+                min_value=min(current_round, int(project.planned_launch_round)),
+                step=1,
+                key=_project_widget_key(project_slot_name, "planned_launch_round"),
+                disabled=fixed_settings_locked,
+            )
             project_mid[1].number_input("Investment This Round", min_value=0.0, step=250.0, key=_project_widget_key(project_slot_name, "investment_this_round"))
             project_mid[2].slider("Testing Intensity", min_value=0.0, max_value=1.0, step=0.05, key=_project_widget_key(project_slot_name, "testing_intensity"))
-            project_mid[3].text_input("Cannibalization Group", key=_project_widget_key(project_slot_name, "cannibalization_group"))
+            project_mid[3].text_input(
+                "Cannibalization Group",
+                key=_project_widget_key(project_slot_name, "cannibalization_group"),
+                disabled=fixed_settings_locked,
+            )
 
             project_bottom = st.columns(4)
-            project_bottom[0].number_input("Projected Defect Modifier", step=0.002, key=_project_widget_key(project_slot_name, "projected_base_defect_modifier"))
-            project_bottom[1].number_input("Projected Demand-Fit Modifier", min_value=0.1, step=0.05, key=_project_widget_key(project_slot_name, "projected_demand_fit_modifier"))
+            project_bottom[0].number_input(
+                "Projected Defect Modifier",
+                step=0.002,
+                key=_project_widget_key(project_slot_name, "projected_base_defect_modifier"),
+                disabled=fixed_settings_locked,
+            )
+            project_bottom[1].number_input(
+                "Projected Demand-Fit Modifier",
+                min_value=0.1,
+                step=0.05,
+                key=_project_widget_key(project_slot_name, "projected_demand_fit_modifier"),
+                disabled=fixed_settings_locked,
+            )
             project_bottom[2].checkbox("Launch Now If Ready", key=_project_widget_key(project_slot_name, "launch_now"))
             project_bottom[3].checkbox("Cancel Project", key=_project_widget_key(project_slot_name, "cancel_now"))
 
