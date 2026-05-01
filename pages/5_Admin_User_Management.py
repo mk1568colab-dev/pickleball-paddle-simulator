@@ -8,6 +8,7 @@ import string
 import pandas as pd
 import streamlit as st
 
+from models.schemas import PersistentTeamState
 from utils.auth import require_admin, require_authenticated_user
 from utils.bootstrap import ensure_app_storage
 from utils.repository import (
@@ -17,6 +18,7 @@ from utils.repository import (
     load_team_names,
     load_users,
     remove_team_data,
+    save_team_state,
     update_user,
 )
 from utils.security import hash_password, validate_password_strength
@@ -27,6 +29,7 @@ BULK_IMPORT_SUMMARY_KEY = "bulk_import_summary"
 TEAM_GENERATION_SUMMARY_KEY = "team_generation_summary"
 REMOVE_TEAM_SUMMARY_KEY = "remove_team_summary"
 PASSWORD_WORDS = ["Paddle", "Rally", "Volley", "Court", "Dink", "Serve"]
+DEFAULT_STARTING_CASH = 50_000.0
 
 
 def _frame(records: list[dict[str, object]]) -> pd.DataFrame:
@@ -51,13 +54,17 @@ def _show_credential_notice() -> None:
         "Passwords are shown only immediately after creation or reset. "
         "They cannot be viewed later because only password hashes are stored."
     )
+    lines = [
+        f"Username: {notice['username']}",
+        f"Temporary Password: {notice['password']}",
+        f"Role: {notice['role']}",
+        f"Team: {notice['team_name'] or '-'}",
+    ]
+    if notice.get("starting_cash") is not None:
+        lines.append(f"Starting Cash: ${float(notice['starting_cash']):,.0f}")
+
     st.code(
-        (
-            f"Username: {notice['username']}\n"
-            f"Temporary Password: {notice['password']}\n"
-            f"Role: {notice['role']}\n"
-            f"Team: {notice['team_name'] or '-'}"
-        ),
+        "\n".join(lines),
         language="text",
     )
 
@@ -205,6 +212,30 @@ def _generate_temporary_password(team_number: int) -> str:
     return f"Team{team_number:02d}-{word}{random_digits}{random_tail}"
 
 
+def _save_initial_team_state(team_name: str, starting_cash_balance: float) -> None:
+    """Store first-round cash before the team chooses its final archetype."""
+    save_team_state(
+        PersistentTeamState(
+            team_name=team_name,
+            archetype="",
+            cash_balance=max(float(starting_cash_balance), 0.0),
+            inventory_units=0,
+            raw_material_inventory=0,
+            backlog_units=0,
+            capacity_units=0,
+            reputation_score=0.0,
+            completed_rounds=[],
+            last_decision={},
+            open_material_orders=[],
+            cumulative_profit=0.0,
+            short_term_debt_balance=0.0,
+            interest_expense_last_round=0.0,
+            liquidity_warning_flag=False,
+            working_capital_stress_score=0.0,
+        )
+    )
+
+
 def main() -> None:
     """Render the admin user management page."""
     ensure_app_storage()
@@ -259,6 +290,13 @@ def main() -> None:
             password = st.text_input("Temporary Password", type="password")
             role = st.selectbox("Role", options=["admin", "team_leader"])
             team_name = st.text_input("Team Name")
+            starting_cash_balance = st.number_input(
+                "Starting Cash for Team Leader Account",
+                min_value=0.0,
+                value=DEFAULT_STARTING_CASH,
+                step=5_000.0,
+                help="Used only when the new account is a team_leader.",
+            )
             is_active = st.checkbox("Active", value=True)
             submitted = st.form_submit_button("Create User", type="primary")
 
@@ -279,11 +317,21 @@ def main() -> None:
                 except ValueError as error:
                     st.error(str(error))
                 else:
+                    if created_user.role == "team_leader" and created_user.team_name:
+                        _save_initial_team_state(
+                            created_user.team_name,
+                            starting_cash_balance,
+                        )
                     st.session_state[CREDENTIAL_NOTICE_KEY] = {
                         "username": created_user.username,
                         "password": password,
                         "role": created_user.role,
                         "team_name": created_user.team_name,
+                        "starting_cash": (
+                            starting_cash_balance
+                            if created_user.role == "team_leader"
+                            else None
+                        ),
                     }
                     st.success(f"User `{created_user.username}` created.")
                     st.rerun()
@@ -313,6 +361,13 @@ def main() -> None:
             team_name_prefix = st.text_input("Team Name Prefix", value="Team")
             username_prefix = st.text_input("Username Prefix", value="team")
             username_suffix = st.text_input("Username Suffix", value="_lead")
+            starting_cash_balance = st.number_input(
+                "Starting Cash per Team",
+                min_value=0.0,
+                value=DEFAULT_STARTING_CASH,
+                step=5_000.0,
+                help="Creates first-round cash for each generated team.",
+            )
             is_active = st.checkbox("Create accounts as active", value=True)
             update_existing = st.checkbox(
                 "Reset/update matching existing team-leader usernames",
@@ -334,6 +389,7 @@ def main() -> None:
                 team_name_prefix=team_name_prefix,
                 username_prefix=username_prefix,
                 username_suffix=username_suffix,
+                starting_cash_balance=starting_cash_balance,
                 is_active=is_active,
                 update_existing=update_existing,
             )
@@ -411,6 +467,7 @@ def main() -> None:
                                     "password": password,
                                     "role": updated_user.role,
                                     "team_name": updated_user.team_name,
+                                    "starting_cash": None,
                                 }
                             st.success(f"User `{updated_user.username}` updated.")
                             st.rerun()
@@ -623,6 +680,7 @@ def _run_team_account_generation(
     team_name_prefix: str,
     username_prefix: str,
     username_suffix: str,
+    starting_cash_balance: float,
     is_active: bool,
     update_existing: bool,
 ) -> dict[str, object]:
@@ -687,6 +745,7 @@ def _run_team_account_generation(
                 )
                 created_count += 1
                 existing_team_users[team_name.strip().lower()] = get_user_by_username(username)
+                _save_initial_team_state(team_name, starting_cash_balance)
             elif existing_user.role != "team_leader":
                 error_rows.append(
                     {
@@ -707,6 +766,7 @@ def _run_team_account_generation(
                 )
                 updated_count += 1
                 existing_team_users[team_name.strip().lower()] = get_user_by_username(username)
+                _save_initial_team_state(team_name, starting_cash_balance)
             else:
                 skipped_count += 1
                 continue
@@ -716,6 +776,7 @@ def _run_team_account_generation(
                     "team_name": team_name,
                     "username": username,
                     "temporary_password": password,
+                    "starting_cash": starting_cash_balance,
                     "role": "team_leader",
                     "is_active": is_active,
                 }

@@ -5,7 +5,8 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 
-from engine.simulator import preview_team_decision
+from engine.config import STARTING_RAW_MATERIAL_COVERAGE
+from engine.simulator import estimate_development_project, preview_team_decision
 from models.schemas import (
     MAX_TECH_GENERATION,
     MIN_TECH_GENERATION,
@@ -586,13 +587,33 @@ def _render_state_snapshot(
     product_lines: list[ProductLine],
     existing_state,
     market_report,
+    selected_archetype: TeamArchetype,
 ) -> None:
     """Render the team's current persistent operating and technology position."""
     beginning_inventory = sum(max(line.inventory_units, 0) for line in product_lines)
     beginning_backlog = sum(max(line.backlog_units, 0) for line in product_lines)
-    installed_capacity = existing_state.capacity_units if existing_state else 0
-    reputation = existing_state.reputation_score if existing_state else 0.0
-    raw_material_inventory = existing_state.raw_material_inventory if existing_state else 0
+    is_first_round_state = not existing_state or not existing_state.completed_rounds
+    installed_capacity = (
+        existing_state.capacity_units
+        if existing_state and existing_state.capacity_units > 0
+        else selected_archetype.base_capacity
+        if is_first_round_state
+        else 0
+    )
+    reputation = (
+        existing_state.reputation_score
+        if existing_state and existing_state.reputation_score > 0
+        else selected_archetype.base_reputation
+        if is_first_round_state
+        else 0.0
+    )
+    raw_material_inventory = (
+        existing_state.raw_material_inventory
+        if existing_state and existing_state.raw_material_inventory > 0
+        else int(round(selected_archetype.base_capacity * STARTING_RAW_MATERIAL_COVERAGE))
+        if is_first_round_state
+        else 0
+    )
     cash_balance = existing_state.cash_balance if existing_state else 0.0
     short_term_debt = existing_state.short_term_debt_balance if existing_state else 0.0
     interest_last_round = (
@@ -686,8 +707,85 @@ def _render_preview(candidate_firm_decision: TeamDecision, preview) -> None:
 
     project_preview_frame = pd.DataFrame(preview.project_rows)
     if not project_preview_frame.empty:
-        st.markdown("#### Pipeline Scenario Preview")
-        st.dataframe(project_preview_frame, use_container_width=True, hide_index=True)
+        st.markdown("#### Development Pipeline Estimate Preview")
+        st.caption(
+            "Use this table before saving: it shows estimated project cost, remaining funding, "
+            "readiness after this round's investment/testing, earliest launch timing, and launch risk."
+        )
+        preferred_columns = [
+            "project_slot_name",
+            "project_name",
+            "status",
+            "target_segment",
+            "target_tech_generation",
+            "intended_slot_name",
+            "estimated_cost_range",
+            "remaining_investment_after_this_round",
+            "funding_progress_pct",
+            "projected_readiness_after_this_round",
+            "readiness_gap_points",
+            "funding_gate_met",
+            "readiness_gate_met",
+            "timing_gate_met",
+            "launch_gate_met",
+            "testing_adequacy",
+            "launch_risk",
+            "launch_blockers",
+            "minimum_development_rounds",
+            "expected_launch_round",
+            "planned_launch_round",
+            "launch_now",
+        ]
+        visible_columns = [
+            column for column in preferred_columns if column in project_preview_frame.columns
+        ]
+        st.dataframe(
+            project_preview_frame[visible_columns],
+            use_container_width=True,
+            hide_index=True,
+        )
+
+
+def _render_project_launch_gate_guidance(
+    candidate_projects: list[ProductDevelopmentProject],
+    current_round: int,
+) -> None:
+    """Show a plain-language launch checklist for active development projects."""
+    rows: list[dict[str, object]] = []
+    for project in candidate_projects:
+        if not project.is_defined() or project.status in {"launched", "canceled"}:
+            continue
+        estimate = estimate_development_project(
+            project,
+            include_current_round_investment=True,
+            current_round=current_round,
+        )
+        rows.append(
+            {
+                "project": f"{project.project_slot_name}: {project.project_name}",
+                "funding_gate": "Pass" if estimate.get("funding_gate_met") else "Not yet",
+                "readiness_gate": "Pass" if estimate.get("readiness_gate_met") else "Not yet",
+                "timing_gate": "Pass" if estimate.get("timing_gate_met") else "Not yet",
+                "can_launch_now": "Yes" if estimate.get("launch_gate_met") else "No",
+                "funding_progress_pct": estimate.get("funding_progress_pct", 0.0),
+                "readiness_after_this_round": estimate.get(
+                    "projected_readiness_after_this_round",
+                    0.0,
+                ),
+                "readiness_needed": estimate.get("readiness_threshold", 0.0),
+                "what_to_do_next": estimate.get("launch_blockers", ""),
+            }
+        )
+
+    if not rows:
+        return
+
+    st.markdown("#### Launch Gate Checklist")
+    st.caption(
+        "A project can launch only when all three gates pass: funding, readiness, and timing. "
+        "If the table says Can Launch Now = Yes, check Launch Now If Ready before saving."
+    )
+    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
 
 def _validation_messages(
@@ -735,8 +833,10 @@ def _validation_messages(
             continue
         if project.target_segment not in TARGET_SEGMENTS:
             messages.append(f"Project {project.project_slot_name} has an invalid target segment.")
-        if project.planned_launch_round < current_round:
-            messages.append(f"Project {project.project_slot_name} cannot have a planned launch round earlier than the current round.")
+        if project.planned_launch_round < project.created_round:
+            messages.append(
+                f"Project {project.project_slot_name} cannot have a planned launch round earlier than the project creation round."
+            )
         if not 0.0 <= project.testing_intensity <= 1.0:
             messages.append(f"Project {project.project_slot_name} testing intensity must stay between 0.0 and 1.0.")
         if project.target_tech_generation < MIN_TECH_GENERATION or project.target_tech_generation > MAX_TECH_GENERATION:
@@ -840,7 +940,10 @@ def main() -> None:
 
     archetype_locked = (
         user.role == "team_leader"
-        and (existing_firm_decision is not None or existing_state is not None)
+        and (
+            existing_firm_decision is not None
+            or bool(existing_state and existing_state.completed_rounds)
+        )
     )
     selected_archetype_name = st.selectbox(
         "Archetype",
@@ -868,7 +971,7 @@ def main() -> None:
         st.rerun()
 
     st.markdown("### 2. Current Team State")
-    _render_state_snapshot(product_lines, existing_state, market_report)
+    _render_state_snapshot(product_lines, existing_state, market_report, selected_archetype)
     st.caption(
         f"Market generation is currently Gen {market_report.current_market_generation}. "
         f"Premium tech adoption is {market_report.premium_tech_adoption:.0%} and mid-market tech adoption is {market_report.mid_market_tech_adoption:.0%}."
@@ -958,7 +1061,14 @@ def main() -> None:
 
     st.markdown("### 5. Development Pipeline")
     st.caption(
-        "Use up to two project slots to invest ahead of launch. More investment speeds funding progress; higher testing improves readiness; advanced technology takes longer unless strong funding and testing earn limited expedite credit."
+        "Use up to two project slots to invest ahead of launch. Project charter settings become fixed once work starts; investment and testing remain controllable each round."
+    )
+    st.info(
+        "How to think about NPD: choose the product concept once, then manage the project. "
+        "More investment improves funding progress, higher testing intensity improves launch readiness, "
+        "and newer technology generations usually require more money and development time. "
+        "The planned launch round is a target date; if a project is late, it can still launch later once funding, readiness, and timing gates pass. "
+        "See the Model Formula Guide page for the exact readiness and cost-estimate formulas."
     )
     existing_projects = load_product_development_projects(team_name=team_name)
     existing_project_by_slot = {project.project_slot_name: project for project in existing_projects}
@@ -972,15 +1082,24 @@ def main() -> None:
             project_meta = st.columns(5)
             project_meta[0].metric("Status", project.status.replace("_", " ").title())
             project_meta[1].metric("Cumulative Investment", f"${project.cumulative_investment:,.0f}")
-            project_meta[2].metric("Readiness", f"{project.launch_readiness_score:.1f}%")
+            project_meta[2].metric("Saved Readiness", f"{project.launch_readiness_score:.1f}%")
             project_meta[3].metric("Earliest Launch", f"Round {project.earliest_launch_round}")
             project_meta[4].metric("Last Launch", f"{project.launched_round or '-'}")
+            st.caption(
+                "Top metrics show the saved project state entering this round. "
+                "Your new investment/testing choices are reflected in the Launch Gate Checklist below."
+            )
 
             st.caption(
                 "Fixed project settings are locked after investment/testing begins. "
                 "Round decisions remain adjustable so teams can speed up or stabilize the project."
                 if fixed_settings_locked
                 else "Set the fixed project charter before starting investment/testing."
+            )
+            st.caption(
+                "Fixed charter: name, segment, tech generation, target slot, planned launch round, "
+                "cannibalization group, defect goal, and demand-fit goal. "
+                "Round controls: investment this round, testing intensity, launch now if ready, or cancel."
             )
             project_top = st.columns([2, 1, 1, 1])
             project_top[0].text_input(
@@ -1049,6 +1168,7 @@ def main() -> None:
     candidate_firm_decision = _current_firm_decision(team_name, selected_archetype_name)
     candidate_product_decisions = _current_product_decisions(team_name, product_lines)
     candidate_projects = _current_projects(team_name, current_round, saved_projects)
+    _render_project_launch_gate_guidance(candidate_projects, current_round)
     preview = preview_team_decision(
         market_report=market_report,
         candidate_team_decision=candidate_firm_decision,

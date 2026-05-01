@@ -20,6 +20,7 @@ INSTRUCTOR_PANEL_PAGE_PATH = "pages/3_Instructor_Panel.py"
 RESULTS_DASHBOARD_PAGE_PATH = "pages/4_Results_Dashboard.py"
 ADMIN_USER_MANAGEMENT_PAGE_PATH = "pages/5_Admin_User_Management.py"
 MODEL_FORMULA_GUIDE_PAGE_PATH = "pages/7_Model_Formula_Guide.py"
+FINANCE_DETAIL_PAGE_PATH = "pages/8_Finance_Detail.py"
 
 
 def _render_sidebar_navigation(user: AppUser) -> None:
@@ -46,6 +47,10 @@ def _render_sidebar_navigation(user: AppUser) -> None:
     st.page_link(
         RESULTS_DASHBOARD_PAGE_PATH,
         label="Results Dashboard",
+    )
+    st.page_link(
+        FINANCE_DETAIL_PAGE_PATH,
+        label="Finance Detail",
     )
     st.page_link(
         MODEL_FORMULA_GUIDE_PAGE_PATH,

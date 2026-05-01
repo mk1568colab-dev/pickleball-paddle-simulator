@@ -184,15 +184,35 @@ def main() -> None:
     st.subheader("6. Product Development and Launch Readiness")
     st.markdown(
         """
-        Development projects behave like a simple stage-gate process. More money moves the project through the funding gate faster, while testing improves launch readiness and can support limited expediting:
+        Development projects behave like a simple stage-gate process. A team first defines a project charter, then manages investment and testing over time.
+
+        Fixed project charter fields include project name, target segment, target technology generation, intended product slot, planned launch round, cannibalization group, defect target, and demand-fit target. Once investment or testing begins, those settings are locked so teams cannot keep redesigning the project every round.
+
+        Controllable project decisions include investment this round, testing intensity, launch-now-if-ready, and cancel project.
+
+        Estimated required investment is based on project ambition:
 
         ```text
         required_investment =
             base_required_investment
-          + segment_complexity_cost
-          + technology_generation_cost
+          * segment_cost_multiplier
+          * technology_generation_cost_multiplier
+          * demand_fit_ambition_multiplier
+          * defect_improvement_multiplier
 
-        funding_progress = cumulative_investment / required_investment
+        estimated_cost_range =
+            required_investment
+          * low/high uncertainty multiplier for the target technology generation
+        ```
+
+        Funding progress and readiness are then updated from investment and testing:
+
+        ```text
+        funding_progress =
+            cumulative_investment / required_investment
+
+        readiness_from_investment =
+            readiness_scale * (1 - exp(-readiness_rate * funding_progress))
 
         readiness_score =
             readiness_from_funding_progress
@@ -205,6 +225,18 @@ def main() -> None:
             and current_round >= earliest_launch_round
         ```
 
+        The Team Decisions page now shows these as three visible launch gates:
+
+        ```text
+        funding_gate = cumulative_investment >= required_investment
+        readiness_gate = readiness_score >= launch_readiness_threshold
+        timing_gate = current_round >= earliest_launch_round
+
+        can_launch_now = funding_gate and readiness_gate and timing_gate
+        ```
+
+        The planned launch round is treated as a target date, not a permanent deadline. If a team misses the target date, the project can still launch in a later round after the funding, readiness, and timing gates are all satisfied.
+
         Strong funding plus strong testing can earn bounded expedite credit:
 
         ```text
@@ -213,16 +245,22 @@ def main() -> None:
                earliest_launch_round can move earlier
         ```
 
-        This keeps the teaching tradeoff clear: teams can accelerate innovation, but only by spending cash and maintaining engineering discipline.
+        This keeps the teaching tradeoff clear: teams can accelerate innovation, but only by spending cash and maintaining engineering discipline. High-tech products can be more attractive after launch, but they require more funding, more time, and more testing discipline.
         """
     )
     st.dataframe(
         _constant_frame(
             [
                 ("NPD_REQUIRED_INVESTMENT_BASE", config.NPD_REQUIRED_INVESTMENT_BASE, "Base development cost before segment and technology adjustments."),
+                ("NPD_SEGMENT_COST_MULTIPLIERS", config.NPD_SEGMENT_COST_MULTIPLIERS, "Development-cost multiplier by target customer segment."),
+                ("NPD_TECH_GENERATION_COST_MULTIPLIERS", config.NPD_TECH_GENERATION_COST_MULTIPLIERS, "Development-cost multiplier by target technology generation."),
+                ("NPD_DEMAND_FIT_AMBITION_COST_RATE", config.NPD_DEMAND_FIT_AMBITION_COST_RATE, "Cost pressure from targeting stronger demand fit."),
+                ("NPD_DEFECT_IMPROVEMENT_COST_RATE", config.NPD_DEFECT_IMPROVEMENT_COST_RATE, "Cost pressure from targeting a lower defect baseline."),
                 ("LAUNCH_READINESS_THRESHOLD", config.LAUNCH_READINESS_THRESHOLD, "Readiness score required before a project can launch."),
                 ("READINESS_TESTING_BONUS_MAX", config.READINESS_TESTING_BONUS_MAX, "Maximum readiness benefit from testing intensity."),
                 ("READINESS_COMPLEXITY_PENALTY_PER_TECH", config.READINESS_COMPLEXITY_PENALTY_PER_TECH, "Readiness penalty for higher technology generations."),
+                ("NPD_TESTING_ADEQUACY_LOW_THRESHOLD", config.NPD_TESTING_ADEQUACY_LOW_THRESHOLD, "Below this testing level, students should expect readiness to stall."),
+                ("NPD_TESTING_ADEQUACY_GOOD_THRESHOLD", config.NPD_TESTING_ADEQUACY_GOOD_THRESHOLD, "Testing level treated as good engineering discipline."),
                 ("NPD_EXPEDITE_PROGRESS_THRESHOLD", config.NPD_EXPEDITE_PROGRESS_THRESHOLD, "Funding-progress threshold for launch-timing expedite credit."),
                 ("NPD_EXPEDITE_TESTING_THRESHOLD", config.NPD_EXPEDITE_TESTING_THRESHOLD, "Testing-intensity threshold for launch-timing expedite credit."),
                 ("NPD_MAX_EXPEDITE_ROUND_REDUCTION_BY_TECH_GENERATION", config.NPD_MAX_EXPEDITE_ROUND_REDUCTION_BY_TECH_GENERATION, "Maximum rounds that expediting can pull forward by tech generation."),

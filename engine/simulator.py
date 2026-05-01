@@ -38,10 +38,16 @@ from engine.config import (
     NPD_EXPEDITE_EXTRA_PROGRESS_PER_ROUND,
     NPD_EXPEDITE_PROGRESS_THRESHOLD,
     NPD_EXPEDITE_TESTING_THRESHOLD,
+    NPD_DEMAND_FIT_AMBITION_COST_RATE,
+    NPD_DEFECT_IMPROVEMENT_COST_RATE,
+    NPD_ESTIMATE_HIGH_MULTIPLIER_BY_TECH_GENERATION,
+    NPD_ESTIMATE_LOW_MULTIPLIER_BY_TECH_GENERATION,
     NPD_MAX_EXPEDITE_ROUND_REDUCTION_BY_TECH_GENERATION,
     NPD_REQUIRED_INVESTMENT_BASE,
-    NPD_REQUIRED_INVESTMENT_BY_SEGMENT,
-    NPD_REQUIRED_INVESTMENT_BY_TECH_GENERATION,
+    NPD_SEGMENT_COST_MULTIPLIERS,
+    NPD_TECH_GENERATION_COST_MULTIPLIERS,
+    NPD_TESTING_ADEQUACY_GOOD_THRESHOLD,
+    NPD_TESTING_ADEQUACY_LOW_THRESHOLD,
     OVERTIME_COST_MULTIPLIER,
     OVERTIME_DEFECT_PENALTY,
     PERIODIC_INTEREST_RATE,
@@ -269,8 +275,8 @@ class PortfolioDecisionPreview:
     likely_cannibalization_exposure_units: float
     segment_mix_summary: str
     warnings: list[str]
-    product_rows: list[dict[str, float | int | str]]
-    project_rows: list[dict[str, float | int | str]]
+    product_rows: list[dict[str, object]]
+    project_rows: list[dict[str, object]]
 
 
 @dataclass
@@ -654,26 +660,62 @@ def preview_team_decision(
         for item in team_product_results
     ]
 
-    project_rows = [
-        {
-            "project_slot_name": item.project_slot_name,
-            "project_name": item.project_name,
-            "status": item.status,
-            "target_segment": item.target_segment,
-            "target_tech_generation": item.target_tech_generation,
-            "intended_slot_name": item.intended_slot_name,
-            "required_investment": item.required_investment,
-            "cumulative_investment": item.cumulative_investment,
-            "investment_this_round": item.investment_this_round,
-            "testing_intensity": item.testing_intensity,
-            "launch_readiness_score": item.launch_readiness_score,
-            "planned_launch_round": item.planned_launch_round,
-            "earliest_launch_round": item.earliest_launch_round,
-            "launch_now": item.launch_now,
-        }
-        for item in preview_projects
-        if item.is_defined()
-    ]
+    project_rows = []
+    for item in preview_projects:
+        if not item.is_defined():
+            continue
+        project_estimate = estimate_development_project(
+            item,
+            include_current_round_investment=False,
+            current_round=market_report.round_number,
+        )
+        project_rows.append(
+            {
+                "project_slot_name": item.project_slot_name,
+                "project_name": item.project_name,
+                "status": item.status,
+                "target_segment": item.target_segment,
+                "target_tech_generation": item.target_tech_generation,
+                "intended_slot_name": item.intended_slot_name,
+                "required_investment": item.required_investment,
+                "cumulative_investment": item.cumulative_investment,
+                "investment_this_round": item.investment_this_round,
+                "testing_intensity": item.testing_intensity,
+                "launch_readiness_score": item.launch_readiness_score,
+                "planned_launch_round": item.planned_launch_round,
+                "earliest_launch_round": item.earliest_launch_round,
+                "launch_now": item.launch_now,
+                "estimated_cost_range": (
+                    f"${project_estimate.get('estimated_low_cost', 0):,.0f}"
+                    f" - ${project_estimate.get('estimated_high_cost', 0):,.0f}"
+                ),
+                "remaining_investment_after_this_round": project_estimate.get(
+                    "remaining_investment_after_this_round",
+                    0.0,
+                ),
+                "funding_progress_pct": project_estimate.get("funding_progress_pct", 0.0),
+                "projected_readiness_after_this_round": project_estimate.get(
+                    "projected_readiness_after_this_round",
+                    0.0,
+                ),
+                "readiness_gap_points": project_estimate.get(
+                    "readiness_gap_points",
+                    0.0,
+                ),
+                "funding_gate_met": project_estimate.get("funding_gate_met", False),
+                "readiness_gate_met": project_estimate.get("readiness_gate_met", False),
+                "timing_gate_met": project_estimate.get("timing_gate_met", False),
+                "launch_gate_met": project_estimate.get("launch_gate_met", False),
+                "launch_blockers": project_estimate.get("launch_blockers", ""),
+                "minimum_development_rounds": project_estimate.get(
+                    "minimum_development_rounds",
+                    0,
+                ),
+                "expected_launch_round": project_estimate.get("expected_launch_round", 0),
+                "testing_adequacy": project_estimate.get("testing_adequacy", ""),
+                "launch_risk": project_estimate.get("launch_risk", ""),
+            }
+        )
 
     installed_capacity_units = (
         starting_state.capacity_units
@@ -879,8 +921,33 @@ def _initialize_team_state(
     initial_cash_balance = _round_currency(archetype.base_capacity * archetype.base_cost * 1.2)
 
     if existing_state is not None:
-        if not existing_state.completed_rounds and existing_state.cash_balance <= 0:
-            existing_state = replace(existing_state, cash_balance=initial_cash_balance)
+        if not existing_state.completed_rounds:
+            existing_state = replace(
+                existing_state,
+                archetype=team_decision.archetype,
+                cash_balance=(
+                    existing_state.cash_balance
+                    if existing_state.cash_balance > 0
+                    else initial_cash_balance
+                ),
+                raw_material_inventory=(
+                    existing_state.raw_material_inventory
+                    if existing_state.raw_material_inventory > 0
+                    else int(
+                        round(archetype.base_capacity * STARTING_RAW_MATERIAL_COVERAGE)
+                    )
+                ),
+                capacity_units=(
+                    existing_state.capacity_units
+                    if existing_state.capacity_units > 0
+                    else archetype.base_capacity
+                ),
+                reputation_score=(
+                    existing_state.reputation_score
+                    if existing_state.reputation_score > 0
+                    else archetype.base_reputation
+                ),
+            )
         return existing_state
 
     return PersistentTeamState(
@@ -2616,6 +2683,115 @@ def _technology_attractiveness_modifier(
     )
 
 
+def estimate_development_project(
+    project: ProductDevelopmentProject,
+    include_current_round_investment: bool = True,
+    current_round: int | None = None,
+) -> dict[str, object]:
+    """Return transparent planning estimates for a development project.
+
+    The estimates are deterministic teaching aids: ambitious segments, newer
+    technology, stronger demand fit, and better defect targets cost more, while
+    investment and testing improve readiness over time.
+    """
+    if not project.is_defined():
+        return {}
+
+    required_investment = _required_investment_for_project(project)
+    projected_cumulative_investment = max(project.cumulative_investment, 0.0)
+    if include_current_round_investment:
+        projected_cumulative_investment += max(project.investment_this_round, 0.0)
+
+    projected_project = replace(
+        project,
+        required_investment=required_investment,
+        cumulative_investment=projected_cumulative_investment,
+    )
+    funding_progress = (
+        projected_cumulative_investment / required_investment
+        if required_investment > 0
+        else 0.0
+    )
+    projected_readiness = _project_readiness_score(
+        projected_project,
+        required_investment,
+    )
+    earliest_launch_round = _minimum_launch_round_for_project(
+        projected_project,
+        required_investment,
+    )
+    expected_launch_round = max(
+        earliest_launch_round,
+        project.planned_launch_round,
+        current_round or 1,
+    )
+    low_estimate = _round_currency(
+        required_investment
+        * NPD_ESTIMATE_LOW_MULTIPLIER_BY_TECH_GENERATION[
+            project.target_tech_generation
+        ]
+    )
+    high_estimate = _round_currency(
+        required_investment
+        * NPD_ESTIMATE_HIGH_MULTIPLIER_BY_TECH_GENERATION[
+            project.target_tech_generation
+        ]
+    )
+    remaining_investment = _round_currency(
+        max(required_investment - projected_cumulative_investment, 0.0)
+    )
+    readiness_gap = round(
+        max(LAUNCH_READINESS_THRESHOLD - projected_readiness, 0.0),
+        1,
+    )
+    funding_gate_met = remaining_investment <= 0
+    readiness_gate_met = projected_readiness >= LAUNCH_READINESS_THRESHOLD
+    timing_gate_met = (
+        current_round >= earliest_launch_round
+        if current_round is not None
+        else None
+    )
+    launch_gate_met = (
+        funding_gate_met
+        and readiness_gate_met
+        and (timing_gate_met is not False)
+    )
+    launch_blockers = _launch_blocker_text(
+        remaining_investment=remaining_investment,
+        readiness_gap=readiness_gap,
+        testing_intensity=project.testing_intensity,
+        current_round=current_round,
+        earliest_launch_round=earliest_launch_round,
+    )
+
+    return {
+        "required_investment": required_investment,
+        "estimated_low_cost": low_estimate,
+        "estimated_high_cost": high_estimate,
+        "remaining_investment_after_this_round": remaining_investment,
+        "funding_progress_pct": round(min(funding_progress, 2.0) * 100.0, 1),
+        "projected_readiness_after_this_round": round(projected_readiness, 1),
+        "readiness_threshold": LAUNCH_READINESS_THRESHOLD,
+        "readiness_gap_points": readiness_gap,
+        "testing_adequacy": _testing_adequacy_label(project.testing_intensity),
+        "launch_risk": _launch_risk_label(projected_project, projected_readiness),
+        "funding_gate_met": funding_gate_met,
+        "readiness_gate_met": readiness_gate_met,
+        "timing_gate_met": timing_gate_met,
+        "launch_gate_met": launch_gate_met,
+        "launch_blockers": launch_blockers,
+        "minimum_development_rounds": NPD_MIN_DEVELOPMENT_ROUNDS_BY_TECH_GENERATION[
+            project.target_tech_generation
+        ],
+        "estimated_earliest_launch_round": earliest_launch_round,
+        "expected_launch_round": expected_launch_round,
+        "estimate_note": (
+            "Investment improves funding progress; testing improves readiness; "
+            "newer technology and stronger performance targets require more money and time."
+        ),
+    }
+
+
 def _project_readiness_score(
     project: ProductDevelopmentProject,
     required_investment: float,
@@ -2689,12 +2865,91 @@ def _project_expedite_round_credit(
 
 
 def _required_investment_for_project(project: ProductDevelopmentProject) -> float:
-    """Return the required investment for a project from segment and tech targets."""
+    """Return estimated required investment from project ambition and complexity."""
+    segment_multiplier = NPD_SEGMENT_COST_MULTIPLIERS.get(
+        project.target_segment,
+        NPD_SEGMENT_COST_MULTIPLIERS["mid"],
+    )
+    tech_multiplier = NPD_TECH_GENERATION_COST_MULTIPLIERS.get(
+        project.target_tech_generation,
+        NPD_TECH_GENERATION_COST_MULTIPLIERS[2],
+    )
+    demand_fit_multiplier = 1.0 + max(
+        project.projected_demand_fit_modifier - 1.0,
+        0.0,
+    ) * NPD_DEMAND_FIT_AMBITION_COST_RATE
+    defect_improvement_multiplier = 1.0 + max(
+        -project.projected_base_defect_modifier,
+        0.0,
+    ) * NPD_DEFECT_IMPROVEMENT_COST_RATE
+
     return _round_currency(
         NPD_REQUIRED_INVESTMENT_BASE
-        + NPD_REQUIRED_INVESTMENT_BY_SEGMENT[project.target_segment]
-        + NPD_REQUIRED_INVESTMENT_BY_TECH_GENERATION[project.target_tech_generation]
+        * segment_multiplier
+        * tech_multiplier
+        * demand_fit_multiplier
+        * defect_improvement_multiplier
     )
+
+
+def _launch_blocker_text(
+    remaining_investment: float,
+    readiness_gap: float,
+    testing_intensity: float,
+    current_round: int | None,
+    earliest_launch_round: int,
+) -> str:
+    """Explain what prevents launch in plain language."""
+    blockers: list[str] = []
+    if remaining_investment > 0:
+        blockers.append(f"Needs ${remaining_investment:,.0f} more investment")
+    if readiness_gap > 0:
+        if testing_intensity < NPD_TESTING_ADEQUACY_LOW_THRESHOLD:
+            blockers.append(
+                f"Readiness is {readiness_gap:.1f} points short; testing is low"
+            )
+        elif testing_intensity < NPD_TESTING_ADEQUACY_GOOD_THRESHOLD:
+            blockers.append(
+                f"Readiness is {readiness_gap:.1f} points short; more testing helps"
+            )
+        else:
+            blockers.append(
+                f"Readiness is {readiness_gap:.1f} points short; add investment or keep testing"
+            )
+    if current_round is not None and current_round < earliest_launch_round:
+        blockers.append(f"Cannot launch before round {earliest_launch_round}")
+    if not blockers:
+        return "All launch gates are met. Check Launch Now If Ready to launch this round."
+    return "; ".join(blockers) + "."
+
+
+def _testing_adequacy_label(testing_intensity: float) -> str:
+    """Return a student-friendly label for the current testing intensity."""
+    bounded_testing = min(max(testing_intensity, 0.0), 1.0)
+    if bounded_testing >= NPD_TESTING_ADEQUACY_GOOD_THRESHOLD:
+        return "Good"
+    if bounded_testing >= NPD_TESTING_ADEQUACY_LOW_THRESHOLD:
+        return "Moderate"
+    return "Low"
+
+
+def _launch_risk_label(
+    project: ProductDevelopmentProject,
+    readiness_score: float,
+) -> str:
+    """Return a simple launch-risk label from readiness, testing, and tech complexity."""
+    testing_label = _testing_adequacy_label(project.testing_intensity)
+    if (
+        readiness_score >= LAUNCH_READINESS_THRESHOLD
+        and testing_label == "Good"
+        and project.target_tech_generation <= 3
+    ):
+        return "Low"
+    if readiness_score >= LAUNCH_READINESS_THRESHOLD and testing_label != "Low":
+        return "Moderate"
+    if readiness_score >= 60.0 or testing_label == "Good":
+        return "Elevated"
+    return "High"
 
 
 def _conversion_cost_per_unit(

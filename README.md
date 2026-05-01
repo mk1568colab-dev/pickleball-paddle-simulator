@@ -130,13 +130,25 @@ SQLite is appropriate for one small hosted app instance with one database file. 
 
 - Log in as `admin`
 - Open `Admin User Management`
-- Use `Create User`
+- Use `Generate Team Accounts` for fast class setup, for example 6 teams at once
+- Set the number of teams and starting cash per team, default `$50,000`
+- Download the generated credentials CSV immediately because plain-text passwords cannot be recovered later
+- Or use `Create User` when adding one team manually
 - Set:
   - `username`
   - temporary password
   - role = `team_leader`
   - `team_name`
   - active or inactive status
+
+### Remove A Team
+
+- Log in as `admin`
+- Open `Admin User Management`
+- Use `Remove Team`
+- Select the team name
+- Type the team name to confirm
+- By default, the team-leader account is deactivated and the team's simulation data is removed
 
 ### Reset A Password
 
@@ -167,6 +179,7 @@ Any logged-in `admin` or `team_leader` can open `My Account` and change their ow
 7. Instructor reviews the submission checklist and validation summary, then closes submissions
 8. Instructor runs the round from `Instructor Panel`
 9. Class reviews aggregate team results, product results, forecast accuracy, liquidity status, pipeline status, and debrief diagnostics in `Results Dashboard`
+10. Use `Finance Detail` when students need to understand why profit, cash, debt, inventory cost, or product contribution changed
 
 ## ITE Classroom-Readiness Features
 
@@ -465,6 +478,23 @@ If ending cash would go negative, the engine automatically creates short-term de
 
 Liquidity stress is flagged when combinations of low cash, high debt, repeated borrowing, or heavy working-capital burden appear. The impact is intentionally modest.
 
+## Finance Detail Page
+
+The `Finance Detail` page gives instructors and teams a deeper financial explanation than the main dashboard.
+
+It includes:
+
+- latest financial summary by team
+- selected-round cash bridge from beginning cash to ending cash
+- detailed cost breakdown for procurement, production, holding, warranty, backlog, expansion, innovation, and interest
+- product-level contribution table showing which product slots made or lost money
+- plain-English demand-to-finance explanations
+- round-by-round finance charts for profit, cumulative profit, revenue, total cost, cash, debt, and working capital
+
+Admins can view all teams. Team leaders can only view their own team's finance detail.
+
+When generating team accounts in `Admin User Management`, instructors can set the starting cash per team. The default is `$50,000`. This creates the initial team financial state while still allowing the team to choose its archetype before the first round.
+
 ## Stage C Engine Logic
 
 The engine still keeps capacity, raw materials, backlog, reputation, and cash at the team level, but now runs demand, forecast accuracy, and results at the product level.
@@ -688,6 +718,7 @@ The SQLite database now contains these main tables:
 - `Team Decisions`
 - `Instructor Panel`
 - `Results Dashboard`
+- `Finance Detail`
 - `Admin User Management`
 - `Model Formula Guide`
 - `My Account`
@@ -698,6 +729,7 @@ The SQLite database now contains these main tables:
 - `Public Market Report` as read-only
 - `Team Decisions` for their own assigned team only
 - `Results Dashboard` with safe filtered visibility
+- `Finance Detail` for their own team only
 - `Model Formula Guide`
 - `My Account`
 
