@@ -43,6 +43,7 @@ def main() -> None:
         - shared firm constraints for capacity, materials, backlog, reputation, cash, and debt
         - simple short-term borrowing, interest expense, and liquidity pressure
         - detailed finance page with cash bridge, cost breakdown, product contribution, and debt diagnostics
+        - student-facing team tracker for saved decisions, product outcomes, forecast accuracy, and launch history
         - live portfolio, planning, and finance analytics before a team submits the round
         - instructor scenario presets, submission open/close controls, CSV exports, debrief diagnostics, and a formula guide for classroom use
         """
@@ -56,6 +57,7 @@ def main() -> None:
             - Create and manage classroom accounts in `Admin User Management`
             - Review team submissions, project pipelines, and pre-run validation in `Instructor Panel`
             - Run the round and review full portfolio and pipeline performance in `Results Dashboard`
+            - Use `My Team Tracker` to inspect one team's round-by-round decision and result history
             - Use `Finance Detail` to explain cash, cost, debt, and product-level profit drivers
             - Use the `Teaching Debrief` dashboard tab and `Model Formula Guide` to support class discussion and research evidence collection
             - Change your own password in `My Account`
@@ -67,6 +69,7 @@ def main() -> None:
             - Review the public market conditions in `Public Market Report`
             - Submit or revise only your own team's firm-level, product-slot, product-forecast, and development-project decisions in `Team Decisions`
             - Review your team's aggregate result, active portfolio, forecast accuracy, liquidity position, pipeline, and the public rankings in `Results Dashboard`
+            - Use `My Team Tracker` to review your own saved decisions and round-by-round performance history
             - Use `Finance Detail` to understand where your team's cash went and which products made or lost money
             - Use `Model Formula Guide` to understand how key outcomes are calculated
             - Change your own password in `My Account`
