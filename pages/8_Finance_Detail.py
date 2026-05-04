@@ -42,6 +42,57 @@ FINANCE_COLUMNS = [
     "forecast_wape",
 ]
 
+STUDENT_SUMMARY_COLUMNS = [
+    "round_number",
+    "team_name",
+    "revenue",
+    "total_cost",
+    "profit",
+    "ending_cash_balance",
+    "short_term_debt_balance",
+    "automatic_borrowing_amount",
+    "working_capital_requirement",
+    "fill_rate",
+    "forecast_wape",
+    "liquidity_stress_flag",
+]
+
+CURRENCY_COLUMNS = {
+    "revenue",
+    "procurement_cost",
+    "production_cost",
+    "holding_cost",
+    "warranty_cost",
+    "backlog_cost",
+    "expansion_cost",
+    "innovation_investment",
+    "interest_expense",
+    "total_cost",
+    "profit",
+    "ending_cash_balance",
+    "short_term_debt_balance",
+    "planned_borrowing_amount",
+    "automatic_borrowing_amount",
+    "working_capital_requirement",
+    "beginning_cash_estimate",
+    "cash_change",
+    "allocated_procurement_cost",
+    "allocated_backlog_cost",
+    "allocated_expansion_cost",
+    "other_allocated_cost",
+    "profit_contribution",
+    "visible_product_cost",
+    "cost_per_unit_sold",
+}
+
+PERCENT_COLUMNS = {
+    "fill_rate",
+    "forecast_wape",
+    "pct_of_revenue",
+    "profit_margin_pct",
+    "defect_rate",
+}
+
 
 def _frame(records: list[dict[str, object]]) -> pd.DataFrame:
     """Convert dictionaries into a DataFrame."""
@@ -67,6 +118,41 @@ def _download_frame(label: str, frame: pd.DataFrame, file_name: str) -> None:
         data=frame.to_csv(index=False).encode("utf-8"),
         file_name=file_name,
         mime="text/csv",
+    )
+
+
+def _column_config(frame: pd.DataFrame) -> dict[str, object]:
+    """Return readable Streamlit column formatting for finance tables."""
+    config: dict[str, object] = {}
+    for column in frame.columns:
+        if column in CURRENCY_COLUMNS:
+            config[column] = st.column_config.NumberColumn(column, format="$%.0f")
+        elif column in PERCENT_COLUMNS:
+            config[column] = st.column_config.NumberColumn(column, format="%.1f%%")
+    return config
+
+
+def _with_percentage_points(frame: pd.DataFrame) -> pd.DataFrame:
+    """Convert decimal percentage columns into percentage points for display."""
+    display_frame = frame.copy()
+    for column in PERCENT_COLUMNS:
+        if column in display_frame.columns:
+            display_frame[column] = display_frame[column] * 100.0
+    return display_frame
+
+
+def _render_teaching_note(text: str) -> None:
+    """Render a short student-facing finance explanation."""
+    st.info(text)
+
+
+def _render_readable_dataframe(frame: pd.DataFrame) -> None:
+    """Render a dataframe with classroom-friendly finance formatting."""
+    st.dataframe(
+        _with_percentage_points(frame),
+        use_container_width=True,
+        hide_index=True,
+        column_config=_column_config(frame),
     )
 
 
@@ -333,18 +419,66 @@ def _render_finance_kpis(row: pd.Series) -> None:
     """Show top finance metrics."""
     beginning_cash = _estimated_beginning_cash(row)
     beginning_debt = _estimated_beginning_debt(row)
-    cols = st.columns(6)
-    cols[0].metric("Beginning Cash", _money(beginning_cash))
-    cols[1].metric("Revenue", _money(float(row["revenue"])))
-    cols[2].metric("Total Cost", _money(float(row["total_cost"])))
-    cols[3].metric("Profit", _money(float(row["profit"])))
-    cols[4].metric("Ending Cash", _money(float(row["ending_cash_balance"])))
-    cols[5].metric("Debt", _money(float(row["short_term_debt_balance"])))
+    st.markdown("#### Round Financial Snapshot")
+    cash_cols = st.columns(4)
+    cash_cols[0].metric("Beginning Cash", _money(beginning_cash))
+    cash_cols[1].metric("Ending Cash", _money(float(row["ending_cash_balance"])))
+    cash_cols[2].metric("Beginning Debt", _money(beginning_debt))
+    cash_cols[3].metric("Ending Debt", _money(float(row["short_term_debt_balance"])))
+
+    performance_cols = st.columns(4)
+    performance_cols[0].metric("Revenue", _money(float(row["revenue"])))
+    performance_cols[1].metric("Total Cost", _money(float(row["total_cost"])))
+    performance_cols[2].metric("Profit", _money(float(row["profit"])))
+    performance_cols[3].metric("Working Capital", _money(float(row["working_capital_requirement"])))
 
     st.caption(
-        f"Beginning debt was approximately {_money(beginning_debt)}. "
         f"Service level was {_pct(float(row['fill_rate']))}; forecast error was "
-        f"{_pct(float(row['forecast_wape']))} WAPE."
+        f"{_pct(float(row['forecast_wape']))} WAPE. "
+        "Read this page as: cash started here, sales added money, operating choices spent money, "
+        "and borrowing filled any cash gap."
+    )
+
+
+def _render_latest_financial_overview(latest_frame: pd.DataFrame) -> None:
+    """Render the latest finance state without a wide spreadsheet wall."""
+    st.subheader("Latest Financial Overview")
+    if latest_frame.empty:
+        st.info("Latest finance results appear after a round is run.")
+        return
+
+    total_revenue = float(latest_frame["revenue"].sum())
+    total_profit = float(latest_frame["profit"].sum())
+    total_cash = float(latest_frame["ending_cash_balance"].sum())
+    total_debt = float(latest_frame["short_term_debt_balance"].sum())
+    stress_count = int(latest_frame["liquidity_stress_flag"].sum())
+
+    st.caption(
+        "This is the quick read for students: did teams make money, keep cash, avoid debt, "
+        "and serve demand?"
+    )
+    cols = st.columns(5)
+    cols[0].metric("Class Revenue", _money(total_revenue))
+    cols[1].metric("Class Profit", _money(total_profit))
+    cols[2].metric("Total Cash", _money(total_cash))
+    cols[3].metric("Total Debt", _money(total_debt))
+    cols[4].metric("Liquidity Stress Teams", f"{stress_count}")
+
+    display_columns = [
+        column
+        for column in STUDENT_SUMMARY_COLUMNS
+        if column in latest_frame.columns
+    ]
+    summary_frame = latest_frame[display_columns].sort_values(
+        by="profit",
+        ascending=False,
+    )
+    _render_readable_dataframe(summary_frame)
+
+    _render_teaching_note(
+        "A team can show profit and still have cash trouble if money is trapped in inventory, "
+        "capacity expansion, NPD investment, or debt service. Use the selected-round detail tab "
+        "to explain the cash bridge."
     )
 
 
@@ -366,21 +500,86 @@ def _render_team_round_detail(
 
     with cash_bridge_tab:
         st.subheader("Round Cash Bridge")
+        _render_teaching_note(
+            "Cash is not the same as profit. This bridge shows the actual money movement "
+            "for the selected round: cash coming in, cash going out, and any borrowing needed."
+        )
         bridge_frame = _cash_bridge_rows(team_result_row)
-        st.dataframe(
-            bridge_frame[["step", "display", "explanation"]],
-            use_container_width=True,
-            hide_index=True,
+
+        cash_in_steps = [
+            "Beginning cash",
+            "Planned borrowing",
+            "Sales and liquidation revenue",
+        ]
+        cash_out_steps = [
+            "Procurement cost",
+            "Production cost",
+            "Holding cost",
+            "Warranty cost",
+            "Backlog cost",
+            "Capacity expansion",
+            "NPD / innovation investment",
+            "Interest expense",
+        ]
+        financing_steps = [
+            "Ending cash before automatic borrowing",
+            "Automatic borrowing",
+            "Ending cash",
+        ]
+
+        cash_in_col, cash_out_col, financing_col = st.columns([0.30, 0.42, 0.28])
+        with cash_in_col:
+            st.markdown("##### 1. Cash Available / Added")
+            _render_readable_dataframe(
+                bridge_frame[bridge_frame["step"].isin(cash_in_steps)][
+                    ["step", "cash_effect", "explanation"]
+                ]
+            )
+        with cash_out_col:
+            st.markdown("##### 2. Cash Spent")
+            _render_readable_dataframe(
+                bridge_frame[bridge_frame["step"].isin(cash_out_steps)][
+                    ["step", "cash_effect", "explanation"]
+                ]
+            )
+        with financing_col:
+            st.markdown("##### 3. Final Cash / Borrowing")
+            _render_readable_dataframe(
+                bridge_frame[bridge_frame["step"].isin(financing_steps)][
+                    ["step", "cash_effect", "explanation"]
+                ]
+            )
+        st.caption(
+            "Negative cash effects are spending. Automatic borrowing appears only when "
+            "ending cash would otherwise fall below zero."
         )
         _download_frame("Download Cash Bridge CSV", bridge_frame, "cash_bridge.csv")
 
     with cost_tab:
         st.subheader("Cost Breakdown")
+        _render_teaching_note(
+            "This section answers: what did the team spend money on, and which decision caused it?"
+        )
         cost_frame = _cost_breakdown_rows(team_result_row)
-        st.dataframe(
-            cost_frame,
-            use_container_width=True,
-            hide_index=True,
+        chart_frame = cost_frame.set_index("cost_category")[["amount"]]
+        chart_col, table_col = st.columns([0.35, 0.65])
+        with chart_col:
+            st.bar_chart(chart_frame, use_container_width=True)
+        with table_col:
+            _render_readable_dataframe(
+                cost_frame[
+                    [
+                        "cost_category",
+                        "amount",
+                        "cost_per_unit_sold",
+                        "pct_of_revenue",
+                        "main_driver",
+                    ]
+                ]
+            )
+        st.caption(
+            "High production can increase revenue, but it can also raise production, QC, holding, "
+            "and working-capital costs if demand does not arrive."
         )
         _download_frame("Download Cost Breakdown CSV", cost_frame, "cost_breakdown.csv")
 
@@ -390,7 +589,36 @@ def _render_team_round_detail(
         if product_finance.empty:
             st.info("Product contribution rows appear after product results are generated.")
         else:
-            st.dataframe(product_finance, use_container_width=True, hide_index=True)
+            _render_teaching_note(
+                "Use this table to find which paddle line actually made money. A product can sell units "
+                "but still disappoint if defects, inventory, or allocated costs are too high."
+            )
+            product_display_columns = [
+                "slot_name",
+                "product_name",
+                "target_segment",
+                "lifecycle_stage",
+                "tech_generation",
+                "forecast_units",
+                "actual_demand_units",
+                "sales_units",
+                "ending_inventory",
+                "revenue",
+                "visible_product_cost",
+                "profit_contribution",
+                "profit_margin_pct",
+                "fill_rate",
+                "defect_rate",
+            ]
+            _render_readable_dataframe(
+                product_finance[
+                    [
+                        column
+                        for column in product_display_columns
+                        if column in product_finance.columns
+                    ]
+                ]
+            )
             _download_frame(
                 "Download Product Contribution CSV",
                 product_finance,
@@ -399,6 +627,9 @@ def _render_team_round_detail(
 
     with explanation_tab:
         st.subheader("Demand-to-Finance Explanation")
+        st.caption(
+            "These notes translate the numbers into managerial language for debrief."
+        )
         for note in _finance_diagnostics(team_result_row, team_product_frame):
             st.write(f"- {note}")
 
