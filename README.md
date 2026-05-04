@@ -1,17 +1,109 @@
-# Pickleball Paddle Simulator
+# Kiki Pickleball Business Simulation
 
-Hosted-ready Streamlit classroom simulator with:
+<p align="center">
+  <img src="assets/kiki_mascot.png" alt="Kiki mascot holding a pickleball paddle" width="260" />
+</p>
 
-- `admin` and `team_leader` accounts
-- SQLite persistence
-- quantitative OM/SCM gameplay
-- Stage A portfolio and lifecycle logic
-- Stage B development pipeline, technology generations, retirement, and cannibalization
-- Stage C product-level forecasting, S&OP discipline, cash control, and borrowing
-- ITE-oriented teaching support: scenario presets, submission locks, debrief diagnostics, CSV exports, and transparent formula guide
-- one shared hosted app instance for classroom use
+Kiki Pickleball Business Simulation is a hosted-ready Streamlit classroom game for teaching operations management, supply chain management, product portfolio decisions, demand forecasting, S&OP discipline, and cash-control tradeoffs through a competitive pickleball paddle market.
 
-This version intentionally excludes `team_member`, marketing, ambassador strategy, retailer negotiation, multi-country operations, and Monte Carlo systems.
+Students act as team leaders of competing paddle companies. Each round, teams read the market report, forecast demand, set product prices, plan production, choose supplier mix, manage quality, invest in new products, and protect cash. The instructor controls the market environment, opens and closes submissions, runs the round engine, and leads a data-driven debrief.
+
+## Why This Is A Strong Operations Management Teaching Tool
+
+This is not just a scoreboard game. It is designed to make students experience the managerial tradeoffs that are often difficult to teach with slides alone.
+
+| OM / SCM concept | How students experience it | Teaching question |
+|---|---|---|
+| Demand forecasting | Forecast each active product before planning production. | Did the team forecast realistically or simply hope demand would appear? |
+| S&OP discipline | Align forecast, production, raw materials, capacity, inventory, and cash. | Was the plan internally coherent? |
+| Capacity planning | Choose overtime and expansion while facing shared firm constraints. | Did growth create value or just cost? |
+| Supplier mix | Balance offshore, balanced, and premium sourcing. | Did lower input cost increase defects or supply risk? |
+| Quality control | Spend QC dollars per unit to reduce defects. | Was quality investment worth the cost? |
+| Inventory and backlog | Carry inventory, miss sales, or allow backlog. | Did the team protect service without overstocking? |
+| Product portfolio | Manage up to three active paddle product slots. | Which product actually created value? |
+| Product lifecycle | Products move through launch, growth, maturity, and decline. | Did teams refresh products before decline hurt demand? |
+| New product development | Invest in up to two future product projects. | Did innovation happen too early, too late, or at the right moment? |
+| Technology generations | Products compete against market technology expectations. | Did newer technology create advantage or launch risk? |
+| Cash and debt | Profit, working capital, borrowing, interest, and liquidity stress are tracked. | Can a profitable team still run into cash pressure? |
+
+The main learning message is that there is no permanent best strategy. A cash-conservative team can win in a supply shock, a premium-quality team can win when customers become picky, a low-cost team can win service in beginner-heavy markets, and an innovation team can win when technology shifts. The instructor can therefore frame performance as a multi-objective management problem, not just a short-term profit contest.
+
+## What The App Supports
+
+- `admin` and `team_leader` accounts with role-based access
+- first-run admin setup with hashed passwords
+- SQLite persistence for one hosted classroom instance
+- quantitative OM/SCM gameplay with product-level decisions
+- up to 3 active product slots per team: `A`, `B`, `C`
+- up to 2 development project slots per team: `P1`, `P2`
+- product lifecycle tracking: `launch`, `growth`, `maturity`, `decline`
+- technology-generation effects and market-generation pressure
+- product-level demand allocation with team-level rollups
+- intra-portfolio cannibalization between related products
+- product retirement and replacement
+- product-level forecasting with forecast-vs-actual tracking
+- cash balance, borrowing, interest expense, and liquidity pressure
+- instructor scenario presets, submission controls, CSV exports, and formula guide
+- offline 20-environment experiment runner for calibration and teaching research
+
+This version intentionally excludes `team_member`, marketing, ambassador strategy, retailer negotiation, multi-country operations, and heavy Monte Carlo systems. The goal is a classroom-manageable OM/SCM simulator, not an overbuilt enterprise game.
+
+## Quick Start
+
+### Run Locally
+
+Use this when testing on your own computer:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m streamlit run app.py
+```
+
+Then open:
+
+```text
+http://localhost:8501
+```
+
+Important: `localhost` only works on the computer running Streamlit. Students should use the hosted URL, not your local URL.
+
+### Deploy For Class
+
+Use one central hosted Streamlit instance:
+
+1. Push this repo to GitHub.
+2. Create a Render web service or blueprint from the repo.
+3. Attach a persistent disk.
+4. Set `SIMULATOR_DB_PATH=/var/data/simulator.db`.
+5. Start with `python run_streamlit.py`.
+6. Open the hosted Render URL.
+7. Complete first-run admin setup.
+8. Create team leader accounts and give students their usernames/passwords.
+
+## Classroom Flow
+
+1. Instructor sets the current market in `Public Market Report`.
+2. Instructor opens submissions in `Instructor Panel`.
+3. Teams log in with their assigned `team_leader` accounts.
+4. Teams review the market report and submit product, operations, finance, forecast, and development decisions.
+5. Instructor checks validation warnings and closes submissions.
+6. Instructor clicks `Run Round`.
+7. Class reviews results, finance detail, forecast accuracy, portfolio performance, and debrief diagnostics.
+8. Instructor advances the market report and opens the next round.
+
+## Repository Highlights
+
+| Path | Purpose |
+|---|---|
+| `app.py` | Streamlit entry point and navigation shell. |
+| `pages/` | Home, login, market report, team decisions, instructor panel, dashboards, finance, formula guide, and account pages. |
+| `engine/` | Core deterministic OM/SCM simulation engine and tunable constants. |
+| `models/` | Dataclass schemas for market reports, teams, products, projects, states, and results. |
+| `utils/` | Authentication, SQLite database setup, repository helpers, bootstrap, and branding. |
+| `scripts/run_20_environment_simulations.py` | Offline 20-environment experiment runner. |
+| `documentation/` | Instructor manuals, model/formula guides, student guidebooks, and experiment guides. |
+| `assets/kiki_mascot.png` | Kiki mascot used for app branding and documentation. |
 
 ## Stage C Overview
 
@@ -821,6 +913,77 @@ strategy presets. Batch outputs include:
   all product-level results across the batch
 - `batch_forecast_accuracy.csv`
   all product-level forecast accuracy results across the batch
+
+## Offline 20-Environment Experiment
+
+The repo also includes a larger "simulation of the simulation" experiment. It runs the same six strategy archetypes through 20 named market environments and exports a detailed Excel workbook plus CSV files.
+
+Run calibrated mode:
+
+```powershell
+python scripts\run_20_environment_simulations.py --teams 6 --rounds 12 --calibrated
+```
+
+The 20 environments are:
+
+| # | Environment | Main pressure |
+|---|---|---|
+| 1 | Baseline | Balanced market conditions |
+| 2 | Picky Customers | Quality, reputation, and service |
+| 3 | Price Sensitive | Price pressure |
+| 4 | Tech Shift | Technology generation change |
+| 5 | Beginner Boom | Beginner segment growth |
+| 6 | Premium Market | Premium demand and technology adoption |
+| 7 | Demand Recession | Lower demand and cash discipline |
+| 8 | Demand Boom | Growth and capacity scaling |
+| 9 | Supply Shock | Input risk and sourcing resilience |
+| 10 | Cost Inflation | Material cost pressure |
+| 11 | Fast Lifecycle | Product aging and replacement timing |
+| 12 | Warranty Sensitive | Defects and quality economics |
+| 13 | Price War | Low-price competition |
+| 14 | Inventory Risk | Overstock and working-capital burden |
+| 15 | Capacity Constraint | Production bottlenecks |
+| 16 | Forecast Volatility | Planning uncertainty |
+| 17 | Viral Demand | Sudden demand spike |
+| 18 | Cash Crunch | Debt and liquidity pressure |
+| 19 | Premium Expansion | Premium growth plus tech expectations |
+| 20 | Unstable Market | Mixed shocks and resilience |
+
+Outputs are written under:
+
+```text
+simulation_outputs/twenty_environment_calibrated_YYYYMMDD_HHMMSS/
+```
+
+The Excel workbook includes:
+
+- one sheet per environment
+- `Scenario_Assumptions`
+- `All_Scenario_Winners`
+- `Strategy_Summary`
+- `Teaching_Insights`
+
+CSV exports include:
+
+- `scenario_assumptions.csv`
+- `all_scenario_winners.csv`
+- `strategy_summary.csv`
+- `teaching_insights.csv`
+- `round_level_results.csv`
+- `final_team_results.csv`
+
+This runner is useful for instructor calibration, classroom examples, teaching notes, and research framing. It does not change the classroom SQLite database.
+
+## Documentation Pack
+
+The `documentation/` folder contains ready-to-use Word guides:
+
+- instructor operating manual
+- simulator model and formula guide
+- student guidebook with big-picture figures
+- offline 20-environment experiment guide
+
+The ZIP documentation pack also includes the offline experiment code so another instructor or developer can reproduce the analysis.
 
 ## Security Notes
 
