@@ -1068,6 +1068,7 @@ def main() -> None:
         "More investment improves funding progress, higher testing intensity improves launch readiness, "
         "and newer technology generations usually require more money and development time. "
         "The planned launch round is a target date; if a project is late, it can still launch later once funding, readiness, and timing gates pass. "
+        "After launch, the new product moves into its portfolio slot and the project slot resets so you can start the next development project. "
         "See the Model Formula Guide page for the exact readiness and cost-estimate formulas."
     )
     existing_projects = load_product_development_projects(team_name=team_name)

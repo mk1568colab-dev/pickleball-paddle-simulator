@@ -2523,15 +2523,60 @@ def _update_projects_after_round(
     updated_projects: list[ProductDevelopmentProject] = []
     for prepared_project in prepared_projects:
         project = replace(prepared_project.project)
+        if project.status == "launched":
+            updated_projects.append(
+                _empty_project_slot_for_next_round(
+                    launched_project=project,
+                    next_round=round_number + 1,
+                )
+            )
+            continue
+
         project.launch_now = False
         project.cancel_now = False
         project.investment_this_round = 0.0
-        if project.status == "launched":
-            project.launched_round = project.launched_round or round_number
         if project.status == "canceled":
             project.canceled_round = project.canceled_round or round_number
         updated_projects.append(project)
     return updated_projects
+
+
+def _empty_project_slot_for_next_round(
+    launched_project: ProductDevelopmentProject,
+    next_round: int,
+) -> ProductDevelopmentProject:
+    """Return a fresh editable pipeline slot after a project has launched.
+
+    The launched product is now represented by ProductLine, ProductRoundResult, and
+    launch-event history. The development slot itself becomes available again so
+    students do not keep editing a finished project.
+    """
+    return ProductDevelopmentProject(
+        project_id=launched_project.project_id,
+        team_name=launched_project.team_name,
+        project_slot_name=launched_project.project_slot_name,
+        project_name="",
+        target_segment="mid",
+        target_tech_generation=2,
+        intended_slot_name="C",
+        required_investment=0.0,
+        cumulative_investment=0.0,
+        investment_this_round=0.0,
+        testing_intensity=0.0,
+        launch_readiness_score=0.0,
+        planned_launch_round=next_round + 1,
+        earliest_launch_round=next_round + 1,
+        status="concept",
+        cannibalization_group="",
+        projected_base_defect_modifier=0.0,
+        projected_demand_fit_modifier=1.0,
+        created_round=next_round,
+        launched_round=None,
+        canceled_round=None,
+        launch_now=False,
+        cancel_now=False,
+        replaced_product_name=None,
+    )
 
 
 def _segment_attractiveness(
