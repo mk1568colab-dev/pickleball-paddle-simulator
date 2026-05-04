@@ -4,7 +4,7 @@ import streamlit as st
 
 from utils.auth import require_authenticated_user
 from utils.bootstrap import ensure_app_storage
-from utils.branding import APP_NAME, APP_TAGLINE, MASCOT_IMAGE_PATH, MASCOT_NAME
+from utils.branding import APP_NAME, APP_TAGLINE, MASCOT_NAME
 
 
 def main() -> None:
@@ -18,20 +18,16 @@ def main() -> None:
     database_path = ensure_app_storage()
     user = require_authenticated_user()
 
-    hero_text, hero_mascot = st.columns([0.66, 0.34], vertical_alignment="center")
-    with hero_text:
-        st.title(APP_NAME)
-        st.caption(APP_TAGLINE)
-        st.write(f"You are signed in as `{user.username}` with the role `{user.role}`.")
-        if user.team_name:
-            st.write(f"Assigned team: `{user.team_name}`")
-        st.info(
-            f"Meet {MASCOT_NAME}: your pickleball business coach for this simulation. "
-            "Use the market report, team decisions, dashboards, and formula guides to "
-            "connect strategy choices to operational and financial results."
-        )
-    with hero_mascot:
-        st.image(MASCOT_IMAGE_PATH, caption=f"{MASCOT_NAME}, the simulator mascot", use_container_width=True)
+    st.title(APP_NAME)
+    st.caption(APP_TAGLINE)
+    st.write(f"You are signed in as `{user.username}` with the role `{user.role}`.")
+    if user.team_name:
+        st.write(f"Assigned team: `{user.team_name}`")
+    st.info(
+        f"Meet {MASCOT_NAME}: your pickleball business coach for this simulation. "
+        "Use the market report, team decisions, dashboards, and formula guides to "
+        "connect strategy choices to operational and financial results."
+    )
 
     st.subheader("What This Version Supports")
     st.markdown(
