@@ -1328,6 +1328,23 @@ def _progress_projects(
         if normalized_project.created_round <= 0:
             normalized_project.created_round = market_report.round_number
 
+        if normalized_project.status == "launched":
+            normalized_project.launch_now = False
+            normalized_project.cancel_now = False
+            normalized_project.investment_this_round = 0.0
+            normalized_project.testing_intensity = 0.0
+            prepared_projects.append(
+                PreparedProject(
+                    project=normalized_project,
+                    required_investment=normalized_project.required_investment,
+                    readiness_pct=round(normalized_project.launch_readiness_score, 2),
+                    min_launch_round=normalized_project.earliest_launch_round,
+                    launch_requested=False,
+                    cancel_requested=False,
+                )
+            )
+            continue
+
         if (
             normalized_project.status in {"launched", "canceled"}
             and normalized_project.project_name.strip()

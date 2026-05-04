@@ -952,42 +952,77 @@ def save_product_development_projects(
         )
 
 
+def _empty_development_project_slot(
+    team_name: str,
+    project_slot_name: str,
+    current_round: int,
+) -> ProductDevelopmentProject:
+    """Create a reusable blank development slot for the current decision round."""
+    return ProductDevelopmentProject(
+        project_id=build_project_id(team_name, project_slot_name),
+        team_name=team_name,
+        project_slot_name=project_slot_name,
+        project_name="",
+        target_segment="mid",
+        target_tech_generation=2,
+        intended_slot_name="C",
+        required_investment=0.0,
+        cumulative_investment=0.0,
+        investment_this_round=0.0,
+        testing_intensity=0.0,
+        launch_readiness_score=0.0,
+        planned_launch_round=current_round + 1,
+        earliest_launch_round=current_round + 1,
+        status="concept",
+        cannibalization_group="",
+        projected_base_defect_modifier=0.0,
+        projected_demand_fit_modifier=1.0,
+        created_round=current_round,
+    )
+
+
 def ensure_development_projects_for_team(team_name: str) -> list[ProductDevelopmentProject]:
     """Ensure a team has two editable development-project slots."""
     ensure_app_storage()
+    current_round = load_market_report().round_number
     existing_projects = load_product_development_projects(team_name=team_name)
+    normalized_existing_projects: list[ProductDevelopmentProject] = []
+    for project in existing_projects:
+        launched_before_current_round = (
+            project.status == "launched"
+            and project.launched_round is not None
+            and project.launched_round < current_round
+        )
+        if launched_before_current_round:
+            normalized_existing_projects.append(
+                _empty_development_project_slot(
+                    team_name=team_name,
+                    project_slot_name=project.project_slot_name,
+                    current_round=current_round,
+                )
+            )
+        else:
+            normalized_existing_projects.append(project)
+
+    if normalized_existing_projects != existing_projects:
+        save_product_development_projects(normalized_existing_projects)
+        existing_projects = normalized_existing_projects
+
     existing_by_slot = {
         item.project_slot_name: item for item in existing_projects
     }
     if len(existing_by_slot) == len(PROJECT_SLOT_NAMES):
         return sorted(existing_projects, key=lambda item: item.project_slot_name)
 
-    current_round = load_market_report().round_number
     created_projects: list[ProductDevelopmentProject] = list(existing_projects)
     for project_slot_name in PROJECT_SLOT_NAMES:
         if project_slot_name in existing_by_slot:
             continue
         created_projects.append(
-            ProductDevelopmentProject(
-                project_id=build_project_id(team_name, project_slot_name),
+            _empty_development_project_slot(
                 team_name=team_name,
                 project_slot_name=project_slot_name,
-                project_name="",
-                target_segment="mid",
-                target_tech_generation=2,
-                intended_slot_name="C",
-                required_investment=0.0,
-                cumulative_investment=0.0,
-                investment_this_round=0.0,
-                testing_intensity=0.0,
-                launch_readiness_score=0.0,
-                planned_launch_round=current_round + 1,
-                earliest_launch_round=current_round + 1,
-                status="concept",
-                cannibalization_group="",
-                projected_base_defect_modifier=0.0,
-                projected_demand_fit_modifier=1.0,
-                created_round=current_round,
+                current_round=current_round,
             )
         )
 
