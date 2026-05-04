@@ -487,22 +487,6 @@ Even after becoming `launch_ready`, the team still has to choose `launch_now` to
 
 Only one launch per team per round is allowed in Stage B.
 
-## Retirement And Replacement Rules
-
-Teams can retire aging products with `retire_flag`.
-
-Stage B also supports replacement:
-
-- when a project launches into an occupied slot, it replaces the old product in that slot
-- replaced inventory is liquidated at a markdown recovery rate
-- the new product starts with:
-  - lifecycle stage `launch`
-  - age `0`
-  - its project tech generation
-  - its projected defect and demand-fit modifiers
-
-Retired products no longer remain active in future rounds.
-
 ## Cannibalization Logic
 
 Stage B models bounded intra-team cannibalization after initial market demand allocation.
@@ -539,53 +523,6 @@ The Team Decisions preview and Instructor Panel now surface planning-discipline 
 - raw-material ordering too low for the planned output
 - high inventory target relative to forecast
 - likely cash shortfall even before the round is executed
-
-## Cash And Borrowing Logic
-
-Stage C keeps finance intentionally simple and classroom-manageable.
-
-The simulator now rolls forward:
-
-- `cash_balance`
-- `short_term_debt_balance`
-- `interest_expense`
-- `working_capital_requirement`
-- `liquidity_stress_flag`
-
-Round cash flow is modeled as:
-
-- starting cash
-- plus revenue collected
-- plus planned borrowing
-- minus procurement spend
-- minus production conversion spend
-- minus holding cost
-- minus warranty cost
-- minus backlog cost
-- minus expansion capex
-- minus development investment
-- minus interest expense
-
-If ending cash would go negative, the engine automatically creates short-term debt for the remaining deficit and floors cash at zero.
-
-Liquidity stress is flagged when combinations of low cash, high debt, repeated borrowing, or heavy working-capital burden appear. The impact is intentionally modest.
-
-## Finance Detail Page
-
-The `Finance Detail` page gives instructors and teams a deeper financial explanation than the main dashboard.
-
-It includes:
-
-- latest financial summary by team
-- selected-round cash bridge from beginning cash to ending cash
-- detailed cost breakdown for procurement, production, holding, warranty, backlog, expansion, innovation, and interest
-- product-level contribution table showing which product slots made or lost money
-- plain-English demand-to-finance explanations
-- round-by-round finance charts for profit, cumulative profit, revenue, total cost, cash, debt, and working capital
-
-Admins can view all teams. Team leaders can only view their own team's finance detail.
-
-When generating team accounts in `Admin User Management`, instructors can set the starting cash per team. The default is `$50,000`. This creates the initial team financial state while still allowing the team to choose its archetype before the first round.
 
 ## Stage C Engine Logic
 
@@ -769,37 +706,6 @@ The dashboard now shows active portfolio, pipeline, forecast accuracy, and liqui
 - own launch and retirement events
 - own debrief prompt
 - public ranking table
-
-## Database Schema
-
-The SQLite database now contains these main tables:
-
-- `users`
-  username, password hash, role, team assignment, and active status
-- `team_archetypes`
-  archetype baselines plus suggested default portfolios
-- `market_reports`
-  public round conditions plus technology-shift fields
-- `classroom_rounds`
-  instructor-controlled open/closed submission status by round
-- `team_decisions`
-  firm-level shared portfolio constraints and planned borrowing by round
-- `product_lines`
-  persistent slot state for each team's active or retired products
-- `product_decisions`
-  product-slot decisions and per-product forecasts by round
-- `product_forecasts`
-  persisted product-level forecast submissions by round
-- `product_development_projects`
-  persistent development-pipeline slots and launch state
-- `team_states`
-  persistent team cash, debt, materials, capacity, reputation, backlog, and cumulative profit
-- `round_results`
-  aggregate firm-level round results including forecast and finance metrics
-- `product_round_results`
-  product-slot round results including launch, retirement, cannibalization, and forecast metrics
-- `forecast_accuracy_results`
-  per-product forecast-vs-actual diagnostics by round
 
 ## Roles And Access
 
