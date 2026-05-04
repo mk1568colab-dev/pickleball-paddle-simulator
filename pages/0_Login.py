@@ -13,12 +13,13 @@ from utils.auth import (
     system_requires_initial_setup,
 )
 from utils.bootstrap import ensure_app_storage
+from utils.branding import APP_NAME
 
 
 def main() -> None:
     """Render the login experience."""
     st.set_page_config(
-        page_title="Login - Pickleball Paddle Simulator",
+        page_title=f"Login - {APP_NAME}",
         page_icon=":material/login:",
         layout="centered",
     )
@@ -31,7 +32,7 @@ def main() -> None:
     user = get_current_user()
     if user is not None:
         render_user_sidebar(user)
-        st.title("Login")
+        st.title(APP_NAME)
         st.info(f"You are already signed in as `{user.username}`.")
 
         if st.button("Go to Home", type="primary"):

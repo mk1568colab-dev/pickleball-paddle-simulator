@@ -4,12 +4,13 @@ import streamlit as st
 
 from utils.auth import require_authenticated_user
 from utils.bootstrap import ensure_app_storage
+from utils.branding import APP_NAME, APP_TAGLINE, MASCOT_IMAGE_PATH, MASCOT_NAME
 
 
 def main() -> None:
     """Render the authenticated home page."""
     st.set_page_config(
-        page_title="Pickleball Paddle Simulator",
+        page_title=APP_NAME,
         page_icon=":material/sports_tennis:",
         layout="wide",
     )
@@ -17,14 +18,20 @@ def main() -> None:
     database_path = ensure_app_storage()
     user = require_authenticated_user()
 
-    st.title("Pickleball Paddle Market Simulator")
-    st.caption(
-        "A hosted classroom competition app for quantitative OM, SCM, portfolio, product-pipeline, forecasting, and cash-control rounds."
-    )
-
-    st.write(f"You are signed in as `{user.username}` with the role `{user.role}`.")
-    if user.team_name:
-        st.write(f"Assigned team: `{user.team_name}`")
+    hero_text, hero_mascot = st.columns([0.66, 0.34], vertical_alignment="center")
+    with hero_text:
+        st.title(APP_NAME)
+        st.caption(APP_TAGLINE)
+        st.write(f"You are signed in as `{user.username}` with the role `{user.role}`.")
+        if user.team_name:
+            st.write(f"Assigned team: `{user.team_name}`")
+        st.info(
+            f"Meet {MASCOT_NAME}: your pickleball business coach for this simulation. "
+            "Use the market report, team decisions, dashboards, and formula guides to "
+            "connect strategy choices to operational and financial results."
+        )
+    with hero_mascot:
+        st.image(MASCOT_IMAGE_PATH, caption=f"{MASCOT_NAME}, the simulator mascot", use_container_width=True)
 
     st.subheader("What This Version Supports")
     st.markdown(
@@ -44,6 +51,7 @@ def main() -> None:
         - simple short-term borrowing, interest expense, and liquidity pressure
         - detailed finance page with cash bridge, cost breakdown, product contribution, and debt diagnostics
         - student-facing team tracker for saved decisions, product outcomes, forecast accuracy, and launch history
+        - visual big-picture guide explaining the game loop, decisions, portfolio, NPD gates, competition, lifecycle, cash flow, and strategy tradeoffs
         - live portfolio, planning, and finance analytics before a team submits the round
         - instructor scenario presets, submission open/close controls, CSV exports, debrief diagnostics, and a formula guide for classroom use
         """
@@ -58,6 +66,7 @@ def main() -> None:
             - Review team submissions, project pipelines, and pre-run validation in `Instructor Panel`
             - Run the round and review full portfolio and pipeline performance in `Results Dashboard`
             - Use `My Team Tracker` to inspect one team's round-by-round decision and result history
+            - Use `Game Big Picture` when introducing the simulation or explaining how decisions connect
             - Use `Finance Detail` to explain cash, cost, debt, and product-level profit drivers
             - Use the `Teaching Debrief` dashboard tab and `Model Formula Guide` to support class discussion and research evidence collection
             - Change your own password in `My Account`
@@ -70,6 +79,7 @@ def main() -> None:
             - Submit or revise only your own team's firm-level, product-slot, product-forecast, and development-project decisions in `Team Decisions`
             - Review your team's aggregate result, active portfolio, forecast accuracy, liquidity position, pipeline, and the public rankings in `Results Dashboard`
             - Use `My Team Tracker` to review your own saved decisions and round-by-round performance history
+            - Use `Game Big Picture` to understand how all decisions connect before submitting
             - Use `Finance Detail` to understand where your team's cash went and which products made or lost money
             - Use `Model Formula Guide` to understand how key outcomes are calculated
             - Change your own password in `My Account`

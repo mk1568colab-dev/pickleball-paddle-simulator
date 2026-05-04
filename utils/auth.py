@@ -5,6 +5,7 @@ from __future__ import annotations
 import streamlit as st
 
 from models.schemas import AppUser
+from utils.branding import APP_NAME, APP_TAGLINE, MASCOT_IMAGE_PATH, MASCOT_NAME
 from utils.repository import get_user_by_username, has_active_admin
 from utils.security import verify_password
 
@@ -22,6 +23,7 @@ ADMIN_USER_MANAGEMENT_PAGE_PATH = "pages/5_Admin_User_Management.py"
 MODEL_FORMULA_GUIDE_PAGE_PATH = "pages/7_Model_Formula_Guide.py"
 FINANCE_DETAIL_PAGE_PATH = "pages/8_Finance_Detail.py"
 MY_TEAM_TRACKER_PAGE_PATH = "pages/9_My_Team_Tracker.py"
+GAME_BIG_PICTURE_GUIDE_PAGE_PATH = "pages/10_Game_Big_Picture_Guide.py"
 
 
 def _render_sidebar_navigation(user: AppUser) -> None:
@@ -52,6 +54,10 @@ def _render_sidebar_navigation(user: AppUser) -> None:
     st.page_link(
         MY_TEAM_TRACKER_PAGE_PATH,
         label="My Team Tracker",
+    )
+    st.page_link(
+        GAME_BIG_PICTURE_GUIDE_PAGE_PATH,
+        label="Game Big Picture",
     )
     st.page_link(
         FINANCE_DETAIL_PAGE_PATH,
@@ -110,8 +116,14 @@ def logout_user() -> None:
 
 def render_login_form() -> None:
     """Render the shared login form."""
-    st.title("Login")
-    st.caption("Use the account created by your instructor or admin.")
+    mascot_col, login_col = st.columns([0.38, 0.62], vertical_alignment="center")
+    with mascot_col:
+        st.image(MASCOT_IMAGE_PATH, caption=f"{MASCOT_NAME}, your simulation mascot", use_container_width=True)
+    with login_col:
+        st.title(APP_NAME)
+        st.caption(APP_TAGLINE)
+        st.subheader("Login")
+        st.caption("Use the account created by your instructor or admin.")
 
     with st.form("login_form"):
         username = st.text_input("Username")
@@ -130,6 +142,9 @@ def render_login_form() -> None:
 def render_user_sidebar(user: AppUser) -> None:
     """Show the current user and logout action in the sidebar."""
     with st.sidebar:
+        st.image(MASCOT_IMAGE_PATH, width=120)
+        st.caption(APP_NAME)
+        st.divider()
         _render_sidebar_navigation(user)
         st.divider()
         st.markdown("### Session")

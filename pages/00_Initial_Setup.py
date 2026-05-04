@@ -6,6 +6,7 @@ import streamlit as st
 
 from utils.auth import HOME_PAGE_PATH, LOGIN_PAGE_PATH, SESSION_USER_KEY, get_current_user, system_requires_initial_setup
 from utils.bootstrap import ensure_app_storage
+from utils.branding import APP_NAME, APP_TAGLINE, MASCOT_IMAGE_PATH
 from utils.repository import create_initial_admin
 from utils.security import hash_password, validate_password_strength
 
@@ -13,7 +14,7 @@ from utils.security import hash_password, validate_password_strength
 def main() -> None:
     """Render the one-time initial admin setup flow."""
     st.set_page_config(
-        page_title="Initial Setup - Pickleball Paddle Simulator",
+        page_title=f"Initial Setup - {APP_NAME}",
         page_icon=":material/admin_panel_settings:",
         layout="centered",
     )
@@ -21,7 +22,9 @@ def main() -> None:
     ensure_app_storage()
     existing_user = get_current_user()
 
-    st.title("Initial Setup")
+    st.image(MASCOT_IMAGE_PATH, width=220)
+    st.title(f"{APP_NAME} Initial Setup")
+    st.caption(APP_TAGLINE)
     st.caption("Create the first admin account for this hosted classroom app.")
 
     if not system_requires_initial_setup():

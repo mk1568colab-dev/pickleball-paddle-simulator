@@ -1,0 +1,121 @@
+experiment_mode,scenario_id,scenario_name,team_name,strategy_archetype,operating_archetype,final_profit,final_revenue,final_cost,final_cash,final_debt,cash_minus_debt,ending_inventory,ending_backlog,service_level,forecast_accuracy,forecast_wape,balanced_score,profit_rank,balanced_rank,service_rank,forecast_rank,cash_rank,innovation_rank,innovation_score,liquidity_stress,reputation_after_round
+calibrated,1,Baseline,Team 02,Balanced S&OP,Engineering Challenger,86731.31,371351.0,284619.69,125875.31,12000.0,113875.31,0,27,0.6781,0.6786,0.3214,84.0,1,1,3,1,1,4,166.0,TRUE,0.71
+calibrated,1,Baseline,Team 01,Cash conservative,Community / Club,86331.73,265140.84,178809.11,109371.73,0.0,109371.73,0,11,0.5521,0.6096,0.3904,64.0,2,2,5,3,2,6,88.0,FALSE,0.0
+calibrated,1,Baseline,Team 03,Premium quality,Premium Quality,54747.55,232565.47,177817.92,80331.55,0.0,80331.55,0,3,0.6022,0.5789,0.4211,52.0,3,3,4,4,3,3,179.0,FALSE,0.0
+calibrated,1,Baseline,Team 04,Innovation leap,Engineering Challenger,19713.26,229832.4,210119.14,130857.26,84000.0,46857.26,0,4,0.4904,0.4895,0.5105,20.0,4,5,6,5,4,1,236.5,TRUE,0.0
+calibrated,1,Baseline,Team 05,Aggressive growth,Sponsorship Growth,-61433.72,507159.55,568593.27,87750.28,120000.0,-32249.72,111,75,0.8363,0.6748,0.3252,36.0,5,4,2,2,5,2,197.5,TRUE,11.3
+calibrated,1,Baseline,Team 06,Low-cost volume,Low-Cost Volume,-246208.07,283227.12,529435.19,0.0,216976.07,-216976.07,1299,98,0.9087,0.1336,0.8664,12.0,6,6,1,6,6,5,108.5,TRUE,0.0
+calibrated,2,Picky Customers,Team 03,Premium quality,Premium Quality,99027.43,253537.37,154509.94,124611.43,0.0,124611.43,0,0,0.906,0.8313,0.1687,96.0,1,1,1,1,2,5,106.0,FALSE,100.0
+calibrated,2,Picky Customers,Team 02,Balanced S&OP,Engineering Challenger,98252.58,384198.0,285945.42,137396.58,12000.0,125396.58,0,27,0.6307,0.6139,0.3861,64.0,2,2,4,3,1,3,166.0,TRUE,0.0
+calibrated,2,Picky Customers,Team 01,Cash conservative,Community / Club,84281.86,236111.64,151829.78,107321.86,0.0,107321.86,0,8,0.4722,0.4061,0.5939,44.0,3,3,5,5,3,6,88.0,FALSE,0.0
+calibrated,2,Picky Customers,Team 04,Innovation leap,Engineering Challenger,21764.27,229832.4,208068.13,132908.27,84000.0,48908.27,0,4,0.4474,0.449,0.551,24.0,4,5,6,4,4,1,236.5,TRUE,0.0
+calibrated,2,Picky Customers,Team 05,Aggressive growth,Sponsorship Growth,-41497.62,529334.4,570832.02,107686.38,120000.0,-12313.62,71,75,0.8021,0.6715,0.3285,32.0,5,4,3,2,5,2,197.5,TRUE,7.68
+calibrated,2,Picky Customers,Team 06,Low-cost volume,Low-Cost Volume,-277341.64,273841.13,551182.77,0.0,248109.64,-248109.64,1605,98,0.8986,0.0365,0.9635,8.0,6,6,2,6,6,4,108.5,TRUE,0.0
+calibrated,3,Price Sensitive,Team 02,Balanced S&OP,Engineering Challenger,127945.7,384198.0,256252.3,167089.7,12000.0,155089.7,0,27,0.5246,0.5295,0.4705,76.0,1,1,3,3,1,4,166.0,TRUE,0.0
+calibrated,3,Price Sensitive,Team 01,Cash conservative,Community / Club,92930.62,217425.24,124494.62,115970.62,0.0,115970.62,0,6,0.2925,0.2267,0.7733,48.0,2,4,6,6,2,5,88.0,FALSE,0.0
+calibrated,3,Price Sensitive,Team 03,Premium quality,Premium Quality,77764.27,236457.36,158693.09,103348.27,0.0,103348.27,0,3,0.4735,0.4687,0.5313,52.0,3,3,4,4,3,3,179.0,FALSE,0.0
+calibrated,3,Price Sensitive,Team 06,Low-cost volume,Low-Cost Volume,69134.87,398255.44,329120.57,98366.87,0.0,98366.87,0,82,0.7441,0.6887,0.3113,60.0,4,2,1,2,4,6,69.5,FALSE,0.0
+calibrated,3,Price Sensitive,Team 05,Aggressive growth,Sponsorship Growth,46636.32,551834.5,505198.18,195820.32,120000.0,75820.32,0,75,0.6559,0.7087,0.2913,40.0,5,5,2,1,5,2,197.5,TRUE,0.0
+calibrated,3,Price Sensitive,Team 04,Innovation leap,Engineering Challenger,39184.4,229832.4,190648.0,150328.4,84000.0,66328.4,0,4,0.3607,0.3742,0.6258,0.0,6,6,5,5,6,1,236.5,TRUE,0.0
+calibrated,4,Tech Shift,Team 04,Innovation leap,Engineering Challenger,125825.96,291008.16,165182.2,152969.96,0.0,152969.96,0,0,0.7806,0.768,0.232,96.0,1,1,2,1,1,4,109.0,FALSE,65.35
+calibrated,4,Tech Shift,Team 02,Balanced S&OP,Engineering Challenger,95638.79,374342.0,278703.21,134782.79,12000.0,122782.79,0,22,0.4916,0.4924,0.5076,48.0,2,2,5,5,2,3,115.0,TRUE,0.0
+calibrated,4,Tech Shift,Team 01,Cash conservative,Community / Club,66645.17,187243.44,120598.27,89685.17,0.0,89685.17,0,5,0.237,0.1615,0.8385,36.0,3,4,6,6,3,5,88.0,FALSE,0.0
+calibrated,4,Tech Shift,Team 03,Premium quality,Premium Quality,54682.63,220361.04,165678.41,80266.63,0.0,80266.63,0,0,0.5092,0.5035,0.4965,40.0,4,3,4,4,4,2,182.5,FALSE,3.42
+calibrated,4,Tech Shift,Team 05,Aggressive growth,Sponsorship Growth,-15988.82,550212.1,566200.92,133195.18,120000.0,13195.18,0,75,0.5544,0.5755,0.4245,28.0,5,5,3,3,5,1,198.0,TRUE,0.0
+calibrated,4,Tech Shift,Team 06,Low-cost volume,Low-Cost Volume,-138644.36,373607.52,512251.88,0.0,109412.36,-109412.36,400,96,0.8809,0.5857,0.4143,28.0,6,6,1,2,6,6,75.5,TRUE,0.0
+calibrated,5,Beginner Boom,Team 02,Balanced S&OP,Engineering Challenger,131949.93,384198.0,252248.07,171093.93,12000.0,159093.93,0,27,0.2808,0.2839,0.7161,84.0,1,1,3,3,1,4,166.0,FALSE,0.0
+calibrated,5,Beginner Boom,Team 01,Cash conservative,Community / Club,95128.21,217425.24,122297.03,118168.21,0.0,118168.21,0,6,0.1524,0.1181,0.8819,48.0,2,4,6,6,2,5,88.0,FALSE,0.0
+calibrated,5,Beginner Boom,Team 05,Aggressive growth,Sponsorship Growth,88639.89,518318.08,429678.19,141823.89,24000.0,117823.89,0,68,0.328,0.4005,0.5995,60.0,3,3,2,2,3,2,197.5,TRUE,0.0
+calibrated,5,Beginner Boom,Team 06,Low-cost volume,Low-Cost Volume,83539.69,419920.32,336380.63,112771.69,0.0,112771.69,0,85,0.3916,0.4488,0.5512,64.0,4,2,1,1,4,6,69.5,FALSE,0.0
+calibrated,5,Beginner Boom,Team 03,Premium quality,Premium Quality,80081.32,236457.36,156376.04,105665.32,0.0,105665.32,0,3,0.2692,0.2664,0.7336,28.0,5,5,4,4,5,3,179.0,FALSE,0.0
+calibrated,5,Beginner Boom,Team 04,Innovation leap,Engineering Challenger,41613.71,229832.4,188218.69,152757.71,84000.0,68757.71,0,4,0.1965,0.2039,0.7961,0.0,6,6,5,5,6,1,236.5,TRUE,0.0
+calibrated,6,Premium Market,Team 03,Premium quality,Premium Quality,121144.65,275541.8,154397.15,146728.65,0.0,146728.65,0,0,0.6539,0.6475,0.3525,96.0,1,1,2,1,1,5,107.5,FALSE,39.42
+calibrated,6,Premium Market,Team 02,Balanced S&OP,Engineering Challenger,106872.59,384198.0,277325.41,146016.59,12000.0,134016.59,0,27,0.4049,0.4094,0.5906,56.0,2,2,4,4,2,3,166.0,TRUE,0.0
+calibrated,6,Premium Market,Team 01,Cash conservative,Community / Club,87735.02,231278.88,143543.86,110775.02,0.0,110775.02,0,7,0.3016,0.2491,0.7509,40.0,3,3,5,6,3,6,88.0,FALSE,0.0
+calibrated,6,Premium Market,Team 04,Innovation leap,Engineering Challenger,26739.29,229832.4,203093.11,137883.29,84000.0,53883.29,0,4,0.276,0.2864,0.7136,20.0,4,6,6,5,4,1,236.5,TRUE,0.0
+calibrated,6,Premium Market,Team 05,Aggressive growth,Sponsorship Growth,-2132.89,546479.23,548612.12,147051.11,120000.0,27051.11,0,75,0.5587,0.6072,0.3928,32.0,5,4,3,2,5,2,197.5,TRUE,0.0
+calibrated,6,Premium Market,Team 06,Low-cost volume,Low-Cost Volume,-149834.49,356466.88,506301.37,0.0,120602.49,-120602.49,660,98,0.8058,0.4909,0.5091,24.0,6,5,1,3,6,4,108.5,TRUE,0.0
+calibrated,7,Demand Recession,Team 01,Cash conservative,Community / Club,23859.98,227325.36,203465.38,46899.98,0.0,46899.98,421,11,0.8973,0.6447,0.3553,88.0,1,1,4,1,1,6,88.0,FALSE,43.47
+calibrated,7,Demand Recession,Team 03,Premium quality,Premium Quality,5041.79,191504.63,186462.84,30625.79,0.0,30625.79,0,3,0.8175,0.4077,0.5923,68.0,2,2,5,2,2,3,179.0,FALSE,36.29
+calibrated,7,Demand Recession,Team 04,Innovation leap,Engineering Challenger,-28836.15,190362.01,219198.16,82307.85,84000.0,-1692.15,0,4,0.7109,0.4063,0.5937,40.0,3,3,6,3,3,1,236.5,TRUE,0.0
+calibrated,7,Demand Recession,Team 02,Balanced S&OP,Engineering Challenger,-98830.48,232319.0,331149.48,0.0,71686.48,-71686.48,931,27,0.9043,0.3175,0.6825,36.0,4,4,3,4,4,4,166.0,TRUE,75.61
+calibrated,7,Demand Recession,Team 05,Aggressive growth,Sponsorship Growth,-342048.39,304179.07,646227.46,0.0,312864.39,-312864.39,1472,0,0.9919,0.0,1.0,28.0,5,5,1,5,5,2,197.5,TRUE,72.85
+calibrated,7,Demand Recession,Team 06,Low-cost volume,Low-Cost Volume,-424341.79,175213.11,599554.9,0.0,395109.79,-395109.79,2536,0,0.99,0.0,1.0,12.0,6,6,2,6,6,5,108.5,TRUE,0.0
+calibrated,8,Demand Boom,Team 02,Balanced S&OP,Engineering Challenger,123927.77,414460.0,290532.23,151071.77,0.0,151071.77,0,30,0.2171,0.2236,0.7764,80.0,1,1,3,3,2,3,166.0,FALSE,0.0
+calibrated,8,Demand Boom,Team 05,Aggressive growth,Sponsorship Growth,121897.96,545340.96,423443.0,181081.96,30000.0,151081.96,0,61,0.2826,0.3113,0.6887,76.0,2,2,2,2,1,5,106.0,TRUE,0.0
+calibrated,8,Demand Boom,Team 01,Cash conservative,Community / Club,78958.69,208196.28,129237.59,101998.69,0.0,101998.69,0,6,0.1176,0.0845,0.9155,36.0,3,4,6,6,3,6,88.0,FALSE,0.0
+calibrated,8,Demand Boom,Team 03,Premium quality,Premium Quality,65860.94,236457.36,170596.42,91444.94,0.0,91444.94,0,3,0.1916,0.1896,0.8104,40.0,4,3,4,4,4,2,179.0,FALSE,0.0
+calibrated,8,Demand Boom,Team 04,Innovation leap,Engineering Challenger,26851.86,229832.4,202980.54,137995.86,84000.0,53995.86,0,4,0.1401,0.1453,0.8547,12.0,5,6,5,5,5,1,236.5,TRUE,0.0
+calibrated,8,Demand Boom,Team 06,Low-cost volume,Low-Cost Volume,-53602.91,410858.8,464461.71,17629.09,42000.0,-24370.91,0,98,0.3631,0.4244,0.5756,32.0,6,5,1,1,6,4,108.5,TRUE,0.0
+calibrated,9,Supply Shock,Team 01,Cash conservative,Community / Club,55127.12,256164.84,201037.72,78167.12,0.0,78167.12,0,11,0.5555,0.6305,0.3695,76.0,1,2,5,3,1,6,88.0,FALSE,0.0
+calibrated,9,Supply Shock,Team 02,Balanced S&OP,Engineering Challenger,46045.54,366058.0,320012.46,85189.54,12000.0,73189.54,0,27,0.7002,0.6979,0.3021,80.0,2,1,3,1,2,4,166.0,FALSE,6.56
+calibrated,9,Supply Shock,Team 03,Premium quality,Premium Quality,30664.37,231453.5,200789.13,56248.37,0.0,56248.37,0,3,0.6185,0.5889,0.4111,52.0,3,3,4,4,3,3,179.0,FALSE,0.0
+calibrated,9,Supply Shock,Team 04,Innovation leap,Engineering Challenger,-4127.55,229832.4,233959.95,107016.45,84000.0,23016.45,0,4,0.5109,0.5018,0.4982,20.0,4,5,6,5,4,1,236.5,TRUE,0.0
+calibrated,9,Supply Shock,Team 05,Aggressive growth,Sponsorship Growth,-161684.21,467552.26,629236.47,0.0,132500.21,-132500.21,187,75,0.8552,0.6306,0.3694,36.0,5,4,2,2,5,2,197.5,TRUE,0.0
+calibrated,9,Supply Shock,Team 06,Low-cost volume,Low-Cost Volume,-316528.36,265045.18,581573.54,0.0,287296.36,-287296.36,1220,98,0.8827,0.0759,0.9241,12.0,6,6,1,6,6,5,108.5,TRUE,0.0
+calibrated,10,Cost Inflation,Team 01,Cash conservative,Community / Club,59356.38,278011.2,218654.82,82396.38,0.0,82396.38,0,11,0.55,0.5834,0.4166,76.0,1,1,5,3,1,6,88.0,FALSE,0.0
+calibrated,10,Cost Inflation,Team 02,Balanced S&OP,Engineering Challenger,41816.74,384198.0,342381.26,80960.74,12000.0,68960.74,0,27,0.6724,0.6533,0.3467,68.0,2,2,3,2,2,4,166.0,TRUE,0.0
+calibrated,10,Cost Inflation,Team 03,Premium quality,Premium Quality,25164.9,233306.78,208141.88,50748.9,0.0,50748.9,0,3,0.5869,0.567,0.433,52.0,3,3,4,4,3,3,179.0,FALSE,0.0
+calibrated,10,Cost Inflation,Team 04,Innovation leap,Engineering Challenger,-11741.12,229832.4,241573.52,99402.88,84000.0,15402.88,0,4,0.4731,0.474,0.526,20.0,4,5,6,5,4,1,236.5,TRUE,0.0
+calibrated,10,Cost Inflation,Team 05,Aggressive growth,Sponsorship Growth,-159553.2,524038.66,683591.86,0.0,130369.2,-130369.2,118,75,0.8236,0.6779,0.3221,40.0,5,4,2,1,5,2,197.5,TRUE,13.27
+calibrated,10,Cost Inflation,Team 06,Low-cost volume,Low-Cost Volume,-350340.79,294904.19,645244.98,0.0,321108.79,-321108.79,1371,98,0.9037,0.1866,0.8134,12.0,6,6,1,6,6,5,108.5,TRUE,0.0
+calibrated,11,Fast Lifecycle,Team 04,Innovation leap,Engineering Challenger,116952.22,281075.8,164123.58,144096.22,0.0,144096.22,0,0,0.7973,0.7974,0.2026,96.0,1,1,2,1,1,4,109.0,FALSE,68.13
+calibrated,11,Fast Lifecycle,Team 02,Balanced S&OP,Engineering Challenger,93398.16,374342.0,280943.84,132542.16,12000.0,120542.16,0,22,0.5332,0.5365,0.4635,48.0,2,2,5,5,2,3,115.0,TRUE,0.0
+calibrated,11,Fast Lifecycle,Team 01,Cash conservative,Community / Club,65541.74,187243.44,121701.7,88581.74,0.0,88581.74,0,5,0.2412,0.1645,0.8355,36.0,3,4,6,6,3,5,88.0,FALSE,0.0
+calibrated,11,Fast Lifecycle,Team 03,Premium quality,Premium Quality,53457.11,220361.04,166903.93,79041.11,0.0,79041.11,0,0,0.5457,0.5396,0.4604,40.0,4,3,4,4,4,2,182.5,FALSE,8.76
+calibrated,11,Fast Lifecycle,Team 05,Aggressive growth,Sponsorship Growth,-19418.08,550321.92,569740.0,129765.92,120000.0,9765.92,0,75,0.5787,0.6057,0.3943,28.0,5,5,3,3,5,1,198.0,TRUE,0.0
+calibrated,11,Fast Lifecycle,Team 06,Low-cost volume,Low-Cost Volume,-115095.81,392000.4,507096.21,0.0,85863.81,-85863.81,178,96,0.876,0.6174,0.3826,28.0,6,6,1,2,6,6,75.5,TRUE,0.0
+calibrated,12,Warranty Sensitive,Team 03,Premium quality,Premium Quality,89380.08,258988.79,169608.71,114964.08,0.0,114964.08,0,0,0.8812,0.8406,0.1594,96.0,1,1,2,1,1,5,104.5,FALSE,97.51
+calibrated,12,Warranty Sensitive,Team 02,Balanced S&OP,Engineering Challenger,69532.08,366058.0,296525.92,108676.08,12000.0,96676.08,0,27,0.6042,0.6207,0.3793,68.0,2,2,4,3,2,3,166.0,FALSE,0.0
+calibrated,12,Warranty Sensitive,Team 01,Cash conservative,Community / Club,60956.75,218037.24,157080.49,83996.75,0.0,83996.75,0,8,0.4407,0.4104,0.5896,44.0,3,3,5,5,3,6,88.0,FALSE,0.0
+calibrated,12,Warranty Sensitive,Team 04,Innovation leap,Engineering Challenger,10326.3,229832.4,219506.1,121470.3,84000.0,37470.3,0,4,0.4344,0.4423,0.5577,24.0,4,5,6,4,4,1,236.5,TRUE,0.0
+calibrated,12,Warranty Sensitive,Team 05,Aggressive growth,Sponsorship Growth,-94801.53,486777.22,581578.75,54382.47,120000.0,-65617.53,42,75,0.7977,0.6624,0.3376,32.0,5,4,3,2,5,2,197.5,TRUE,0.0
+calibrated,12,Warranty Sensitive,Team 06,Low-cost volume,Low-Cost Volume,-285257.88,258745.96,544003.84,0.0,256025.88,-256025.88,1301,98,0.8888,0.0,1.0,12.0,6,6,1,6,6,4,108.5,TRUE,0.0
+calibrated,13,Price War,Team 02,Balanced S&OP,Engineering Challenger,135978.28,384198.0,248219.72,175122.28,12000.0,163122.28,0,27,0.3889,0.3932,0.6068,84.0,1,1,3,3,1,4,166.0,FALSE,0.0
+calibrated,13,Price War,Team 01,Cash conservative,Community / Club,91973.59,206464.32,114490.73,115013.59,0.0,115013.59,0,6,0.1947,0.1412,0.8588,44.0,2,3,6,6,3,5,88.0,FALSE,0.0
+calibrated,13,Price War,Team 06,Low-cost volume,Low-Cost Volume,86330.48,421719.25,335388.77,115562.48,0.0,115562.48,0,87,0.5306,0.5947,0.4053,80.0,3,2,1,1,2,6,69.5,FALSE,0.0
+calibrated,13,Price War,Team 03,Premium quality,Premium Quality,82390.79,236457.36,154066.57,107974.79,0.0,107974.79,0,3,0.356,0.3524,0.6476,40.0,4,4,4,4,4,3,179.0,FALSE,0.0
+calibrated,13,Price War,Team 05,Aggressive growth,Sponsorship Growth,62279.15,552218.88,489939.73,211463.15,120000.0,91463.15,0,75,0.4805,0.5856,0.4144,36.0,5,5,2,2,5,2,197.5,TRUE,0.0
+calibrated,13,Price War,Team 04,Innovation leap,Engineering Challenger,43992.01,229832.4,185840.39,155136.01,84000.0,71136.01,0,4,0.2653,0.2752,0.7248,0.0,6,6,5,5,6,1,236.5,TRUE,0.0
+calibrated,14,Inventory Risk,Team 01,Cash conservative,Community / Club,75460.45,277639.92,202179.47,98500.45,0.0,98500.45,5,11,0.8203,0.7413,0.2587,88.0,1,1,4,1,1,6,88.0,FALSE,18.46
+calibrated,14,Inventory Risk,Team 03,Premium quality,Premium Quality,20565.28,213833.09,193267.81,46149.28,0.0,46149.28,0,3,0.7386,0.5869,0.4131,64.0,2,2,5,3,2,3,179.0,FALSE,15.71
+calibrated,14,Inventory Risk,Team 02,Balanced S&OP,Engineering Challenger,-4100.58,323605.0,327705.58,35043.42,12000.0,23043.42,382,27,0.8734,0.6827,0.3173,56.0,3,3,3,2,3,4,166.0,TRUE,71.74
+calibrated,14,Inventory Risk,Team 04,Innovation leap,Engineering Challenger,-17547.83,209000.82,226548.65,93596.17,84000.0,9596.17,0,4,0.6083,0.4913,0.5087,24.0,4,5,6,4,4,1,236.5,TRUE,0.0
+calibrated,14,Inventory Risk,Team 05,Aggressive growth,Sponsorship Growth,-246919.12,406435.58,653354.7,0.0,217735.12,-217735.12,873,0,0.984,0.302,0.698,28.0,5,4,1,5,5,2,197.5,TRUE,74.44
+calibrated,14,Inventory Risk,Team 06,Low-cost volume,Low-Cost Volume,-392084.05,222514.16,614598.21,0.0,362852.05,-362852.05,2126,0,0.9822,0.0,1.0,8.0,6,6,2,6,6,5,108.5,TRUE,0.0
+calibrated,15,Capacity Constraint,Team 05,Aggressive growth,Sponsorship Growth,132939.03,555037.08,422098.05,192123.03,30000.0,162123.03,0,63,0.2641,0.2967,0.7033,84.0,1,1,2,2,1,5,104.5,TRUE,0.0
+calibrated,15,Capacity Constraint,Team 02,Balanced S&OP,Engineering Challenger,124574.03,414460.0,289885.97,151718.03,0.0,151718.03,0,30,0.1993,0.2014,0.7986,72.0,2,2,3,3,2,3,166.0,FALSE,0.0
+calibrated,15,Capacity Constraint,Team 01,Cash conservative,Community / Club,77633.61,201188.88,123555.27,100673.61,0.0,100673.61,0,5,0.1047,0.0717,0.9283,36.0,3,4,6,6,3,6,88.0,FALSE,0.0
+calibrated,15,Capacity Constraint,Team 03,Premium quality,Premium Quality,67612.21,236457.36,168845.15,93196.21,0.0,93196.21,0,3,0.1755,0.1737,0.8263,40.0,4,3,4,4,4,2,179.0,FALSE,0.0
+calibrated,15,Capacity Constraint,Team 04,Innovation leap,Engineering Challenger,28670.74,229832.4,201161.66,139814.74,84000.0,55814.74,0,4,0.128,0.1328,0.8672,12.0,5,6,5,5,5,1,236.5,TRUE,0.0
+calibrated,15,Capacity Constraint,Team 06,Low-cost volume,Low-Cost Volume,-48581.08,410858.8,459439.88,22650.92,42000.0,-19349.08,0,98,0.3368,0.3955,0.6045,32.0,6,5,1,1,6,4,108.5,TRUE,0.0
+calibrated,16,Forecast Volatility,Team 02,Balanced S&OP,Engineering Challenger,164138.38,396287.84,232149.46,191282.38,0.0,191282.38,0,22,0.6334,0.5972,0.4028,88.0,1,1,3,2,1,5,106.0,FALSE,0.0
+calibrated,16,Forecast Volatility,Team 01,Cash conservative,Community / Club,89479.92,224567.28,135087.36,112519.92,0.0,112519.92,0,7,0.3496,0.2715,0.7285,48.0,2,3,6,6,2,6,88.0,FALSE,0.0
+calibrated,16,Forecast Volatility,Team 03,Premium quality,Premium Quality,69915.94,236086.7,166170.76,95499.94,0.0,95499.94,0,3,0.4888,0.4644,0.5356,56.0,3,2,4,3,3,3,179.0,FALSE,0.0
+calibrated,16,Forecast Volatility,Team 04,Innovation leap,Engineering Challenger,31252.17,229832.4,198580.23,142396.17,84000.0,58396.17,0,4,0.3729,0.3729,0.6271,24.0,4,5,5,5,4,1,236.5,TRUE,0.0
+calibrated,16,Forecast Volatility,Team 05,Aggressive growth,Sponsorship Growth,13863.07,546753.79,532890.72,163047.07,120000.0,43047.07,0,75,0.6931,0.6557,0.3443,40.0,5,4,2,1,5,2,197.5,TRUE,0.0
+calibrated,16,Forecast Volatility,Team 06,Low-cost volume,Low-Cost Volume,-145888.11,344816.56,490704.67,0.0,116656.11,-116656.11,804,98,0.8385,0.4387,0.5613,20.0,6,6,1,4,6,4,108.5,TRUE,0.0
+calibrated,17,Viral Demand,Team 05,Aggressive growth,Sponsorship Growth,138073.2,569355.16,431281.96,203257.2,36000.0,167257.2,0,64,0.3186,0.3346,0.6654,84.0,1,1,2,2,1,5,104.5,TRUE,0.0
+calibrated,17,Viral Demand,Team 02,Balanced S&OP,Engineering Challenger,111097.49,384198.0,273100.51,150241.49,12000.0,138241.49,0,27,0.2173,0.2181,0.7819,56.0,2,2,4,4,2,3,166.0,TRUE,0.0
+calibrated,17,Viral Demand,Team 01,Cash conservative,Community / Club,78144.71,201188.88,123044.17,101184.71,0.0,101184.71,0,5,0.1267,0.0868,0.9132,36.0,3,4,6,6,3,6,88.0,FALSE,0.0
+calibrated,17,Viral Demand,Team 03,Premium quality,Premium Quality,68176.88,236457.36,168280.48,93760.88,0.0,93760.88,0,3,0.2252,0.2229,0.7771,48.0,4,3,3,3,4,2,179.0,FALSE,0.0
+calibrated,17,Viral Demand,Team 04,Innovation leap,Engineering Challenger,29259.49,229832.4,200572.91,140403.49,84000.0,56403.49,0,4,0.1595,0.1654,0.8346,12.0,5,6,5,5,5,1,236.5,TRUE,0.0
+calibrated,17,Viral Demand,Team 06,Low-cost volume,Low-Cost Volume,-50339.96,410858.8,461198.76,20892.04,42000.0,-21107.96,0,98,0.4043,0.3534,0.6466,32.0,6,5,1,1,6,4,108.5,TRUE,0.0
+calibrated,18,Cash Crunch,Team 01,Cash conservative,Community / Club,56058.64,256164.84,200106.2,79098.64,0.0,79098.64,0,11,0.6804,0.7054,0.2946,80.0,1,1,5,2,1,6,88.0,FALSE,0.0
+calibrated,18,Cash Crunch,Team 02,Balanced S&OP,Engineering Challenger,37253.38,358012.0,320758.62,76397.38,12000.0,64397.38,54,27,0.828,0.721,0.279,72.0,2,2,3,1,2,4,166.0,TRUE,53.25
+calibrated,18,Cash Crunch,Team 03,Premium quality,Premium Quality,22774.01,223391.74,200617.73,48358.01,0.0,48358.01,0,3,0.7028,0.5853,0.4147,56.0,3,3,4,3,3,3,179.0,FALSE,3.43
+calibrated,18,Cash Crunch,Team 04,Innovation leap,Engineering Challenger,-15097.25,219188.5,234285.75,96046.75,84000.0,12046.75,0,4,0.5732,0.5145,0.4855,24.0,4,4,6,4,4,1,236.5,TRUE,0.0
+calibrated,18,Cash Crunch,Team 05,Aggressive growth,Sponsorship Growth,-206052.14,428195.33,634247.47,0.0,176868.14,-176868.14,440,51,0.9476,0.4408,0.5592,24.0,5,5,2,5,5,2,197.5,TRUE,34.15
+calibrated,18,Cash Crunch,Team 06,Low-cost volume,Low-Cost Volume,-356028.44,232646.3,588674.74,0.0,326796.44,-326796.44,1572,51,0.951,0.0,1.0,12.0,6,6,1,6,6,5,108.5,TRUE,0.0
+calibrated,19,Premium Expansion,Team 03,Premium quality,Premium Quality,123385.93,278248.72,154862.79,148969.93,0.0,148969.93,0,0,0.5428,0.5376,0.4624,92.0,1,1,2,2,1,5,107.5,FALSE,31.35
+calibrated,19,Premium Expansion,Team 02,Balanced S&OP,Engineering Challenger,111105.48,384198.0,273092.52,150249.48,12000.0,138249.48,0,27,0.3102,0.3136,0.6864,56.0,2,2,4,4,2,3,166.0,TRUE,0.0
+calibrated,19,Premium Expansion,Team 01,Cash conservative,Community / Club,85303.19,218753.28,133450.09,108343.19,0.0,108343.19,0,6,0.2142,0.165,0.835,40.0,3,3,5,6,3,6,88.0,FALSE,0.0
+calibrated,19,Premium Expansion,Team 04,Innovation leap,Engineering Challenger,29249.49,229832.4,200582.91,140393.49,84000.0,56393.49,0,4,0.2119,0.2198,0.7802,20.0,4,6,6,5,4,1,236.5,TRUE,0.0
+calibrated,19,Premium Expansion,Team 05,Aggressive growth,Sponsorship Growth,13828.48,552519.55,538691.07,163012.48,120000.0,43012.48,0,75,0.4401,0.5019,0.4981,28.0,5,5,3,3,5,2,197.5,TRUE,0.0
+calibrated,19,Premium Expansion,Team 06,Low-cost volume,Low-Cost Volume,-60233.39,410858.8,471092.19,21024.3,52025.69,-31001.39,0,98,0.7004,0.5482,0.4518,32.0,6,4,1,1,6,4,108.5,TRUE,0.0
+calibrated,20,Unstable Market,Team 01,Cash conservative,Community / Club,66034.19,256164.84,190130.65,89074.19,0.0,89074.19,0,11,0.4875,0.5468,0.4532,76.0,1,1,5,3,1,6,88.0,FALSE,0.0
+calibrated,20,Unstable Market,Team 02,Balanced S&OP,Engineering Challenger,61909.16,366058.0,304148.84,101053.16,12000.0,89053.16,0,27,0.6128,0.6029,0.3971,76.0,2,2,3,2,2,4,166.0,FALSE,0.0
+calibrated,20,Unstable Market,Team 03,Premium quality,Premium Quality,43058.05,234140.76,191082.71,68642.05,0.0,68642.05,0,3,0.5619,0.5136,0.4864,52.0,3,3,4,4,3,3,179.0,FALSE,0.0
+calibrated,20,Unstable Market,Team 04,Innovation leap,Engineering Challenger,5731.41,229832.4,224100.99,116875.41,84000.0,32875.41,0,4,0.4389,0.4208,0.5792,20.0,4,5,6,5,4,1,236.5,TRUE,0.0
+calibrated,20,Unstable Market,Team 05,Aggressive growth,Sponsorship Growth,-106951.56,488534.4,595485.96,42232.44,120000.0,-77767.56,42,75,0.7847,0.6419,0.3581,40.0,5,4,2,1,5,2,197.5,TRUE,0.0
+calibrated,20,Unstable Market,Team 06,Low-cost volume,Low-Cost Volume,-256466.25,289804.24,546270.49,0.0,227234.25,-227234.25,942,98,0.8491,0.2525,0.7475,12.0,6,6,1,6,6,5,108.5,TRUE,0.0
