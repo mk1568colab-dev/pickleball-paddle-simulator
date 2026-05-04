@@ -83,6 +83,7 @@ CURRENCY_COLUMNS = {
     "profit_contribution",
     "visible_product_cost",
     "cost_per_unit_sold",
+    "cash_effect",
 }
 
 PERCENT_COLUMNS = {
@@ -334,6 +335,7 @@ def _product_finance_frame(product_frame: pd.DataFrame) -> pd.DataFrame:
             "allocated_backlog_cost",
             "allocated_expansion_cost",
             "other_allocated_cost",
+            "visible_product_cost",
             "profit_contribution",
             "profit_margin_pct",
             "fill_rate",
@@ -447,6 +449,50 @@ def _render_latest_financial_overview(latest_frame: pd.DataFrame) -> None:
         st.info("Latest finance results appear after a round is run.")
         return
 
+    if len(latest_frame) == 1:
+        row = latest_frame.iloc[0]
+        _render_finance_kpis(row)
+        st.markdown("#### What Students Should Notice")
+        student_reading_frame = pd.DataFrame(
+            [
+                {
+                    "question": "Did we make money?",
+                    "current_value": _money(float(row["profit"])),
+                    "how_to_read_it": "Profit is revenue minus all round costs. Positive is good, but it is not the same as cash.",
+                },
+                {
+                    "question": "Did we protect cash?",
+                    "current_value": _money(float(row["ending_cash_balance"])),
+                    "how_to_read_it": "Cash is what carries into the next round for materials, production, NPD, and debt pressure.",
+                },
+                {
+                    "question": "Did we need emergency borrowing?",
+                    "current_value": _money(float(row["automatic_borrowing_amount"])),
+                    "how_to_read_it": "Automatic borrowing means spending exceeded available cash after sales and planned borrowing.",
+                },
+                {
+                    "question": "Did inventory tie up money?",
+                    "current_value": _money(float(row["working_capital_requirement"])),
+                    "how_to_read_it": "Working capital shows cash tied up in inventory and operating pressure.",
+                },
+                {
+                    "question": "Did we serve demand?",
+                    "current_value": _pct(float(row["fill_rate"])),
+                    "how_to_read_it": "Fill rate shows how much allocated demand became actual sales instead of stockout/backlog pain.",
+                },
+                {
+                    "question": "Was our plan accurate?",
+                    "current_value": _pct(float(row["forecast_wape"])),
+                    "how_to_read_it": "Lower WAPE means the forecast was closer to actual demand.",
+                },
+            ]
+        )
+        st.dataframe(student_reading_frame, use_container_width=True, hide_index=True)
+        _render_teaching_note(
+            "Next: open Selected Round Detail to see exactly which costs caused the result."
+        )
+        return
+
     total_revenue = float(latest_frame["revenue"].sum())
     total_profit = float(latest_frame["profit"].sum())
     total_cash = float(latest_frame["ending_cash_balance"].sum())
@@ -473,6 +519,7 @@ def _render_latest_financial_overview(latest_frame: pd.DataFrame) -> None:
         by="profit",
         ascending=False,
     )
+    st.markdown("#### Team Comparison")
     _render_readable_dataframe(summary_frame)
 
     _render_teaching_note(
@@ -687,7 +734,7 @@ def _render_finance_trends(team_results_frame: pd.DataFrame) -> None:
         "working_capital_requirement",
         "liquidity_stress_flag",
     ]
-    st.dataframe(trend_frame[trend_columns], use_container_width=True, hide_index=True)
+    _render_readable_dataframe(trend_frame[trend_columns])
     _download_frame(
         "Download Finance Trend CSV",
         trend_frame[trend_columns],
@@ -741,14 +788,9 @@ def main() -> None:
 
     with overview_tab:
         latest_frame = _latest_round_frame(scoped_team_results)
-        st.subheader("Latest Financial Summary")
-        st.dataframe(
-            latest_frame[[column for column in FINANCE_COLUMNS if column in latest_frame.columns]],
-            use_container_width=True,
-            hide_index=True,
-        )
+        _render_latest_financial_overview(latest_frame)
         _download_frame(
-            "Download Latest Financial Summary CSV",
+            "Download Full Latest Financial Summary CSV",
             latest_frame,
             "latest_financial_summary.csv",
         )
