@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from html import escape
+
 import streamlit as st
 
 from utils.auth import require_authenticated_user
@@ -121,13 +123,15 @@ def _render_styles() -> None:
 
 
 def _flow_html(items: list[str]) -> str:
-    """Build a horizontal flow diagram."""
+    """Build a horizontal flow diagram without fragile indented HTML."""
     parts: list[str] = ['<div class="flow-row">']
     for index, item in enumerate(items):
         color = CARD_COLORS[index % len(CARD_COLORS)]
-        parts.append(f'<div class="flow-card" style="background:{color};">{item}</div>')
+        parts.append(
+            f'<div class="flow-card" style="background:{color};">{escape(item)}</div>'
+        )
         if index < len(items) - 1:
-            parts.append('<div class="flow-arrow">→</div>')
+            parts.append('<div class="flow-arrow">&rarr;</div>')
     parts.append("</div>")
     return "".join(parts)
 
@@ -138,28 +142,31 @@ def _card_grid(cards: list[tuple[str, str]]) -> str:
     for index, (title, body) in enumerate(cards):
         color = CARD_COLORS[index % len(CARD_COLORS)]
         html.append(
-            f"""
-            <div class="info-card" style="background:{color};">
-                <h4>{title}</h4>
-                <p>{body}</p>
-            </div>
-            """
+            f'<div class="info-card" style="background:{color};">'
+            f"<h4>{escape(title)}</h4>"
+            f"<p>{escape(body)}</p>"
+            "</div>"
         )
     html.append("</div>")
     return "".join(html)
 
 
+def _formula_box(formula: str) -> str:
+    """Build a formula box without indented Markdown code-block behavior."""
+    return f'<div class="formula-box">{escape(formula.strip())}</div>'
+
+
 def _figure(title: str, caption: str, body_html: str, takeaway: str) -> None:
     """Render one numbered figure with caption and takeaway."""
     st.markdown(
-        f"""
-        <div class="big-picture-figure">
-            <h3>{title}</h3>
-            <div class="figure-caption">{caption}</div>
-            {body_html}
-            <p class="small-note"><strong>Student takeaway:</strong> {takeaway}</p>
-        </div>
-        """,
+        (
+            '<div class="big-picture-figure">'
+            f"<h3>{escape(title)}</h3>"
+            f'<div class="figure-caption">{escape(caption)}</div>'
+            f"{body_html}"
+            f'<p class="small-note"><strong>Student takeaway:</strong> {escape(takeaway)}</p>'
+            "</div>"
+        ),
         unsafe_allow_html=True,
     )
 
@@ -205,29 +212,25 @@ def _strategy_table() -> str:
         ),
     ]
     body = "".join(
-        f"""
-        <tr>
-            <td><strong>{strategy}</strong></td>
-            <td>{logic}</td>
-            <td>{strength}</td>
-            <td>{risk}</td>
-        </tr>
-        """
+        "<tr>"
+        f"<td><strong>{escape(strategy)}</strong></td>"
+        f"<td>{escape(logic)}</td>"
+        f"<td>{escape(strength)}</td>"
+        f"<td>{escape(risk)}</td>"
+        "</tr>"
         for strategy, logic, strength, risk in rows
     )
-    return f"""
-    <table class="strategy-table">
-        <thead>
-            <tr>
-                <th>Strategy</th>
-                <th>Core Logic</th>
-                <th>Where It Can Win</th>
-                <th>Main Risk</th>
-            </tr>
-        </thead>
-        <tbody>{body}</tbody>
-    </table>
-    """
+    return (
+        '<table class="strategy-table">'
+        "<thead><tr>"
+        "<th>Strategy</th>"
+        "<th>Core Logic</th>"
+        "<th>Where It Can Win</th>"
+        "<th>Main Risk</th>"
+        "</tr></thead>"
+        f"<tbody>{body}</tbody>"
+        "</table>"
+    )
 
 
 def main() -> None:
@@ -309,12 +312,14 @@ def main() -> None:
                 "Launch Now If Ready",
             ]
         )
-        + """
-        <div class="formula-box">can_launch_now =
+        + _formula_box(
+            """
+can_launch_now =
     funding_gate_passed
     and readiness_gate_passed
-    and timing_gate_passed</div>
-        """,
+    and timing_gate_passed
+            """
+        ),
         "If readiness is stuck, check testing intensity and remaining investment. A planned launch date is a target, not a guarantee.",
     )
 
@@ -329,12 +334,14 @@ def main() -> None:
                 ("Sales Realization", "Demand becomes sales only if enough good units are available."),
             ]
         )
-        + """
-        <div class="formula-box">product_demand =
+        + _formula_box(
+            """
+product_demand =
     segment_demand
     * product_attractiveness
-    / total_attractiveness_of_all_products</div>
-        """,
+    / total_attractiveness_of_all_products
+            """
+        ),
         "Winning demand is not only about low price. It is about the whole value proposition versus competitors.",
     )
 
@@ -365,8 +372,9 @@ def main() -> None:
                 "Ending Cash and Debt",
             ]
         )
-        + """
-        <div class="formula-box">ending_cash_before_borrowing =
+        + _formula_box(
+            """
+ending_cash_before_borrowing =
     starting_cash
     + revenue
     - materials
@@ -377,8 +385,9 @@ def main() -> None:
     - backlog
     - expansion
     - NPD investment
-    - interest</div>
-        """,
+    - interest
+            """
+        ),
         "A strategy can look good operationally but fail financially if it creates too much inventory, debt, or development spending.",
     )
 
