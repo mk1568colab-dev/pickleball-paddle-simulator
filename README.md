@@ -1,58 +1,80 @@
 # Kiki Pickleball Business Simulation
 
 <p align="center">
-  <img src="assets/kiki_mascot.png" alt="Kiki mascot holding a pickleball paddle" width="260" />
+  <img src="assets/kiki_mascot.png" alt="Kiki mascot holding a pickleball paddle" width="245" />
 </p>
 
-Kiki Pickleball Business Simulation is a hosted-ready Streamlit classroom game for teaching operations management, supply chain management, product portfolio decisions, demand forecasting, S&OP discipline, and cash-control tradeoffs through a competitive pickleball paddle market.
+Kiki Pickleball Business Simulation is a hosted-ready Streamlit classroom game for teaching operations management, supply chain management, product portfolio decisions, demand forecasting, S&OP discipline, product development, and cash-control tradeoffs.
 
-Students act as team leaders of competing paddle companies. Each round, teams read the market report, forecast demand, set product prices, plan production, choose supplier mix, manage quality, invest in new products, and protect cash. The instructor controls the market environment, opens and closes submissions, runs the round engine, and leads a data-driven debrief.
+Students run competing pickleball paddle companies. Each round, they read the market, forecast demand, plan production, choose supplier mix, manage quality, invest in new products, and protect cash. The instructor controls the market environment, opens and closes submissions, runs the round engine, and leads the debrief.
 
-## Why This Is A Strong Operations Management Teaching Tool
+## Why It Works Well For Operations Management
 
-This is not just a scoreboard game. It is designed to make students experience the managerial tradeoffs that are often difficult to teach with slides alone.
+This simulator is built around tradeoffs, not trivia. Students quickly learn that high sales, high profit, strong service, accurate forecasts, innovation, and healthy cash do not always move together.
 
-| OM / SCM concept | How students experience it | Teaching question |
+| Teaching concept | What students do in the game | Class discussion |
 |---|---|---|
-| Demand forecasting | Forecast each active product before planning production. | Did the team forecast realistically or simply hope demand would appear? |
-| S&OP discipline | Align forecast, production, raw materials, capacity, inventory, and cash. | Was the plan internally coherent? |
-| Capacity planning | Choose overtime and expansion while facing shared firm constraints. | Did growth create value or just cost? |
-| Supplier mix | Balance offshore, balanced, and premium sourcing. | Did lower input cost increase defects or supply risk? |
-| Quality control | Spend QC dollars per unit to reduce defects. | Was quality investment worth the cost? |
-| Inventory and backlog | Carry inventory, miss sales, or allow backlog. | Did the team protect service without overstocking? |
-| Product portfolio | Manage up to three active paddle product slots. | Which product actually created value? |
-| Product lifecycle | Products move through launch, growth, maturity, and decline. | Did teams refresh products before decline hurt demand? |
-| New product development | Invest in up to two future product projects. | Did innovation happen too early, too late, or at the right moment? |
-| Technology generations | Products compete against market technology expectations. | Did newer technology create advantage or launch risk? |
-| Cash and debt | Profit, working capital, borrowing, interest, and liquidity stress are tracked. | Can a profitable team still run into cash pressure? |
+| Demand forecasting | Forecast product-level demand before production. | Did the forecast guide the plan or just justify it? |
+| S&OP discipline | Align forecast, production, materials, capacity, inventory, and cash. | Was the plan coherent across functions? |
+| Capacity planning | Choose overtime and expansion. | Did growth create value or just cost? |
+| Supplier mix | Balance offshore, balanced, and premium sourcing. | Did cheaper sourcing increase risk or defects? |
+| Quality control | Spend QC dollars per unit. | When is quality worth the cost? |
+| Inventory and backlog | Decide how much stock and backlog risk to tolerate. | Did service improve or did inventory trap cash? |
+| Portfolio management | Manage up to three active paddle products. | Which product actually created value? |
+| Product lifecycle | Products age through launch, growth, maturity, and decline. | Did teams refresh the portfolio at the right time? |
+| NPD and technology | Invest in future products and technology generations. | Did innovation happen too early, too late, or just right? |
+| Cash discipline | Track cash, borrowing, debt, interest, and working capital. | Can a profitable team still become financially fragile? |
 
-The main learning message is that there is no permanent best strategy. A cash-conservative team can win in a supply shock, a premium-quality team can win when customers become picky, a low-cost team can win service in beginner-heavy markets, and an innovation team can win when technology shifts. The instructor can therefore frame performance as a multi-objective management problem, not just a short-term profit contest.
+The core lesson: there is no permanent best strategy. The best team depends on the market environment and the performance objective.
+
+## The Round Loop
+
+<p align="center">
+  <img src="assets/readme/round_loop.png" alt="Round loop figure showing market report, decisions, engine results, and learning cycle" width="900" />
+</p>
+
+Each round is a business cycle. The next decision starts from the operational, financial, and portfolio consequences of the previous round.
+
+## What Students Control
+
+<p align="center">
+  <img src="assets/readme/student_controls.png" alt="Student control map showing demand, operations, supply, portfolio, pipeline, and finance decisions" width="900" />
+</p>
+
+Students do not simply choose a strategy label. They make connected numerical decisions across demand, operations, supply, portfolio, pipeline, and finance.
+
+## Portfolio And Pipeline
+
+<p align="center">
+  <img src="assets/readme/portfolio_pipeline.png" alt="Portfolio and pipeline figure showing active product slots and development project launch gates" width="900" />
+</p>
+
+Teams sell active products today while investing in future products for tomorrow. Launches require funding progress, readiness, timing, and a team launch decision.
 
 ## What The App Supports
 
-- `admin` and `team_leader` accounts with role-based access
-- first-run admin setup with hashed passwords
-- SQLite persistence for one hosted classroom instance
-- quantitative OM/SCM gameplay with product-level decisions
-- up to 3 active product slots per team: `A`, `B`, `C`
-- up to 2 development project slots per team: `P1`, `P2`
-- product lifecycle tracking: `launch`, `growth`, `maturity`, `decline`
-- technology-generation effects and market-generation pressure
-- product-level demand allocation with team-level rollups
-- intra-portfolio cannibalization between related products
-- product retirement and replacement
-- product-level forecasting with forecast-vs-actual tracking
-- cash balance, borrowing, interest expense, and liquidity pressure
-- instructor scenario presets, submission controls, CSV exports, and formula guide
-- offline 20-environment experiment runner for calibration and teaching research
+- Hosted Streamlit app with `admin` and `team_leader` roles
+- SQLite persistence for one classroom app instance
+- First-run admin setup with hashed passwords
+- Instructor-created student/team accounts
+- Public market report and scenario presets
+- Product-level pricing, forecasting, production, QC, and inventory decisions
+- Firm-level capacity, supplier mix, raw material, backlog, borrowing, and cash decisions
+- Up to three active product slots per team
+- Up to two product-development project slots per team
+- Lifecycle stages: `launch`, `growth`, `maturity`, `decline`
+- Technology generations and market technology pressure
+- Product-level demand allocation and product-level results
+- Intra-team cannibalization between related products
+- Forecast accuracy, service level, profit, cash, debt, and innovation analytics
+- Instructor dashboard, formula guide, finance detail, CSV exports, and documentation
+- Offline 20-environment experiment runner for calibration and teaching research
 
-This version intentionally excludes `team_member`, marketing, ambassador strategy, retailer negotiation, multi-country operations, and heavy Monte Carlo systems. The goal is a classroom-manageable OM/SCM simulator, not an overbuilt enterprise game.
+This version intentionally excludes marketing, ambassador strategy, retailer negotiation, team-member accounts, multi-country operations, and heavy Monte Carlo systems.
 
-## Quick Start
+## Quick Start: Run Locally
 
-### Run Locally
-
-Use this when testing on your own computer:
+Use local mode for testing on your own computer.
 
 ```powershell
 python -m venv .venv
@@ -60,868 +82,123 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-Then open:
+Open the local URL printed by Streamlit:
 
 ```text
 http://localhost:8501
 ```
 
-Important: `localhost` only works on the computer running Streamlit. Students should use the hosted URL, not your local URL.
+Important: `localhost` only works on the computer running Streamlit. Students should use the hosted URL.
 
-### Deploy For Class
+## Deploy For A Class
 
-Use one central hosted Streamlit instance:
+The intended classroom setup is one hosted Streamlit app instance. Students connect from their own browsers using the same public URL.
 
-1. Push this repo to GitHub.
+For Render:
+
+1. Push this repository to GitHub.
 2. Create a Render web service or blueprint from the repo.
 3. Attach a persistent disk.
 4. Set `SIMULATOR_DB_PATH=/var/data/simulator.db`.
-5. Start with `python run_streamlit.py`.
+5. Use the start command `python run_streamlit.py`.
 6. Open the hosted Render URL.
 7. Complete first-run admin setup.
-8. Create team leader accounts and give students their usernames/passwords.
+8. Create team leader accounts and distribute usernames/passwords.
 
-## Classroom Flow
+Useful environment variables:
 
-1. Instructor sets the current market in `Public Market Report`.
-2. Instructor opens submissions in `Instructor Panel`.
-3. Teams log in with their assigned `team_leader` accounts.
-4. Teams review the market report and submit product, operations, finance, forecast, and development decisions.
-5. Instructor checks validation warnings and closes submissions.
-6. Instructor clicks `Run Round`.
-7. Class reviews results, finance detail, forecast accuracy, portfolio performance, and debrief diagnostics.
-8. Instructor advances the market report and opens the next round.
-
-## Repository Highlights
-
-| Path | Purpose |
+| Variable | Purpose |
 |---|---|
-| `app.py` | Streamlit entry point and navigation shell. |
-| `pages/` | Home, login, market report, team decisions, instructor panel, dashboards, finance, formula guide, and account pages. |
-| `engine/` | Core deterministic OM/SCM simulation engine and tunable constants. |
-| `models/` | Dataclass schemas for market reports, teams, products, projects, states, and results. |
-| `utils/` | Authentication, SQLite database setup, repository helpers, bootstrap, and branding. |
-| `scripts/run_20_environment_simulations.py` | Offline 20-environment experiment runner. |
-| `documentation/` | Instructor manuals, model/formula guides, student guidebooks, and experiment guides. |
-| `assets/kiki_mascot.png` | Kiki mascot used for app branding and documentation. |
+| `SIMULATOR_DB_PATH` | Exact SQLite database file path. |
+| `SIMULATOR_DATA_DIR` | Directory where `simulator.db` should be created. |
+| `SIMULATOR_ENV` | Use `prod` or `dev`. |
+| `SIMULATOR_ENABLE_DEMO_ACCOUNTS` | Enables demo accounts only in explicit dev/demo mode. |
+| `RENDER_DISK_PATH` | Optional hosted disk directory fallback. |
 
-## Stage C Overview
-
-Stage C upgrades the simulator from a portfolio-and-pipeline business into a portfolio-and-pipeline business that also has to forecast demand, align plans, and survive cash pressure.
-
-Each team now manages:
-
-- up to 3 active product slots: `A`, `B`, `C`
-- up to 2 development project slots: `P1`, `P2`
-- product-level demand forecasts for each active slot
-- firm-level liquidity and borrowing decisions
-
-The core Stage C ideas are:
-
-- active products still compete in the market each round
-- future products require investment before they can launch
-- launch timing is delayed by readiness and earliest-launch rules
-- technology generations affect market attractiveness
-- older products can be retired or replaced
-- newer products can cannibalize older products within the same team portfolio
-- teams now submit product-level forecasts before they plan production
-- the simulator now tracks forecast error, bias, and WAPE
-- cash, short-term debt, interest expense, and working-capital pressure now matter
-
-## First-Run Admin Setup
-
-The default production workflow does not rely on shared seeded passwords.
-
-When the app starts:
-
-1. If there is no active `admin` account in the database, the app redirects to `Initial Setup`
-2. The instructor creates the first admin account with:
-   - admin username
-   - admin password
-   - confirm password
-3. After that, normal login becomes available
-
-The initial setup page disables itself automatically after the first active admin exists.
-
-## Local Run
-
-From this project folder:
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m streamlit run app.py
-```
-
-Then open the URL Streamlit prints, usually:
-
-```text
-http://localhost:8501
-```
-
-`localhost` is for your own machine only. For classroom use across many student devices, deploy the app to one hosted URL.
-
-## Hosted Run
-
-This project is designed for one centrally hosted Streamlit instance. Students open that hosted URL in their browsers from school Wi-Fi, conference Wi-Fi, or cellular data.
-
-Included host-ready files:
-
-- `run_streamlit.py`
-- `Procfile`
-- `render.yaml`
-- `.streamlit/config.toml`
-
-Typical hosted startup command:
-
-```bash
-python run_streamlit.py
-```
-
-For a small host like Render:
-
-1. Push this repo to GitHub
-2. Create a web service or blueprint from the repo
-3. Attach one persistent disk
-4. Set a persistent SQLite path such as `/var/data/simulator.db`
-5. Start the app with `python run_streamlit.py`
-
-## Environment Variables
-
-Supported environment variables:
-
-- `SIMULATOR_DB_PATH`
-  Sets the exact SQLite database file path
-- `SIMULATOR_DATA_DIR`
-  Sets the directory where `simulator.db` should be created
-- `SIMULATOR_ENV`
-  Use `prod` or `dev`
-- `SIMULATOR_ENABLE_DEMO_ACCOUNTS`
-  Only used in explicit development or demo mode
-- `RENDER_DISK_PATH`
-  Optional hosted disk directory fallback
-
-Database path resolution order:
-
-1. `SIMULATOR_DB_PATH`
-2. `SIMULATOR_DATA_DIR/simulator.db`
-3. `RENDER_DISK_PATH/simulator.db`
-4. local fallback `data/simulator.db`
-
-SQLite is appropriate for one small hosted app instance with one database file. This version is not intended for multiple app replicas sharing SQLite.
-
-## Account Workflow
-
-### Create The First Admin
-
-- Launch the app
-- Complete `Initial Setup`
-- Sign in with the admin account you just created
-
-### Create Team Leader Accounts
-
-- Log in as `admin`
-- Open `Admin User Management`
-- Use `Generate Team Accounts` for fast class setup, for example 6 teams at once
-- Set the number of teams and starting cash per team, default `$50,000`
-- Download the generated credentials CSV immediately because plain-text passwords cannot be recovered later
-- Or use `Create User` when adding one team manually
-- Set:
-  - `username`
-  - temporary password
-  - role = `team_leader`
-  - `team_name`
-  - active or inactive status
-
-### Remove A Team
-
-- Log in as `admin`
-- Open `Admin User Management`
-- Use `Remove Team`
-- Select the team name
-- Type the team name to confirm
-- By default, the team-leader account is deactivated and the team's simulation data is removed
-
-### Reset A Password
-
-- Log in as `admin`
-- Open `Admin User Management`
-- Edit the existing user
-- Enter a new temporary password
-- Save the account
-
-Passwords are hashed in the database and cannot be viewed later.
-
-### Change Your Own Password
-
-Any logged-in `admin` or `team_leader` can open `My Account` and change their own password by entering:
-
-- current password
-- new password
-- confirm new password
+SQLite is appropriate for one small hosted app instance. This version is not intended for multiple replicas sharing the same SQLite file.
 
 ## Classroom Workflow
 
-1. Instructor completes the initial admin setup
-2. Instructor creates or bulk imports `team_leader` accounts
-3. Teams log in from their own browsers
-4. Instructor updates the `Public Market Report` or applies a scenario preset
-5. Instructor opens submissions for the current round in `Instructor Panel`
-6. Teams submit firm-level operations, product-slot plans, product-level forecasts, and development-project decisions in `Team Decisions`
-7. Instructor reviews the submission checklist and validation summary, then closes submissions
-8. Instructor runs the round from `Instructor Panel`
-9. Class reviews aggregate team results, product results, forecast accuracy, liquidity status, pipeline status, and debrief diagnostics in `Results Dashboard`
-10. Use `Finance Detail` when students need to understand why profit, cash, debt, inventory cost, or product contribution changed
-
-## ITE Classroom-Readiness Features
-
-This version adds features intended to make the simulator easier to use as a classroom-tested game/software artifact.
-
-### Scenario Presets
-
-Admins can apply public market scenarios from `Public Market Report`.
-
-Built-in presets include:
-
-- `Stable Market`
-- `Demand Boom`
-- `Supply Shock`
-- `Quality-Sensitive Market`
-- `Technology Shift`
-- `Price War`
-- `Cash Crunch`
-
-These presets update only public market-report inputs such as total demand, segment shares, material-cost pressure, supply risk, quality sensitivity, technology adoption, and beginner price pressure. They do not change private team state or hidden engine constants.
-
-### Submission Open / Close Control
-
-The `Instructor Panel` now includes a submission status control for the current round.
-
-- When submissions are open, team leaders can save their own decisions.
-- When submissions are closed, team leaders can still review their plan but cannot save changes.
-- Admin users can still edit or inspect data when needed.
-
-The same panel also shows a submission checklist by active team leader account.
-
-### Teaching Debrief Diagnostics
-
-The admin dashboard includes a `Teaching Debrief` tab that converts round outputs into classroom discussion prompts.
-
-Examples of generated teaching points:
-
-- liquidity discipline
-- volume is not the same as profit
-- forecast-vs-plan discipline
-- service level and constraint management
-- quality is an economic decision
-- inventory risk
-- innovation timing tradeoff
-- portfolio cannibalization
-
-These diagnostics are not a hidden scoring engine. They are instructor aids for debrief and reflection.
-
-### Optional Balanced Teaching Score
-
-The dashboard includes an optional score that balances multiple learning objectives:
-
-```text
-balanced_score =
-    100 * (
-        0.40 * profit_percentile
-      + 0.20 * fill_rate_percentile
-      + 0.20 * forecast_accuracy_percentile
-      + 0.20 * liquidity_health_percentile
-      - liquidity_stress_penalty
-    )
-```
-
-This helps instructors avoid a pure short-term-profit game. It is useful when the learning objective is managerial balance across profit, service, planning discipline, and cash health.
-
-### CSV Exports
-
-The dashboard now provides CSV exports for classroom assessment and research evidence:
-
-- latest team summary
-- persistent team state
-- debrief diagnostics
-- optional balanced score
-- forecast learning summary
-- product forecast accuracy
-- product results
-- liquidity summary
-- portfolio snapshot
-- development pipeline
-
-### Model Formula Guide
-
-The `Model Formula Guide` page explains the simulator's main formulas in student-readable language:
-
-- segment demand allocation
-- product attractiveness
-- forecast accuracy
-- production feasibility
-- defect rate and QC spend
-- cash, borrowing, and liquidity stress
-- optional balanced teaching score
-
-This page supports transparency and makes the simulation easier to discuss in a paper, teaching note, or classroom debrief.
-
-## Stage C Decision Model
-
-Each team now submits three layers of decisions.
-
-### Firm-Level Shared Decisions
-
-These still apply across the whole firm:
-
-- `overtime_capacity_units`
-- `capacity_expansion_units`
-- `raw_material_order_qty`
-- `supplier_mix_offshore_pct`
-- `supplier_mix_balanced_pct`
-- `supplier_mix_premium_pct`
-- `expedited_order_share_pct`
-- `max_backorder_units`
-- `planned_borrowing_amount`
-
-These remain shared across all active products for the team.
-
-### Product-Level Active Portfolio Decisions
-
-Each active slot submits:
-
-- `product_name`
-- `is_active`
-- `target_segment`
-- `forecast_units`
-- `selling_price_per_unit`
-- `planned_production_units`
-- `qc_budget_per_unit`
-- `target_finished_goods_inventory`
-- `retire_flag`
-
-### Development Project Decisions
-
-Each project slot can submit:
-
-- `project_name`
-- `target_segment`
-- `target_tech_generation`
-- `intended_slot_name`
-- `planned_launch_round`
-- `investment_this_round`
-- `testing_intensity`
-- `launch_now`
-- `cancel_now`
-- `cannibalization_group`
-- `projected_base_defect_modifier`
-- `projected_demand_fit_modifier`
-
-## Lifecycle Rules
-
-Every active product has:
-
-- `age_in_rounds`
-- `lifecycle_stage`
-
-Lifecycle stage is currently rule-based and transparent:
-
-- `launch`: age `0-1`
-- `growth`: age `2-3`
-- `maturity`: age `4-6`
-- `decline`: age `7+`
-
-Lifecycle affects:
-
-- demand attractiveness
-- price tolerance
-- defect stabilization
-
-## Technology Generation Rules
-
-Products and projects now carry a numeric technology generation, currently `Gen 1` to `Gen 4`.
-
-The market report now also includes:
-
-- `current_market_generation`
-- `technology_shift_rate`
-- `premium_tech_adoption`
-- `mid_market_tech_adoption`
-- `beginner_price_pressure`
-
-Technology affects:
-
-- demand attractiveness
-- obsolescence pressure
-- launch risk for newer products
-- relative price tolerance
-
-The effect is stronger in premium and mid segments than in beginner.
-
-## Launch Readiness Rules
-
-Development projects now progress over multiple rounds.
-
-Each project has:
-
-- `required_investment`
-- `cumulative_investment`
-- `launch_readiness_score`
-- `planned_launch_round`
-- `earliest_launch_round`
-- `status`
-
-Readiness is driven by:
-
-- cumulative investment progress
-- testing intensity
-- technology complexity penalty
-
-In the engine, a project becomes `launch_ready` only when:
-
-- `cumulative_investment >= required_investment`
-- `launch_readiness_score >= launch threshold`
-- `current round >= earliest_launch_round`
-
-Even after becoming `launch_ready`, the team still has to choose `launch_now` to actually launch it.
-
-Only one launch per team per round is allowed in Stage B.
-
-## Cannibalization Logic
-
-Stage B models bounded intra-team cannibalization after initial market demand allocation.
-
-Demand can transfer from an older product to a newer product when:
-
-- both belong to the same team
-- they are in the same cannibalization group or similar segment
-- the receiving product is newer, stronger, or just launched
-- the donor product is more mature or declining
-
-Cannibalization is intentionally conservative and transparent. The engine stores:
-
-- demand shifted in
-- demand shifted out
-- total team-level cannibalized demand
-
-## Forecasting And S&OP Logic
-
-Each active product now carries its own submitted demand forecast.
-
-After the round runs, the simulator compares forecast and realized product demand using:
-
-- `forecast_error_units = actual_demand_units - forecast_units`
-- `absolute_error_units = abs(actual_demand_units - forecast_units)`
-- `forecast_bias_pct = forecast_error_units / max(forecast_units, 1)`
-- per-product `mape_or_wape_value = absolute_error_units / max(actual_demand_units, 1)`
-- team-level `forecast_wape = sum(absolute_error_units) / max(sum(actual_demand_units), 1)`
-
-The Team Decisions preview and Instructor Panel now surface planning-discipline warnings such as:
-
-- production plan materially below forecast
-- production plan materially above forecast
-- raw-material ordering too low for the planned output
-- high inventory target relative to forecast
-- likely cash shortfall even before the round is executed
-
-## Stage C Engine Logic
-
-The engine still keeps capacity, raw materials, backlog, reputation, and cash at the team level, but now runs demand, forecast accuracy, and results at the product level.
-
-### Shared Firm Constraints
-
-For each team, the simulator first calculates:
-
-- installed capacity
-- overtime-adjusted effective capacity
-- raw-material inventory available this round
-- inbound raw-material receipts
-- weighted supplier cost, lead time, defect pressure, and risk exposure
-
-### Project Progress
-
-Before demand allocation, the engine:
-
-- updates each project's cumulative investment
-- recomputes launch readiness
-- updates project status
-- checks launch eligibility
-
-### Launch And Replacement
-
-If an eligible project is launched:
-
-- the target slot becomes a new active product
-- any replaced product in that slot is retired
-- the new product inherits the project tech generation and modifiers
-- the launched product starts in lifecycle stage `launch`
-
-### Product-Level Production Allocation
-
-Teams still submit product-level planned production by slot.
-
-If the sum of product plans exceeds firm-level feasible production because of:
-
-- capacity
-- overtime limit
-- raw-material availability
-
-the engine proportionally caps production across the active products using largest-remainder integer rounding.
-
-### Product-Level Defect Rate
-
-Each product's defect rate now depends on:
-
-- archetype base defect rate
-- product `base_defect_rate_modifier`
-- product `qc_budget_per_unit`
-- shared supplier defect pressure
-- supply risk
-- utilization stress
-- launch instability
-- technology novelty penalty when appropriate
-
-`qc_budget_per_unit` is also charged as a real per-unit production cost, so teams trade off lower defects against higher operating cost.
-
-### Product-Level Demand Allocation
-
-Demand is split into:
-
-- premium
-- mid
-- beginner
-
-Each active product competes for segment demand using:
-
-- actual numeric selling price
-- target segment alignment
-- archetype segment fit
-- product demand-fit modifier
-- lifecycle multiplier
-- team reputation
-- service readiness
-- technology generation relative to the market
-- launch novelty when newly launched
-
-Demand is allocated across all active products from all teams, not only at the team level.
-
-### Cannibalization Pass
-
-After initial demand allocation, the engine applies bounded intra-team cannibalization so a newer or stronger product can steal part of an older sibling product's demand.
-
-### Product-Level Service And Inventory
-
-Each product now has its own:
-
-- beginning finished-goods inventory
-- beginning backlog
-- demand allocated
-- sales units
-- lost sales units
-- ending finished-goods inventory
-- fill rate
-- profit contribution
-
-Backorders remain constrained by the shared firm-level `max_backorder_units`.
-
-### Team-Level Aggregation
-
-After product results are computed, the engine aggregates them into a firm-level summary:
-
-- total sales
-- total revenue
-- total cost
-- total profit
-- weighted defect rate
-- fill rate
-- ending total inventory
-- ending raw-material inventory
-- updated reputation
-- updated cash
-- updated installed capacity
-- innovation investment
-- launch and retirement event text
-- forecast totals and forecast accuracy metrics
-- ending cash, debt, interest, and working-capital burden
-
-## Team Decisions Page
-
-The `Team Decisions` page now has six main parts:
-
-1. team identity
-2. current team state
-3. firm-level shared decisions and finance
-4. active product portfolio and forecasts
-5. development pipeline
-6. analytics preview before save
-
-The preview now shows:
-
-- total forecast units
-- total planned production across products
-- forecast-production gap
-- effective firm capacity
-- raw-material sufficiency
-- projected ending inventory if forecast is accurate
-- projected working-capital burden
-- projected ending cash before borrowing
-- projected likely borrowing need
-- projected portfolio mix by segment
-- projected weighted defect rate
-- projected weighted margin by product
-- pipeline project count
-- launch-ready project count
-- average portfolio tech position versus market generation
-- products at risk of obsolescence
-- likely cannibalization exposure
-- warnings when production exceeds shared constraints
-
-## Results Dashboard
-
-The dashboard now shows active portfolio, pipeline, forecast accuracy, and liquidity outputs.
-
-### Admin View
-
-- team-level ranking tables
-- product-level results table
-- forecast accuracy and planning-diagnostic tables
-- liquidity and debt summary
-- teaching debrief diagnostics
-- optional balanced teaching score
-- CSV export buttons for assessment and research use
-- active portfolio snapshot by team
-- lifecycle stage distribution
-- development pipeline table
-- launch and retirement log
-- persistent team state
-
-### Team Leader View
-
-- own team aggregate results
-- own forecast-vs-actual detail
-- own cash and debt summary
-- own active portfolio snapshot
-- own development pipeline table
-- own product results
-- own launch and retirement events
-- own debrief prompt
-- public ranking table
-
-## Roles And Access
-
-`admin` can use:
-
-- `Home`
-- `Public Market Report`
-- `Team Decisions`
-- `Instructor Panel`
-- `Results Dashboard`
-- `Finance Detail`
-- `Admin User Management`
-- `Model Formula Guide`
-- `My Account`
-
-`team_leader` can use:
-
-- `Home`
-- `Public Market Report` as read-only
-- `Team Decisions` for their own assigned team only
-- `Results Dashboard` with safe filtered visibility
-- `Finance Detail` for their own team only
-- `Model Formula Guide`
-- `My Account`
-
-`team_leader` cannot:
-
-- run rounds
-- reset runtime data
-- manage users
-- submit decisions for another team
-
-## Offline Strategy Simulation Runner
-
-You can run multi-team "what if" scenarios without changing the classroom database.
-The runner uses the real Stage C engine in memory and writes CSV/Markdown outputs.
-
-```powershell
-.\.venv\Scripts\python.exe scripts\run_strategy_simulation.py --teams 6 --rounds 4
-```
-
-Optional examples:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\run_strategy_simulation.py --teams 10 --rounds 5
-.\.venv\Scripts\python.exe scripts\run_strategy_simulation.py --teams 4 --rounds 3 --strategies balanced_sop innovation_leap low_cost_volume
-.\.venv\Scripts\python.exe scripts\run_strategy_simulation.py --teams 6 --rounds 4 --market-scenario supply_shock
-.\.venv\Scripts\python.exe scripts\run_strategy_simulation.py --teams 6 --rounds 4 --compare-market-scenarios
-.\.venv\Scripts\python.exe scripts\run_strategy_simulation.py --batch-runs 100 --min-teams 4 --max-teams 10 --rounds 4
-```
-
-Outputs are written under `simulation_outputs/strategy_run_YYYYMMDD_HHMMSS/`:
-
-- `summary.md`
-  instructor-readable ranking and interpretation summary
-- `team_results.csv`
-  firm-level round history with profit, cash, debt, forecast accuracy, and service metrics
-- `product_results.csv`
-  product-slot sales, inventory, lifecycle, technology, defects, and cannibalization
-- `forecast_accuracy.csv`
-  product-level forecast versus actual demand
-- `final_team_states.csv`
-  final cash, debt, capacity, reputation, inventory, and carryover state
-
-The default strategy presets are:
-
-- `premium_quality`
-- `low_cost_volume`
-- `balanced_sop`
-- `innovation_leap`
-- `cash_conservative`
-- `aggressive_growth`
-
-The market scenario presets are:
-
-- `baseline`
-- `demand_boom`
-- `volume_surge`
-- `supply_shock`
-- `tech_shift`
-- `price_recession`
-- `quality_sensitive`
-
-When `--compare-market-scenarios` is used, the runner creates one subfolder per
-market scenario plus:
-
-- `market_scenario_summary.md`
-  cross-scenario winner and strategy robustness summary
-- `market_scenario_comparison.csv`
-  one final winner row per market condition
-- `market_scenario_team_results.csv`
-  every team under every market condition for spreadsheet analysis
-
-When `--batch-runs` is used, the runner creates randomized but deterministic
-experiment settings from the selected seed. It varies market demand, demand
-growth, segment mix, material-cost pressure, supply risk, technology pressure,
-quality sensitivity, the number of teams, and the pairing between archetypes and
-strategy presets. Batch outputs include:
-
-- `batch_summary.md`
-  high-level robustness summary
-- `batch_run_summary.csv`
-  one row per simulation run
-- `batch_final_team_results.csv`
-  final-round result for every team in every simulation
-- `batch_strategy_robustness.csv`
-  aggregate strategy performance across all batch runs
-- `batch_team_round_results.csv`
-  all firm-level round histories across the batch
-- `batch_product_round_results.csv`
-  all product-level results across the batch
-- `batch_forecast_accuracy.csv`
-  all product-level forecast accuracy results across the batch
+1. Instructor creates the first admin account.
+2. Instructor creates team leader accounts in `Admin User Management`.
+3. Instructor sets the current round market in `Public Market Report`.
+4. Instructor opens submissions in `Instructor Panel`.
+5. Teams log in and submit decisions in `Team Decisions`.
+6. Instructor checks validation warnings and closes submissions.
+7. Instructor clicks `Run Round`.
+8. Class reviews results, forecast accuracy, finance, portfolio, and pipeline outcomes.
+9. Instructor advances the market and opens the next round.
+
+## Main Pages
+
+| Page | Main purpose |
+|---|---|
+| `Home` | Overview, session status, and app orientation. |
+| `Public Market Report` | Instructor sets demand, segment shares, supply risk, technology pressure, and event text. |
+| `Team Decisions` | Teams submit forecasts, product decisions, operations, sourcing, finance, and NPD choices. |
+| `Instructor Panel` | Admin reviews submissions, validation, open/close status, and runs rounds. |
+| `Admin User Management` | Admin creates teams, resets passwords, bulk imports accounts, and deactivates/removes teams. |
+| `Results Dashboard` | Team results, product results, forecast accuracy, finance, rankings, and debrief views. |
+| `Model Formula Guide` | Transparent explanation of the deterministic model logic. |
+| `My Account` | Password change and account status. |
 
 ## Offline 20-Environment Experiment
 
-The repo also includes a larger "simulation of the simulation" experiment. It runs the same six strategy archetypes through 20 named market environments and exports a detailed Excel workbook plus CSV files.
-
-Run calibrated mode:
+The repo includes a separate offline experiment runner that simulates the simulator under 20 named environments. It does not change the classroom database.
 
 ```powershell
 python scripts\run_20_environment_simulations.py --teams 6 --rounds 12 --calibrated
 ```
 
-The 20 environments are:
-
-| # | Environment | Main pressure |
-|---|---|---|
-| 1 | Baseline | Balanced market conditions |
-| 2 | Picky Customers | Quality, reputation, and service |
-| 3 | Price Sensitive | Price pressure |
-| 4 | Tech Shift | Technology generation change |
-| 5 | Beginner Boom | Beginner segment growth |
-| 6 | Premium Market | Premium demand and technology adoption |
-| 7 | Demand Recession | Lower demand and cash discipline |
-| 8 | Demand Boom | Growth and capacity scaling |
-| 9 | Supply Shock | Input risk and sourcing resilience |
-| 10 | Cost Inflation | Material cost pressure |
-| 11 | Fast Lifecycle | Product aging and replacement timing |
-| 12 | Warranty Sensitive | Defects and quality economics |
-| 13 | Price War | Low-price competition |
-| 14 | Inventory Risk | Overstock and working-capital burden |
-| 15 | Capacity Constraint | Production bottlenecks |
-| 16 | Forecast Volatility | Planning uncertainty |
-| 17 | Viral Demand | Sudden demand spike |
-| 18 | Cash Crunch | Debt and liquidity pressure |
-| 19 | Premium Expansion | Premium growth plus tech expectations |
-| 20 | Unstable Market | Mixed shocks and resilience |
-
-Outputs are written under:
+The runner exports an Excel workbook and CSV files under:
 
 ```text
 simulation_outputs/twenty_environment_calibrated_YYYYMMDD_HHMMSS/
 ```
 
-The Excel workbook includes:
+Use it to test whether different environments reward different strategies, such as:
 
-- one sheet per environment
-- `Scenario_Assumptions`
-- `All_Scenario_Winners`
-- `Strategy_Summary`
-- `Teaching_Insights`
+- Cash Conservative
+- Balanced S&OP
+- Premium Quality
+- Innovation Leap
+- Aggressive Growth
+- Low-Cost Volume
 
-CSV exports include:
+## Documentation
 
-- `scenario_assumptions.csv`
-- `all_scenario_winners.csv`
-- `strategy_summary.csv`
-- `teaching_insights.csv`
-- `round_level_results.csv`
-- `final_team_results.csv`
+The `documentation/` folder includes:
 
-This runner is useful for instructor calibration, classroom examples, teaching notes, and research framing. It does not change the classroom SQLite database.
+- Instructor operating manual
+- Student guidebook with figures
+- Simulator model and formula guide
+- Offline 20-environment experiment guide
+- Documentation ZIP pack
 
-## Documentation Pack
+## Repository Structure
 
-The `documentation/` folder contains ready-to-use Word guides:
-
-- instructor operating manual
-- simulator model and formula guide
-- student guidebook with big-picture figures
-- offline 20-environment experiment guide
-
-The ZIP documentation pack also includes the offline experiment code so another instructor or developer can reproduce the analysis.
+| Path | Purpose |
+|---|---|
+| `app.py` | Streamlit entry point and navigation. |
+| `pages/` | Multipage Streamlit UI. |
+| `engine/` | Deterministic OM/SCM simulation engine and constants. |
+| `models/` | Dataclass schemas for market, teams, products, projects, and results. |
+| `utils/` | Authentication, database, repository, storage, and branding helpers. |
+| `data/` | Default market and archetype seed data. |
+| `scripts/` | Offline experiments and documentation/figure generation tools. |
+| `assets/` | Kiki mascot and README visuals. |
+| `documentation/` | Instructor, student, formula, and experiment guides. |
 
 ## Security Notes
 
-- passwords are stored only as secure hashes
-- existing passwords are never displayed after creation
-- inactive users cannot log in
-- page guards protect admin-only controls
-- `team_leader` team assignment comes from the authenticated account, not from a manual text field
+- Passwords are stored as secure hashes.
+- Existing passwords are never displayed after creation.
+- Inactive users cannot log in.
+- Admin-only pages are protected.
+- Team leaders can submit decisions only for their assigned team.
 
-## Demo Accounts
+## Status
 
-Production mode does not create shared default passwords.
+Kiki is a classroom-ready OM/SCM simulator prototype. It is intentionally focused on operations, supply chain, product portfolio, forecasting, development pipeline, lifecycle, technology, and cash-control decisions.
 
-Demo accounts are seeded only when both of these are true:
-
-- `SIMULATOR_ENV=dev`
-- `SIMULATOR_ENABLE_DEMO_ACCOUNTS=true`
-
-That option exists only for explicit demo or development use.
-
-## Simplifications Left For Later Stages
-
-Stage C intentionally still does not include:
-
-- marketing
-- ambassador strategy
-- retailer or channel negotiation
-- multi-country operations
-- patent or IP systems
-- complex stochastic Monte Carlo simulation
-- delayed channel rollout by geography
-- full financial statements
-- taxes, equity issuance, or advanced treasury management
-
-This keeps the model classroom-manageable while still adding real portfolio, pipeline, forecasting, cash-control, and replacement tradeoffs.
+Marketing, ambassador strategy, retailer/channel negotiation, and team-member roles are intentionally left for future versions.
