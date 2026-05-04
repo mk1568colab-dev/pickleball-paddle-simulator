@@ -144,6 +144,72 @@ STRATEGY_PRESETS: dict[str, dict[str, Any]] = {
 
 DEFAULT_STRATEGY_ROTATION = tuple(STRATEGY_PRESETS)
 
+STRATEGY_ARCHETYPE_NAME_MAP: dict[str, str] = {
+    "cash_conservative": "Community / Club",
+    "balanced_sop": "Engineering Challenger",
+    "premium_quality": "Premium Quality",
+    "innovation_leap": "Engineering Challenger",
+    "aggressive_growth": "Sponsorship Growth",
+    "low_cost_volume": "Low-Cost Volume",
+}
+
+STRATEGY_PROJECT_PROFILES: dict[str, dict[str, Any]] = {
+    "cash_conservative": {
+        "target_segment": "best",
+        "target_generation_gap": 0,
+        "planned_launch_lag": 4,
+        "intended_slot_name": "C",
+        "projected_base_defect_modifier": 0.000,
+        "projected_demand_fit_modifier": 1.02,
+        "cannibalization_group_suffix": "steady_refresh",
+    },
+    "balanced_sop": {
+        "target_segment": "best",
+        "target_generation_gap": 1,
+        "planned_launch_lag": 3,
+        "intended_slot_name": "C",
+        "projected_base_defect_modifier": -0.001,
+        "projected_demand_fit_modifier": 1.05,
+        "cannibalization_group_suffix": "planned_refresh",
+    },
+    "premium_quality": {
+        "target_segment": "premium",
+        "target_generation_gap": 1,
+        "planned_launch_lag": 3,
+        "intended_slot_name": "C",
+        "projected_base_defect_modifier": -0.004,
+        "projected_demand_fit_modifier": 1.12,
+        "cannibalization_group_suffix": "premium_platform",
+    },
+    "innovation_leap": {
+        "target_segment": "premium",
+        "target_generation_gap": 2,
+        "planned_launch_lag": 2,
+        "intended_slot_name": "C",
+        "projected_base_defect_modifier": 0.003,
+        "projected_demand_fit_modifier": 1.18,
+        "cannibalization_group_suffix": "nextgen_leap",
+    },
+    "aggressive_growth": {
+        "target_segment": "mid",
+        "target_generation_gap": 1,
+        "planned_launch_lag": 2,
+        "intended_slot_name": "C",
+        "projected_base_defect_modifier": 0.002,
+        "projected_demand_fit_modifier": 1.08,
+        "cannibalization_group_suffix": "growth_line",
+    },
+    "low_cost_volume": {
+        "target_segment": "beginner",
+        "target_generation_gap": 0,
+        "planned_launch_lag": 3,
+        "intended_slot_name": "C",
+        "projected_base_defect_modifier": 0.004,
+        "projected_demand_fit_modifier": 1.05,
+        "cannibalization_group_suffix": "value_refresh",
+    },
+}
+
 MARKET_SCENARIO_PRESETS: dict[str, dict[str, Any]] = {
     "baseline": {
         "label": "Baseline market",
@@ -602,11 +668,22 @@ def build_team_specs(
     strategy_offset: int = 0,
     archetype_offset: int = 0,
 ) -> list[dict[str, Any]]:
-    """Create deterministic team assignments for a scenario."""
+    """Create deterministic team assignments for a scenario.
+
+    The offline experiment is meant to compare coherent business strategies.
+    Therefore, when a strategy has a known operating-archetype fit, use that
+    match instead of blindly rotating through archetypes.
+    """
     teams: list[dict[str, Any]] = []
+    archetype_lookup = {archetype.name: archetype for archetype in archetypes}
     for index in range(team_count):
-        archetype = archetypes[(index + archetype_offset) % len(archetypes)]
         strategy_key = strategy_rotation[(index + strategy_offset) % len(strategy_rotation)]
+        matched_archetype_name = STRATEGY_ARCHETYPE_NAME_MAP.get(strategy_key)
+        archetype = (
+            archetype_lookup[matched_archetype_name]
+            if matched_archetype_name in archetype_lookup
+            else archetypes[(index + archetype_offset) % len(archetypes)]
+        )
         teams.append(
             {
                 "team_name": f"Team {index + 1:02d}",
@@ -876,6 +953,11 @@ def build_project_decisions(
 ) -> list[ProductDevelopmentProject]:
     """Build or update up to two NPD project slots for one team."""
     strategy = team["strategy"]
+    strategy_key = team["strategy_key"]
+    project_profile = STRATEGY_PROJECT_PROFILES.get(
+        strategy_key,
+        STRATEGY_PROJECT_PROFILES["balanced_sop"],
+    )
     project_by_slot = {item.project_slot_name: item for item in existing_projects}
     projects: list[ProductDevelopmentProject] = []
 
@@ -898,28 +980,42 @@ def build_project_decisions(
             continue
 
         if project_slot_name == "P1" and strategy["npd_investment"] > 0:
-            target_segment = best_segment_for_archetype(team["archetype"])
-            target_generation = min(market_report.current_market_generation + 1, 4)
+            target_segment = str(project_profile["target_segment"])
+            if target_segment == "best":
+                target_segment = best_segment_for_archetype(team["archetype"])
+            target_generation = min(
+                market_report.current_market_generation
+                + int(project_profile["target_generation_gap"]),
+                4,
+            )
+            launch_lag = max(int(project_profile["planned_launch_lag"]), 1)
+            intended_slot_name = str(project_profile["intended_slot_name"]).upper()
             projects.append(
                 ProductDevelopmentProject(
                     project_id=build_project_id(team["team_name"], project_slot_name),
                     team_name=team["team_name"],
                     project_slot_name=project_slot_name,
-                    project_name=f"{team['team_name']} NextGen",
+                    project_name=f"{team['team_name']} {strategy['label']} Project",
                     target_segment=target_segment,
                     target_tech_generation=target_generation,
-                    intended_slot_name="C",
+                    intended_slot_name=intended_slot_name,
                     required_investment=0.0,
                     cumulative_investment=0.0,
                     investment_this_round=max(strategy["npd_investment"], 0.0),
                     testing_intensity=strategy["testing_intensity"],
                     launch_readiness_score=0.0,
-                    planned_launch_round=round_number + 2,
-                    earliest_launch_round=round_number + 2,
+                    planned_launch_round=round_number + launch_lag,
+                    earliest_launch_round=round_number + launch_lag,
                     status="concept",
-                    cannibalization_group=f"{target_segment}_nextgen",
-                    projected_base_defect_modifier=0.002,
-                    projected_demand_fit_modifier=1.08,
+                    cannibalization_group=(
+                        f"{target_segment}_{project_profile['cannibalization_group_suffix']}"
+                    ),
+                    projected_base_defect_modifier=float(
+                        project_profile["projected_base_defect_modifier"]
+                    ),
+                    projected_demand_fit_modifier=float(
+                        project_profile["projected_demand_fit_modifier"]
+                    ),
                     created_round=round_number,
                 )
             )
