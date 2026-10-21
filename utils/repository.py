@@ -2138,10 +2138,29 @@ def remove_team_data(
     delete_team_leader_accounts: bool = False,
 ) -> dict[str, int]:
     """Remove one team's simulator records and optionally deactivate its accounts."""
+    return remove_teams_data(
+        [team_name],
+        deactivate_team_leaders=deactivate_team_leaders,
+        delete_team_leader_accounts=delete_team_leader_accounts,
+    )
+
+
+def remove_teams_data(
+    team_names: list[str],
+    *,
+    deactivate_team_leaders: bool = True,
+    delete_team_leader_accounts: bool = False,
+) -> dict[str, int]:
+    """Remove selected teams together; roll back every removal if any fails."""
+    if isinstance(team_names, str) or not team_names:
+        raise ValueError("Select at least one team to remove.")
+    normalized_names: dict[str, str] = {}
+    for team_name in team_names:
+        if not isinstance(team_name, str) or not team_name.strip():
+            raise ValueError("Team name is required.")
+        normalized_names.setdefault(team_name.strip().lower(), team_name.strip())
+    parameters = [(name,) for name in normalized_names.values()]
     ensure_app_storage()
-    normalized_team_name = team_name.strip()
-    if not normalized_team_name:
-        raise ValueError("Team name is required.")
 
     team_tables = [
         "product_decisions",
@@ -2157,26 +2176,27 @@ def remove_team_data(
     deleted_counts: dict[str, int] = {}
 
     with get_connection() as connection:
+        connection.execute("BEGIN IMMEDIATE")
         for table_name in team_tables:
-            cursor = connection.execute(
+            cursor = connection.executemany(
                 f"DELETE FROM {table_name} WHERE LOWER(team_name) = LOWER(?)",
-                (normalized_team_name,),
+                parameters,
             )
             deleted_counts[table_name] = max(cursor.rowcount, 0)
 
         if delete_team_leader_accounts:
-            cursor = connection.execute(
+            cursor = connection.executemany(
                 """
                 DELETE FROM users
                 WHERE role = 'team_leader'
                   AND LOWER(team_name) = LOWER(?)
                 """,
-                (normalized_team_name,),
+                parameters,
             )
             deleted_counts["deleted_team_leader_accounts"] = max(cursor.rowcount, 0)
             deleted_counts["deactivated_team_leader_accounts"] = 0
         elif deactivate_team_leaders:
-            cursor = connection.execute(
+            cursor = connection.executemany(
                 """
                 UPDATE users
                 SET is_active = 0,
@@ -2185,7 +2205,7 @@ def remove_team_data(
                   AND LOWER(team_name) = LOWER(?)
                   AND is_active = 1
                 """,
-                (normalized_team_name,),
+                parameters,
             )
             deleted_counts["deactivated_team_leader_accounts"] = max(cursor.rowcount, 0)
             deleted_counts["deleted_team_leader_accounts"] = 0
