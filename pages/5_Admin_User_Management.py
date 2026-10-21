@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import secrets
+import hashlib
+import sqlite3
 import string
 
 import pandas as pd
@@ -17,7 +19,7 @@ from utils.repository import (
     get_user_by_username,
     load_team_names,
     load_users,
-    remove_team_data,
+    remove_teams_data,
     save_team_state,
     update_user,
 )
@@ -148,7 +150,8 @@ def _show_remove_team_summary() -> None:
         return
 
     st.subheader("Latest Team Removal Summary")
-    st.success(f"`{summary['team_name']}` was removed from the game.")
+    removed_names = summary.get("team_names", [summary.get("team_name", "")])
+    st.success(f"Removed {len(removed_names)} team(s): " + ", ".join(removed_names))
     st.dataframe(_frame(summary["rows_changed"]), use_container_width=True)
 
     if st.button("Clear Team Removal Summary"):
@@ -280,7 +283,7 @@ def main() -> None:
             "Generate Team Accounts",
             "Edit Existing User",
             "Bulk Import Team Leaders",
-            "Remove Team",
+            "Remove Teams",
         ]
     )
 
@@ -509,17 +512,31 @@ def main() -> None:
                         st.rerun()
 
     with remove_team_tab:
-        st.subheader("Remove a Team")
+        st.subheader("Remove Teams")
         st.warning(
-            "This removes simulator data for the selected team. By default, the "
-            "team-leader account is deactivated instead of permanently deleted."
+            "Remove one team, several teams, or all teams at once. This clears their "
+            "game records. Choose below whether to deactivate or permanently delete "
+            "their team-leader accounts. Admin accounts are kept."
         )
 
         team_names = load_team_names(include_inactive_users=True)
         if not team_names:
             st.info("No teams are available to remove yet.")
         else:
-            selected_team_name = st.selectbox("Team to Remove", options=team_names)
+            select_all = st.checkbox(
+                f"Select all {len(team_names)} teams",
+                key="remove_all_teams",
+            )
+            selected_team_names = st.multiselect(
+                "Teams to Remove",
+                options=team_names,
+                default=team_names if select_all else [],
+                disabled=select_all,
+                key=f"remove_team_selection_{select_all}",
+            )
+            if select_all:
+                selected_team_names = team_names
+            selected_names_lower = {name.lower() for name in selected_team_names}
             linked_accounts = [
                 {
                     "user_id": account.user_id,
@@ -530,9 +547,13 @@ def main() -> None:
                 }
                 for account in load_users(role="team_leader")
                 if (account.team_name or "").strip().lower()
-                == selected_team_name.strip().lower()
+                in selected_names_lower
             ]
 
+            st.caption(
+                f"Selected: {len(selected_team_names)} team(s), "
+                f"{len(linked_accounts)} linked team-leader account(s)."
+            )
             st.write("Linked team-leader accounts")
             st.dataframe(_frame(linked_accounts), use_container_width=True)
 
@@ -544,25 +565,40 @@ def main() -> None:
                     "it prevents login while keeping an account record."
                 ),
             )
+            confirmation_text = (
+                selected_team_names[0]
+                if len(selected_team_names) == 1
+                else f"REMOVE {len(selected_team_names)} TEAMS"
+            )
+            selection_signature = hashlib.sha256(
+                repr((sorted(selected_team_names), delete_accounts)).encode("utf-8")
+            ).hexdigest()[:16]
             confirmation = st.text_input(
-                f'Type "{selected_team_name}" to confirm team removal'
+                f'Type "{confirmation_text}" to confirm team removal',
+                key=f"remove_teams_confirmation_{selection_signature}",
+                disabled=not selected_team_names,
             )
 
-            if st.button("Remove Selected Team", type="primary"):
-                if confirmation.strip() != selected_team_name:
-                    st.error("Confirmation text does not match the selected team name.")
+            if st.button(
+                f"Remove {len(selected_team_names)} Selected Team(s)",
+                type="primary",
+                disabled=not selected_team_names,
+                key="remove_selected_teams",
+            ):
+                if confirmation.strip() != confirmation_text:
+                    st.error("Confirmation text does not match. No teams were removed.")
                 else:
                     try:
-                        summary = remove_team_data(
-                            selected_team_name,
+                        summary = remove_teams_data(
+                            selected_team_names,
                             deactivate_team_leaders=not delete_accounts,
                             delete_team_leader_accounts=delete_accounts,
                         )
-                    except ValueError as error:
-                        st.error(str(error))
+                    except (ValueError, sqlite3.Error) as error:
+                        st.error(f"No team removals were saved: {error}")
                     else:
                         st.session_state[REMOVE_TEAM_SUMMARY_KEY] = {
-                            "team_name": selected_team_name,
+                            "team_names": selected_team_names,
                             "rows_changed": [
                                 {"record_type": key, "rows_changed": value}
                                 for key, value in summary.items()
