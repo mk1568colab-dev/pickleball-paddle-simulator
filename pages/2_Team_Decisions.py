@@ -2096,20 +2096,9 @@ def main() -> None:
         _load_decisions_into_session(seed_firm_decision, seed_product_decisions, seed_projects)
         st.session_state[SESSION_CONTEXT_KEY] = current_context
 
-    archetype_locked = (
-        user.role == "team_leader"
-        and (
-            existing_firm_decision is not None
-            or bool(existing_state and existing_state.completed_rounds)
-        )
-    )
-    selected_archetype_name = identity_cols[1].selectbox(
-        "Archetype",
-        options=archetype_names,
-        index=archetype_names.index(st.session_state.get(ARCHETYPE_KEY, default_archetype_name)),
-        key=ARCHETYPE_KEY,
-        disabled=archetype_locked,
-    )
+    selected_archetype_name = default_archetype_name
+    st.session_state[ARCHETYPE_KEY] = selected_archetype_name
+    identity_cols[1].text_input("Operating baseline", value=selected_archetype_name, disabled=True)
     selected_archetype = archetype_lookup[selected_archetype_name]
 
     if identity_cols[2].button("Apply Suggestions"):

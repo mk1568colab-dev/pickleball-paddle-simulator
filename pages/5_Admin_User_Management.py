@@ -8,7 +8,6 @@ import sqlite3
 import pandas as pd
 import streamlit as st
 
-from models.schemas import PersistentTeamState
 from utils.auth import require_admin, require_authenticated_user
 from utils.bootstrap import ensure_app_storage
 from utils.repository import (
@@ -207,27 +206,10 @@ def _generate_temporary_password(team_number: int) -> str:
 
 
 def _save_initial_team_state(team_name: str, starting_cash_balance: float) -> None:
-    """Store first-round cash before the team chooses its final archetype."""
-    save_team_state(
-        PersistentTeamState(
-            team_name=team_name,
-            archetype="",
-            cash_balance=max(float(starting_cash_balance), 0.0),
-            inventory_units=0,
-            raw_material_inventory=0,
-            backlog_units=0,
-            capacity_units=0,
-            reputation_score=0.0,
-            completed_rounds=[],
-            last_decision={},
-            open_material_orders=[],
-            cumulative_profit=0.0,
-            short_term_debt_balance=0.0,
-            interest_expense_last_round=0.0,
-            liquidity_warning_flag=False,
-            working_capital_stress_score=0.0,
-        )
-    )
+    """Preserve existing teams and initialize new teams with the common baseline."""
+    # Account creation now initializes the complete common baseline.
+    from utils.repository import ensure_equal_start_team
+    ensure_equal_start_team(team_name)
 
 
 def main() -> None:
@@ -288,6 +270,7 @@ def main() -> None:
                 "Starting Cash for Team Leader Account",
                 min_value=0.0,
                 value=DEFAULT_STARTING_CASH,
+                disabled=True,
                 step=5_000.0,
                 help="Used only when the new account is a team_leader.",
             )
@@ -361,6 +344,7 @@ def main() -> None:
                 "Starting Cash per Team",
                 min_value=0.0,
                 value=DEFAULT_STARTING_CASH,
+                disabled=True,
                 step=5_000.0,
                 help="Creates first-round cash for each generated team.",
             )
