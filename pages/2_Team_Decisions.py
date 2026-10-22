@@ -2,10 +2,21 @@
 
 from __future__ import annotations
 
+import base64
+from functools import lru_cache
+from html import escape
+from pathlib import Path
+
 import pandas as pd
 import streamlit as st
 
-from engine.config import STARTING_RAW_MATERIAL_COVERAGE
+from engine.config import (
+    EXPEDITED_LEAD_TIME_REDUCTION,
+    STARTING_RAW_MATERIAL_COVERAGE,
+    SUPPLIER_BASE_LEAD_TIMES,
+    SUPPLIER_NAMES,
+    SUPPLY_RISK_INDEX,
+)
 from engine.simulator import estimate_development_project, preview_team_decision
 from models.schemas import (
     MAX_TECH_GENERATION,
@@ -46,6 +57,11 @@ from utils.repository import (
 
 SESSION_CONTEXT_KEY = "stage_b_decision_editor_context"
 ARCHETYPE_KEY = "stage_b_archetype_name"
+SUBMIT_WARNING_CONTEXT_KEY = "stage_b_submit_warning_context"
+SUBMIT_WARNING_MESSAGES_KEY = "stage_b_submit_warning_messages"
+SUBMIT_SUCCESS_MESSAGE_KEY = "stage_b_submit_success_message"
+APP_ROOT = Path(__file__).resolve().parents[1]
+KIKI_CHECKLIST_MASCOT_DIR = APP_ROOT / "assets" / "kiki_checklist_mascots"
 
 FIRM_WIDGET_KEYS = {
     "overtime_capacity_units": "stage_b_overtime_capacity_units",
@@ -106,6 +122,562 @@ def _product_widget_key(slot_name: str, field_name: str) -> str:
 def _project_widget_key(project_slot_name: str, field_name: str) -> str:
     """Return the widget key for a development-project field."""
     return f"stage_b_project_{project_slot_name}_{field_name}"
+
+
+def _inject_compact_decision_css() -> None:
+    """Apply compact page styling without changing decision logic."""
+    st.markdown(
+        """
+        <style>
+        section[data-testid="stSidebar"] {
+            min-width: 12rem !important;
+            width: 12rem !important;
+        }
+        section[data-testid="stSidebar"] img {
+            max-width: 80px !important;
+        }
+        div[data-testid="stSidebarContent"] {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+        div[data-testid="stSidebarContent"] p,
+        div[data-testid="stSidebarContent"] a,
+        div[data-testid="stSidebarContent"] span {
+            font-size: 0.82rem;
+        }
+        .block-container {
+            max-width: 96rem;
+            padding-top: 1.7rem;
+        }
+        div[data-testid="stMetric"] {
+            background: #ffffff;
+            border: 1px solid #d7e0ec;
+            border-radius: 0.45rem;
+            padding: 0.55rem 0.65rem;
+            min-height: 4.0rem;
+        }
+        div[data-testid="stMetricLabel"] {
+            font-size: 0.76rem;
+        }
+        div[data-testid="stMetricValue"] {
+            font-size: 1.04rem;
+        }
+        div[data-testid="stVerticalBlock"] {
+            gap: 0.55rem;
+        }
+        div[data-testid="stHorizontalBlock"] {
+            gap: 0.55rem;
+        }
+        div[data-testid="stNumberInput"] label,
+        div[data-testid="stTextInput"] label,
+        div[data-testid="stSelectbox"] label,
+        div[data-testid="stSlider"] label {
+            font-size: 0.76rem;
+        }
+        .kiki-row-card {
+            border: 1px solid #d7e0ec;
+            border-radius: 0.45rem;
+            background: #ffffff;
+            padding: 0.65rem 0.75rem;
+            margin-bottom: 0.45rem;
+        }
+        .kiki-row-header {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 0.15rem;
+        }
+        .kiki-chip {
+            display: inline-block;
+            border-radius: 999px;
+            padding: 0.12rem 0.45rem;
+            margin: 0 0.2rem 0.2rem 0;
+            background: #edf3fa;
+            color: #163153;
+            font-weight: 700;
+            font-size: 0.72rem;
+            white-space: nowrap;
+        }
+        .kiki-chip-green { background: #dcf5e7; color: #087342; }
+        .kiki-chip-amber { background: #fff0d2; color: #935c00; }
+        .kiki-chip-red { background: #ffe1e1; color: #b42318; }
+        .kiki-chip-blue { background: #e2edff; color: #225eaf; }
+        .kiki-section-note {
+            color: #5a667a;
+            font-size: 0.82rem;
+            margin-top: 0.25rem;
+        }
+        .kiki-submit-check {
+            border: 1px solid #cfdae8;
+            border-radius: 0.7rem;
+            background: #ffffff;
+            padding: 0.85rem 0.95rem 0.95rem 0.95rem;
+            margin-top: 0.25rem;
+        }
+        .kiki-submit-check-title {
+            font-weight: 800;
+            font-size: 1.02rem;
+            color: #111827;
+            margin-bottom: 0.08rem;
+        }
+        .kiki-submit-check-note {
+            color: #66758a;
+            font-size: 0.78rem;
+            margin-bottom: 0.8rem;
+        }
+        .kiki-submit-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.55rem;
+        }
+        .kiki-submit-card {
+            border: 1px solid #d8e1ec;
+            border-top: 0.25rem solid var(--kiki-accent);
+            border-radius: 0.55rem;
+            background: #fbfdff;
+            min-height: 5.3rem;
+            display: grid;
+            grid-template-columns: 4.7rem minmax(0, 1fr);
+            gap: 0.6rem;
+            padding: 0.5rem 0.55rem;
+        }
+        .kiki-submit-card img {
+            width: 4.35rem;
+            height: 4.35rem;
+            object-fit: cover;
+            border-radius: 0.55rem;
+        }
+        .kiki-submit-card-heading {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.35rem;
+        }
+        .kiki-submit-card-name {
+            font-weight: 800;
+            color: #111827;
+            font-size: 0.9rem;
+            line-height: 1.1;
+        }
+        .kiki-submit-card-role {
+            color: #64748b;
+            font-size: 0.68rem;
+            margin-top: 0.1rem;
+        }
+        .kiki-submit-status {
+            border-radius: 999px;
+            padding: 0.1rem 0.42rem;
+            font-size: 0.62rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .kiki-submit-status-ready {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .kiki-submit-status-caution {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .kiki-submit-status-review {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .kiki-submit-items {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.18rem 0.5rem;
+            margin-top: 0.32rem;
+        }
+        .kiki-submit-item {
+            display: flex;
+            align-items: center;
+            gap: 0.28rem;
+            min-width: 0;
+            color: #374151;
+            font-size: 0.66rem;
+            line-height: 1.15;
+        }
+        .kiki-submit-dot {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.0rem;
+            height: 1.0rem;
+            border-radius: 999px;
+            color: #ffffff;
+            font-size: 0.52rem;
+            font-weight: 900;
+            flex: 0 0 auto;
+        }
+        .kiki-submit-dot-ok {
+            background: #16a34a;
+        }
+        .kiki-submit-dot-warn {
+            background: #f59e0b;
+        }
+        .kiki-submit-dot-miss {
+            background: #dc2626;
+        }
+        @media (max-width: 900px) {
+            .kiki-submit-grid {
+                grid-template-columns: 1fr;
+            }
+            .kiki-submit-card {
+                grid-template-columns: 4.2rem minmax(0, 1fr);
+            }
+            .kiki-submit-card img {
+                width: 3.95rem;
+                height: 3.95rem;
+            }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _safe_option_index(options: list[str], value: str) -> int:
+    """Return a valid selectbox index for persisted values."""
+    return options.index(value) if value in options else 0
+
+
+def _chip(text: str, tone: str = "") -> str:
+    """Return a compact HTML chip."""
+    suffix = f" kiki-chip-{tone}" if tone else ""
+    return f'<span class="kiki-chip{suffix}">{text}</span>'
+
+
+@lru_cache(maxsize=8)
+def _image_data_uri(path_text: str) -> str:
+    """Return an image data URI for compact Streamlit HTML cards."""
+    path = Path(path_text)
+    if not path.exists():
+        return ""
+    encoded = base64.b64encode(path.read_bytes()).decode("ascii")
+    return f"data:image/png;base64,{encoded}"
+
+
+def _submit_check_item(label: str, state: str, message: str = "") -> dict[str, str]:
+    """Build a compact checklist item."""
+    return {"label": label, "state": state, "message": message}
+
+
+def _submit_section_state(items: list[dict[str, str]]) -> str:
+    """Summarize a section as ready, caution, or needs review."""
+    states = {item["state"] for item in items}
+    if "miss" in states:
+        return "needs review"
+    if "warn" in states:
+        return "caution"
+    return "ready"
+
+
+def _build_kiki_submit_checklist(
+    candidate_firm_decision: TeamDecision,
+    candidate_product_decisions: list[ProductDecision],
+    candidate_projects: list[ProductDevelopmentProject],
+    preview,
+    current_round: int,
+) -> list[dict[str, object]]:
+    """Build the four pre-submit OM checklist sections shown near Save."""
+    active_products = [decision for decision in candidate_product_decisions if decision.is_active]
+    total_forecast = int(getattr(preview, "total_forecast_units", 0) or 0)
+    total_planned = int(getattr(preview, "total_planned_production_units", 0) or 0)
+    effective_capacity = int(getattr(preview, "effective_capacity_units", 0) or 0)
+    raw_material_available = int(getattr(preview, "raw_material_units_available", 0) or 0)
+    raw_material_gap = raw_material_available - total_planned
+    forecast_gap = abs(int(getattr(preview, "forecast_production_gap_units", 0) or 0))
+    forecast_gap_base = max(total_forecast, total_planned, 1)
+    planned_utilization = total_planned / effective_capacity if effective_capacity > 0 else 0.0
+    defect_rate = float(getattr(preview, "projected_weighted_defect_rate", 0.0) or 0.0)
+    likely_borrowing = float(getattr(preview, "projected_likely_borrowing_need", 0.0) or 0.0)
+    working_capital = float(getattr(preview, "projected_working_capital_requirement", 0.0) or 0.0)
+    planned_borrowing = float(candidate_firm_decision.planned_borrowing_amount or 0.0)
+    launch_requests = [
+        project for project in candidate_projects if project.is_defined() and project.launch_now
+    ]
+    launch_gate_ready_count = sum(
+        1
+        for project in launch_requests
+        if bool(
+            estimate_development_project(
+                project,
+                include_current_round_investment=True,
+                current_round=current_round,
+            ).get("launch_gate_met", False)
+        )
+    )
+
+    if not active_products:
+        forecast_state = "warn"
+        forecast_message = "No active product has a current demand plan."
+    elif all(decision.forecast_units > 0 for decision in active_products):
+        forecast_state = "ok"
+        forecast_message = ""
+    else:
+        forecast_state = "miss"
+        forecast_message = "At least one active product is missing a forecast."
+
+    if forecast_gap <= max(25, int(forecast_gap_base * 0.25)):
+        demand_gap_state = "ok"
+    else:
+        demand_gap_state = "warn"
+
+    price_state = (
+        "ok"
+        if all(
+            decision.selling_price_per_unit > 0 and decision.target_segment in TARGET_SEGMENTS
+            for decision in active_products
+        )
+        else "miss"
+    )
+
+    production_state = "ok" if total_planned > 0 or not active_products else "miss"
+    capacity_state = "ok" if total_planned <= effective_capacity else "miss"
+    if total_planned <= 0:
+        utilization_state = "warn" if active_products else "ok"
+    elif planned_utilization > 0.98 or planned_utilization < 0.25:
+        utilization_state = "warn"
+    else:
+        utilization_state = "ok"
+
+    if total_planned <= 0:
+        raw_material_state = "ok"
+        raw_material_label = "No RM need yet"
+        raw_material_message = ""
+    elif raw_material_gap >= 0:
+        raw_material_state = "ok"
+        raw_material_label = "RM plan covers production"
+        raw_material_message = ""
+    elif candidate_firm_decision.raw_material_order_qty > 0:
+        raw_material_state = "warn"
+        raw_material_label = "RM short this round"
+        raw_material_message = "Raw materials may limit this round's production."
+    else:
+        raw_material_state = "miss"
+        raw_material_label = "RM order missing"
+        raw_material_message = "Raw materials may not support planned production."
+
+    if candidate_firm_decision.raw_material_order_qty > 0:
+        arrival_state = "ok"
+        arrival_label = "Arrival timing shown"
+        arrival_message = ""
+    elif raw_material_gap >= 0:
+        arrival_state = "ok"
+        arrival_label = "No order needed"
+        arrival_message = ""
+    else:
+        arrival_state = "warn"
+        arrival_label = "No arrival timing"
+        arrival_message = "Place a raw-material order to see expected arrival timing."
+
+    if total_planned <= 0 or defect_rate <= 0.05:
+        qc_state = "ok"
+    elif defect_rate >= 0.12:
+        qc_state = "miss"
+    else:
+        qc_state = "warn"
+
+    if likely_borrowing <= 0:
+        cash_state = "ok"
+    elif planned_borrowing >= likely_borrowing * 0.85:
+        cash_state = "ok"
+    elif planned_borrowing <= 0 and likely_borrowing >= max(100_000.0, working_capital * 4.0):
+        cash_state = "miss"
+    else:
+        cash_state = "warn"
+
+    if not launch_requests:
+        launch_state = "ok"
+        launch_label = "No launch request"
+        launch_message = ""
+    elif launch_gate_ready_count >= len(launch_requests):
+        launch_state = "ok"
+        launch_label = "Launch gate ready"
+        launch_message = ""
+    else:
+        launch_state = "miss"
+        launch_label = "Launch gate not ready"
+        launch_message = "A launch request may fail readiness, funding, or timing gates."
+
+    sections: list[dict[str, object]] = [
+        {
+            "title": "Market Forecast",
+            "role": "forecast analyst",
+            "accent": "#0ea5a4",
+            "mascot": KIKI_CHECKLIST_MASCOT_DIR / "market_forecast_kiki.png",
+            "items": [
+                _submit_check_item("Forecast entered", forecast_state, forecast_message),
+                _submit_check_item("Demand gap checked", demand_gap_state),
+                _submit_check_item("Price reviewed", price_state, "Review price and target segment."),
+            ],
+        },
+        {
+            "title": "Production Capacity",
+            "role": "production planner",
+            "accent": "#2563eb",
+            "mascot": KIKI_CHECKLIST_MASCOT_DIR / "production_capacity_kiki.png",
+            "items": [
+                _submit_check_item("Production planned", production_state, "Active products have no planned production."),
+                _submit_check_item("Capacity checked", capacity_state, "Planned production exceeds effective capacity."),
+                _submit_check_item("Utilization reviewed", utilization_state),
+            ],
+        },
+        {
+            "title": "Materials Supply",
+            "role": "logistics checker",
+            "accent": "#d97706",
+            "mascot": KIKI_CHECKLIST_MASCOT_DIR / "materials_supply_kiki.png",
+            "items": [
+                _submit_check_item(
+                    "Supplier mix 100%",
+                    "ok" if candidate_firm_decision.supplier_mix_valid() else "miss",
+                    "Supplier percentages must sum to 100.",
+                ),
+                _submit_check_item(raw_material_label, raw_material_state, raw_material_message),
+                _submit_check_item(arrival_label, arrival_state, arrival_message),
+            ],
+        },
+        {
+            "title": "Service QC Cash",
+            "role": "risk guard",
+            "accent": "#16a34a",
+            "mascot": KIKI_CHECKLIST_MASCOT_DIR / "service_qc_cash_kiki.png",
+            "items": [
+                _submit_check_item("Backlog reviewed", "ok"),
+                _submit_check_item("QC reviewed", qc_state, "Projected defect rate is extremely high."),
+                _submit_check_item("Cash plan checked", cash_state, "Cash shortfall is severe and no borrowing is planned."),
+                _submit_check_item(launch_label, launch_state, launch_message),
+            ],
+        },
+    ]
+    for section in sections:
+        section["state"] = _submit_section_state(section["items"])  # type: ignore[arg-type]
+    return sections
+
+
+def _kiki_submit_warning_messages(sections: list[dict[str, object]]) -> list[str]:
+    """Return section-level soft warnings that require student confirmation."""
+    messages: list[str] = []
+    for section in sections:
+        title = str(section["title"])
+        for item in section["items"]:  # type: ignore[assignment]
+            if item["state"] == "miss":
+                detail = item["message"] or item["label"]
+                messages.append(f"{title}: {detail}")
+    return messages
+
+
+def _render_kiki_submit_checklist(sections: list[dict[str, object]]) -> None:
+    """Render the compact four-part Kiki submit checklist."""
+    status_class_lookup = {
+        "ready": "ready",
+        "caution": "caution",
+        "needs review": "review",
+    }
+    dot_text_lookup = {"ok": "OK", "warn": "!", "miss": "X"}
+    cards: list[str] = []
+    for section in sections:
+        status = str(section["state"])
+        status_class = status_class_lookup.get(status, "review")
+        mascot_uri = _image_data_uri(str(section["mascot"]))
+        items_html = []
+        for item in section["items"]:  # type: ignore[assignment]
+            item_state = item["state"]
+            items_html.append(
+                '<div class="kiki-submit-item">'
+                f'<span class="kiki-submit-dot kiki-submit-dot-{escape(item_state)}">'
+                f"{escape(dot_text_lookup.get(item_state, item_state.upper()))}</span>"
+                f"<span>{escape(item['label'])}</span>"
+                "</div>"
+            )
+        image_html = (
+            f'<img src="{mascot_uri}" alt="{escape(str(section["title"]))} Kiki mascot">'
+            if mascot_uri
+            else ""
+        )
+        cards.append(
+            f'<div class="kiki-submit-card" style="--kiki-accent: {escape(str(section["accent"]))};">'
+            f"<div>{image_html}</div>"
+            "<div>"
+            '<div class="kiki-submit-card-heading">'
+            "<div>"
+            f'<div class="kiki-submit-card-name">{escape(str(section["title"]))}</div>'
+            f'<div class="kiki-submit-card-role">{escape(str(section["role"]))}</div>'
+            "</div>"
+            f'<span class="kiki-submit-status kiki-submit-status-{status_class}">{escape(status)}</span>'
+            "</div>"
+            f'<div class="kiki-submit-items">{"".join(items_html)}</div>'
+            "</div>"
+            "</div>"
+        )
+    st.markdown(
+        '<div class="kiki-submit-check">'
+        '<div class="kiki-submit-check-title">Kiki\'s 4-Part Pre-Submit Check</div>'
+        '<div class="kiki-submit-check-note">'
+        "Small role mascots help teams review the four major decision groups before saving the round plan."
+        "</div>"
+        f'<div class="kiki-submit-grid">{"".join(cards)}</div>'
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _clear_submit_warning_state() -> None:
+    """Clear any pending soft-warning confirmation."""
+    st.session_state.pop(SUBMIT_WARNING_CONTEXT_KEY, None)
+    st.session_state.pop(SUBMIT_WARNING_MESSAGES_KEY, None)
+
+
+def _current_supplier_mix() -> dict[str, float]:
+    """Return the current supplier mix normalized the same way as the engine."""
+    raw_mix = {
+        "Offshore Value": float(
+            st.session_state.get(FIRM_WIDGET_KEYS["supplier_mix_offshore_pct"], 0.0)
+        ),
+        "Balanced Source": float(
+            st.session_state.get(FIRM_WIDGET_KEYS["supplier_mix_balanced_pct"], 0.0)
+        ),
+        "Premium Reliable": float(
+            st.session_state.get(FIRM_WIDGET_KEYS["supplier_mix_premium_pct"], 0.0)
+        ),
+    }
+    raw_total = max(sum(raw_mix.values()), 0.0)
+    if raw_total <= 0:
+        return {
+            "Offshore Value": 0.0,
+            "Balanced Source": 1.0,
+            "Premium Reliable": 0.0,
+        }
+    return {supplier: raw_mix[supplier] / raw_total for supplier in SUPPLIER_NAMES}
+
+
+def _current_material_timing(market_report) -> dict[str, float | int]:
+    """Calculate the expected arrival timing for the current raw-material order."""
+    normalized_mix = _current_supplier_mix()
+    base_weighted_lead_time = sum(
+        normalized_mix[supplier] * SUPPLIER_BASE_LEAD_TIMES[supplier]
+        for supplier in SUPPLIER_NAMES
+    )
+    expedited_share = (
+        max(float(st.session_state.get(FIRM_WIDGET_KEYS["expedited_order_share_pct"], 0.0)), 0.0)
+        / 100.0
+    )
+    adjusted_lead_time = max(
+        base_weighted_lead_time
+        * SUPPLY_RISK_INDEX[market_report.supply_risk]
+        - expedited_share * EXPEDITED_LEAD_TIME_REDUCTION,
+        1.0,
+    )
+    lead_time_rounds = max(int(round(adjusted_lead_time)), 1)
+    return {
+        "order_qty": int(st.session_state.get(FIRM_WIDGET_KEYS["raw_material_order_qty"], 0)),
+        "base_weighted_lead_time": round(base_weighted_lead_time, 2),
+        "adjusted_lead_time": round(adjusted_lead_time, 2),
+        "lead_time_rounds": lead_time_rounds,
+        "arrival_round": market_report.round_number + lead_time_rounds,
+        "supply_risk_index": SUPPLY_RISK_INDEX[market_report.supply_risk],
+    }
 
 
 def _project_fixed_settings_locked(project: ProductDevelopmentProject) -> bool:
@@ -230,6 +802,97 @@ def _suggested_product_decisions(
         )
 
     return product_decisions
+
+
+def _latest_previous_firm_decision(
+    current_round: int,
+    team_name: str,
+) -> TeamDecision | None:
+    """Return the most recent saved firm decision before the current round."""
+    for previous_round in range(current_round - 1, 0, -1):
+        decision = load_team_decision(previous_round, team_name)
+        if decision is not None:
+            return decision
+    return None
+
+
+def _latest_previous_product_decisions(
+    current_round: int,
+    team_name: str,
+) -> list[ProductDecision]:
+    """Return the most recent saved product-slot decisions before this round."""
+    for previous_round in range(current_round - 1, 0, -1):
+        decisions = load_product_decisions(round_number=previous_round, team_name=team_name)
+        if decisions:
+            return decisions
+    return []
+
+
+def _seed_product_decisions_for_round(
+    team_name: str,
+    archetype: TeamArchetype,
+    product_lines: list[ProductLine],
+    current_round: int,
+) -> list[ProductDecision]:
+    """Build current-round defaults from prior choices while honoring current products."""
+    previous_by_slot = {
+        decision.slot_name: decision
+        for decision in _latest_previous_product_decisions(current_round, team_name)
+    }
+    suggested_by_slot = {
+        decision.slot_name: decision
+        for decision in _suggested_product_decisions(team_name, archetype, product_lines)
+    }
+    defaults: list[ProductDecision] = []
+
+    for product_line in sorted(product_lines, key=lambda item: item.slot_name):
+        baseline = previous_by_slot.get(product_line.slot_name) or suggested_by_slot[product_line.slot_name]
+        is_retired_slot = product_line.retirement_flag and not product_line.is_active
+        defaults.append(
+            ProductDecision(
+                product_id=product_line.product_id,
+                team_name=team_name,
+                slot_name=product_line.slot_name,
+                product_name=product_line.product_name,
+                is_active=False if is_retired_slot else product_line.is_active,
+                target_segment=product_line.target_segment,
+                selling_price_per_unit=0.0 if is_retired_slot else baseline.selling_price_per_unit,
+                forecast_units=0 if is_retired_slot else baseline.forecast_units,
+                planned_production_units=0 if is_retired_slot else baseline.planned_production_units,
+                qc_budget_per_unit=0.0 if is_retired_slot else baseline.qc_budget_per_unit,
+                target_finished_goods_inventory=(
+                    0 if is_retired_slot else baseline.target_finished_goods_inventory
+                ),
+                retire_flag=False,
+            )
+        )
+
+    return defaults
+
+
+def _decision_widgets_look_unseeded(product_lines: list[ProductLine]) -> bool:
+    """Detect stale or blank widget state after round/page transitions."""
+    active_lines = [
+        line
+        for line in product_lines
+        if line.is_active and not (line.retirement_flag and not line.is_active)
+    ]
+    missing_product_name = any(
+        line.product_name.strip()
+        and not str(
+            st.session_state.get(_product_widget_key(line.slot_name, "product_name"), "")
+        ).strip()
+        for line in active_lines
+    )
+    supplier_mix_total = sum(
+        float(st.session_state.get(FIRM_WIDGET_KEYS[field_name], 0.0) or 0.0)
+        for field_name in (
+            "supplier_mix_offshore_pct",
+            "supplier_mix_balanced_pct",
+            "supplier_mix_premium_pct",
+        )
+    )
+    return missing_product_name or supplier_mix_total <= 0.0
 
 
 def _seed_projects(
@@ -626,13 +1289,13 @@ def _render_state_snapshot(
     )
 
     snapshot_cols = st.columns(8)
-    snapshot_cols[0].metric("Installed Capacity", f"{installed_capacity:,}")
-    snapshot_cols[1].metric("Beginning FG Inventory", f"{beginning_inventory:,}")
-    snapshot_cols[2].metric("Beginning RM Inventory", f"{raw_material_inventory:,}")
-    snapshot_cols[3].metric("Beginning Backlog", f"{beginning_backlog:,}")
+    snapshot_cols[0].metric("Capacity", f"{installed_capacity:,}")
+    snapshot_cols[1].metric("FG Inv.", f"{beginning_inventory:,}")
+    snapshot_cols[2].metric("RM Inv.", f"{raw_material_inventory:,}")
+    snapshot_cols[3].metric("Backlog", f"{beginning_backlog:,}")
     snapshot_cols[4].metric("Reputation", f"{reputation:.1f}")
-    snapshot_cols[5].metric("Cash Balance", f"${cash_balance:,.0f}")
-    snapshot_cols[6].metric("Short-Term Debt", f"${short_term_debt:,.0f}")
+    snapshot_cols[5].metric("Cash", f"${cash_balance:,.0f}")
+    snapshot_cols[6].metric("Debt", f"${short_term_debt:,.0f}")
     snapshot_cols[7].metric(
         "Tech vs Market",
         f"{average_tech - market_report.current_market_generation:+.1f}",
@@ -641,10 +1304,405 @@ def _render_state_snapshot(
         f"Last-round interest expense: ${interest_last_round:,.0f} | "
         f"Liquidity warning flag: {'On' if liquidity_flag else 'Off'}"
     )
+    if existing_state and existing_state.open_material_orders:
+        incoming_rows = [
+            {
+                "Quantity": order.quantity,
+                "Placed Round": order.placed_round,
+                "Scheduled Arrival": order.arrival_round,
+                "Lead Time Used": order.weighted_lead_time,
+                "Material Unit Cost": order.weighted_material_unit_cost,
+            }
+            for order in sorted(
+                existing_state.open_material_orders,
+                key=lambda item: (item.arrival_round, item.placed_round),
+            )
+        ]
+        st.caption("Incoming raw-material orders already placed and not yet received:")
+        st.dataframe(pd.DataFrame(incoming_rows), use_container_width=True, hide_index=True)
+    else:
+        st.caption("Incoming raw-material orders: none currently waiting to arrive.")
 
 
-def _render_preview(candidate_firm_decision: TeamDecision, preview) -> None:
-    """Render the Stage C portfolio, forecast, and finance analytics preview."""
+def _render_firm_controls(market_report) -> None:
+    """Render compact firm-level operations, sourcing, and finance controls."""
+    st.markdown("### 3. Firm Controls")
+    st.caption("Shared operations, sourcing, and finance choices for the whole firm.")
+    firm_cols = st.columns(10)
+    firm_cols[0].number_input(
+        "Overtime Capacity",
+        min_value=0,
+        step=10,
+        key=FIRM_WIDGET_KEYS["overtime_capacity_units"],
+    )
+    firm_cols[1].number_input(
+        "Capacity Expansion",
+        min_value=0,
+        step=10,
+        key=FIRM_WIDGET_KEYS["capacity_expansion_units"],
+    )
+    firm_cols[2].number_input(
+        "Max Backorder",
+        min_value=0,
+        step=10,
+        key=FIRM_WIDGET_KEYS["max_backorder_units"],
+    )
+    firm_cols[3].number_input(
+        "Raw Material Order",
+        min_value=0,
+        step=10,
+        key=FIRM_WIDGET_KEYS["raw_material_order_qty"],
+    )
+    firm_cols[4].slider(
+        "Expedite %",
+        min_value=0.0,
+        max_value=100.0,
+        step=1.0,
+        key=FIRM_WIDGET_KEYS["expedited_order_share_pct"],
+    )
+    firm_cols[5].number_input(
+        "Borrowing",
+        min_value=0.0,
+        step=500.0,
+        key=FIRM_WIDGET_KEYS["planned_borrowing_amount"],
+    )
+    firm_cols[6].number_input(
+        "Offshore %",
+        min_value=0.0,
+        max_value=100.0,
+        step=1.0,
+        key=FIRM_WIDGET_KEYS["supplier_mix_offshore_pct"],
+    )
+    firm_cols[7].number_input(
+        "Balanced %",
+        min_value=0.0,
+        max_value=100.0,
+        step=1.0,
+        key=FIRM_WIDGET_KEYS["supplier_mix_balanced_pct"],
+    )
+    firm_cols[8].number_input(
+        "Premium %",
+        min_value=0.0,
+        max_value=100.0,
+        step=1.0,
+        key=FIRM_WIDGET_KEYS["supplier_mix_premium_pct"],
+    )
+    supplier_total = sum(
+        float(st.session_state.get(FIRM_WIDGET_KEYS[key], 0.0))
+        for key in (
+            "supplier_mix_offshore_pct",
+            "supplier_mix_balanced_pct",
+            "supplier_mix_premium_pct",
+        )
+    )
+    firm_cols[9].metric("Supplier Total", f"{supplier_total:.0f}%")
+    if round(supplier_total, 6) != 100.0:
+        st.warning("Supplier mix must sum to 100% before saving.")
+    timing = _current_material_timing(market_report)
+    timing_cols = st.columns([1.0, 1.0, 1.0, 2.2])
+    order_qty = int(timing["order_qty"])
+    if order_qty > 0:
+        timing_cols[0].metric("This RM Order", f"{order_qty:,} units")
+        timing_cols[1].metric("Est. Arrival If Ordered", f"Round {timing['arrival_round']}")
+    else:
+        timing_cols[0].metric("This RM Order", "0 units")
+        timing_cols[1].metric("Est. Arrival If Ordered", "-")
+    timing_cols[2].metric("Lead Time Used", f"{timing['lead_time_rounds']} round")
+    timing_cols[3].caption(
+        "New raw-material orders are for future production. In this deterministic version, "
+        "a saved order arrives in its scheduled arrival round. "
+        f"Current weighted lead time is {timing['adjusted_lead_time']:.2f} rounds "
+        f"after supply risk ({market_report.supply_risk} x{timing['supply_risk_index']:.2f}) "
+        "and expedite. Base lead times: Offshore 2.4, Balanced 1.3, Premium 0.9 rounds."
+    )
+
+
+def _render_product_profile(product_lines: list[ProductLine]) -> None:
+    """Render A/B/C product decisions as compact rows."""
+    st.markdown("### 4. Product Profile")
+    st.caption(
+        "All three product slots are shown together so price, forecast, production, quality, inventory, and retirement choices can be compared."
+    )
+    header_cols = st.columns([2.7, 1.05, 0.9, 0.9, 1.0, 0.9, 0.95, 1.0])
+    for column, label in zip(
+        header_cols,
+        [
+            "Product Slot and State",
+            "Segment",
+            "Price",
+            "Forecast",
+            "Production",
+            "QC",
+            "Target FG",
+            "Controls",
+        ],
+    ):
+        column.caption(label)
+
+    line_by_slot = {line.slot_name: line for line in product_lines}
+    segment_options = list(TARGET_SEGMENTS)
+    for slot_name in PRODUCT_SLOT_NAMES:
+        product_line = line_by_slot[slot_name]
+        is_retired_slot = product_line.retirement_flag and not product_line.is_active
+        lifecycle = product_line.lifecycle_stage.title()
+        lifecycle_tone = (
+            "green"
+            if product_line.lifecycle_stage == "launch"
+            else "amber"
+            if product_line.lifecycle_stage == "decline"
+            else "blue"
+        )
+        with st.container(border=True):
+            row_cols = st.columns([2.7, 1.05, 0.9, 0.9, 1.0, 0.9, 0.95, 1.0])
+            with row_cols[0]:
+                heading_suffix = " Retired / Empty" if is_retired_slot else ""
+                st.markdown(
+                    f'<div class="kiki-row-header">Product {slot_name}.{heading_suffix}</div>'
+                    f'{_chip(lifecycle, lifecycle_tone)}'
+                    f'{_chip(f"Age {product_line.age_in_rounds}")}'
+                    f'{_chip(f"Gen {product_line.tech_generation}")}'
+                    f'{_chip(f"FG {product_line.inventory_units:,}")}'
+                    f'{_chip(f"Backlog {product_line.backlog_units:,}", "red" if product_line.backlog_units else "")}',
+                    unsafe_allow_html=True,
+                )
+                if is_retired_slot:
+                    st.caption(
+                        f"Retired after round {product_line.retired_round}; launch a project into this slot to replace it."
+                    )
+                st.text_input(
+                    "Product Name",
+                    key=_product_widget_key(slot_name, "product_name"),
+                    disabled=is_retired_slot,
+                    label_visibility="collapsed",
+                )
+            active_value = bool(
+                st.session_state.get(
+                    _product_widget_key(slot_name, "is_active"),
+                    product_line.is_active,
+                )
+            )
+            current_segment = str(
+                st.session_state.get(
+                    _product_widget_key(slot_name, "target_segment"),
+                    product_line.target_segment,
+                )
+            )
+            with row_cols[1]:
+                st.selectbox(
+                    "Target Segment",
+                    options=segment_options,
+                    index=_safe_option_index(segment_options, current_segment),
+                    key=_product_widget_key(slot_name, "target_segment"),
+                    disabled=is_retired_slot,
+                    label_visibility="collapsed",
+                )
+            with row_cols[2]:
+                st.number_input(
+                    "Selling Price / Unit",
+                    min_value=0.0,
+                    step=1.0,
+                    key=_product_widget_key(slot_name, "selling_price_per_unit"),
+                    disabled=is_retired_slot,
+                    label_visibility="collapsed",
+                )
+            with row_cols[3]:
+                st.number_input(
+                    "Forecast Units",
+                    min_value=0,
+                    step=10,
+                    key=_product_widget_key(slot_name, "forecast_units"),
+                    disabled=is_retired_slot,
+                    label_visibility="collapsed",
+                )
+            with row_cols[4]:
+                st.number_input(
+                    "Planned Production Units",
+                    min_value=0,
+                    step=10,
+                    key=_product_widget_key(slot_name, "planned_production_units"),
+                    disabled=is_retired_slot,
+                    label_visibility="collapsed",
+                )
+            with row_cols[5]:
+                st.number_input(
+                    "QC Budget / Unit",
+                    min_value=0.0,
+                    step=0.25,
+                    key=_product_widget_key(slot_name, "qc_budget_per_unit"),
+                    disabled=is_retired_slot,
+                    label_visibility="collapsed",
+                )
+            with row_cols[6]:
+                st.number_input(
+                    "Target FG Inventory",
+                    min_value=0,
+                    step=5,
+                    key=_product_widget_key(slot_name, "target_finished_goods_inventory"),
+                    disabled=is_retired_slot,
+                    label_visibility="collapsed",
+                )
+            with row_cols[7]:
+                st.checkbox(
+                    "Active",
+                    key=_product_widget_key(slot_name, "is_active"),
+                    value=False if is_retired_slot else active_value,
+                    disabled=is_retired_slot,
+                    help=(
+                        "Retired slots stay inactive until a development project launches into this slot."
+                        if is_retired_slot
+                        else None
+                    ),
+                )
+                st.checkbox(
+                    "Retire",
+                    key=_product_widget_key(slot_name, "retire_flag"),
+                    disabled=is_retired_slot,
+                    help=(
+                        "This slot has already been retired."
+                        if is_retired_slot
+                        else "If checked, the product sells through this round, then any remaining inventory is liquidated and the slot becomes inactive."
+                    ),
+                )
+
+
+def _render_development_pipeline(
+    team_name: str,
+    current_round: int,
+) -> None:
+    """Render the two development-project slots below the product profile."""
+    st.markdown("### 5. Development Pipeline")
+    st.caption(
+        "Project charter fields lock after work begins. Round controls remain adjustable: investment, testing, launch request, and cancellation."
+    )
+    existing_projects = load_product_development_projects(team_name=team_name)
+    existing_project_by_slot = {project.project_slot_name: project for project in existing_projects}
+    project_columns = st.columns(len(PROJECT_SLOT_NAMES))
+    segment_options = list(TARGET_SEGMENTS)
+    slot_options = list(PRODUCT_SLOT_NAMES)
+
+    for project_column, project_slot_name in zip(project_columns, PROJECT_SLOT_NAMES):
+        project = existing_project_by_slot[project_slot_name]
+        fixed_settings_locked = _project_fixed_settings_locked(project)
+        if fixed_settings_locked:
+            _sync_locked_project_fields(project)
+        with project_column:
+            with st.container(border=True):
+                status_tone = (
+                    "green"
+                    if project.status == "launch_ready"
+                    else "amber"
+                    if project.status in {"concept", "development", "pilot"}
+                    else ""
+                )
+                last_launch_label = project.launched_round or "-"
+                st.markdown(
+                    f'<div class="kiki-row-header">Project {project_slot_name}</div>'
+                    f'{_chip(project.status.replace("_", " ").title(), status_tone)}'
+                    f'{_chip(f"Invested ${project.cumulative_investment:,.0f}")}'
+                    f'{_chip(f"Readiness {project.launch_readiness_score:.1f}%")}'
+                    f'{_chip(f"Earliest R{project.earliest_launch_round}")}'
+                    f'{_chip(f"Last {last_launch_label}")}',
+                    unsafe_allow_html=True,
+                )
+                top_cols = st.columns([1.55, 1.0, 0.85, 0.8])
+                top_cols[0].text_input(
+                    "Project Name",
+                    key=_project_widget_key(project_slot_name, "project_name"),
+                    disabled=fixed_settings_locked,
+                )
+                current_segment = str(
+                    st.session_state.get(
+                        _project_widget_key(project_slot_name, "target_segment"),
+                        project.target_segment,
+                    )
+                )
+                top_cols[1].selectbox(
+                    "Target Segment",
+                    options=segment_options,
+                    index=_safe_option_index(segment_options, current_segment),
+                    key=_project_widget_key(project_slot_name, "target_segment"),
+                    disabled=fixed_settings_locked,
+                )
+                top_cols[2].number_input(
+                    "Tech Gen",
+                    min_value=MIN_TECH_GENERATION,
+                    max_value=MAX_TECH_GENERATION,
+                    step=1,
+                    key=_project_widget_key(project_slot_name, "target_tech_generation"),
+                    disabled=fixed_settings_locked,
+                )
+                current_slot = str(
+                    st.session_state.get(
+                        _project_widget_key(project_slot_name, "intended_slot_name"),
+                        project.intended_slot_name,
+                    )
+                )
+                top_cols[3].selectbox(
+                    "Slot",
+                    options=slot_options,
+                    index=_safe_option_index(slot_options, current_slot),
+                    key=_project_widget_key(project_slot_name, "intended_slot_name"),
+                    disabled=fixed_settings_locked,
+                )
+
+                mid_cols = st.columns(4)
+                mid_cols[0].number_input(
+                    "Launch Round",
+                    min_value=min(current_round, int(project.planned_launch_round)),
+                    step=1,
+                    key=_project_widget_key(project_slot_name, "planned_launch_round"),
+                    disabled=fixed_settings_locked,
+                )
+                mid_cols[1].text_input(
+                    "Cannibalization",
+                    key=_project_widget_key(project_slot_name, "cannibalization_group"),
+                    disabled=fixed_settings_locked,
+                )
+                mid_cols[2].number_input(
+                    "Defect Mod.",
+                    step=0.002,
+                    key=_project_widget_key(project_slot_name, "projected_base_defect_modifier"),
+                    disabled=fixed_settings_locked,
+                )
+                mid_cols[3].number_input(
+                    "Demand Fit",
+                    min_value=0.1,
+                    step=0.05,
+                    key=_project_widget_key(project_slot_name, "projected_demand_fit_modifier"),
+                    disabled=fixed_settings_locked,
+                )
+
+                control_cols = st.columns([1.0, 1.0, 0.9, 0.85])
+                control_cols[0].number_input(
+                    "Investment",
+                    min_value=0.0,
+                    step=250.0,
+                    key=_project_widget_key(project_slot_name, "investment_this_round"),
+                )
+                control_cols[1].slider(
+                    "Testing",
+                    min_value=0.0,
+                    max_value=1.0,
+                    step=0.05,
+                    key=_project_widget_key(project_slot_name, "testing_intensity"),
+                )
+                control_cols[2].checkbox(
+                    "Launch Now",
+                    key=_project_widget_key(project_slot_name, "launch_now"),
+                )
+                control_cols[3].checkbox(
+                    "Cancel",
+                    key=_project_widget_key(project_slot_name, "cancel_now"),
+                )
+
+
+def _render_preview(
+    candidate_firm_decision: TeamDecision,
+    candidate_projects: list[ProductDevelopmentProject],
+    current_round: int,
+    preview,
+) -> None:
+    """Render compact Stage C portfolio, forecast, and finance analytics."""
     total_planned = preview.total_planned_production_units
     total_forecast = preview.total_forecast_units
     planned_utilization = (
@@ -655,46 +1713,52 @@ def _render_preview(candidate_firm_decision: TeamDecision, preview) -> None:
     raw_material_gap = preview.raw_material_units_available - total_planned
 
     row_one = st.columns(5)
-    row_one[0].metric("Total Forecast Units", f"{total_forecast:,}")
-    row_one[1].metric("Effective Firm Capacity", f"{preview.effective_capacity_units:,}")
-    row_one[2].metric("Total Planned Production", f"{total_planned:,}")
-    row_one[3].metric("Forecast-Production Gap", f"{preview.forecast_production_gap_units:+,}")
-    row_one[4].metric("Planned Utilization %", f"{planned_utilization:.1f}%")
+    row_one[0].metric("Forecast", f"{total_forecast:,}")
+    row_one[1].metric("Planned Production", f"{total_planned:,}")
+    row_one[2].metric("Effective Capacity", f"{preview.effective_capacity_units:,}")
+    row_one[3].metric("Feasible Output", f"{preview.projected_max_feasible_production:,}")
+    row_one[4].metric("Utilization", f"{planned_utilization:.1f}%")
 
     row_two = st.columns(5)
-    row_two[0].metric("Projected Feasible Output", f"{preview.projected_max_feasible_production:,}")
-    row_two[1].metric("Beginning FG Inventory", f"{preview.beginning_finished_goods_inventory:,}")
-    row_two[2].metric("Raw Material Available", f"{preview.raw_material_units_available:,}")
-    row_two[3].metric("RM Sufficiency Gap", f"{raw_material_gap:+,}")
-    row_two[4].metric(
-        "Projected FG Ending Inventory",
-        f"{preview.projected_ending_finished_goods_inventory_if_forecast_hits:,}",
-    )
+    row_two[0].metric("Forecast Gap", f"{preview.forecast_production_gap_units:+,}")
+    row_two[1].metric("RM Gap", f"{raw_material_gap:+,}")
+    row_two[2].metric("Defect Rate", f"{preview.projected_weighted_defect_rate:.2%}")
+    row_two[3].metric("Margin / Unit", f"${preview.projected_weighted_margin_per_unit:,.2f}")
+    row_two[4].metric("Likely Borrowing", f"${preview.projected_likely_borrowing_need:,.0f}")
 
     row_three = st.columns(5)
-    row_three[0].metric("Weighted Lead Time", f"{preview.weighted_lead_time:.2f} rounds")
-    row_three[1].metric("Weighted Material Cost", f"${preview.weighted_material_unit_cost:,.2f}")
-    row_three[2].metric("Projected Weighted Defect Rate", f"{preview.projected_weighted_defect_rate:.2%}")
-    row_three[3].metric("Projected Margin / Unit", f"${preview.projected_weighted_margin_per_unit:,.2f}")
-    row_three[4].metric("Projected Innovation Spend", f"${preview.projected_innovation_investment:,.0f}")
-
-    row_four = st.columns(5)
-    row_four[0].metric("Projected Working Capital", f"${preview.projected_working_capital_requirement:,.0f}")
-    row_four[1].metric("Projected Cash Before Borrowing", f"${preview.projected_ending_cash_before_borrowing:,.0f}")
-    row_four[2].metric("Likely Borrowing Need", f"${preview.projected_likely_borrowing_need:,.0f}")
-    row_four[3].metric("Planned Borrowing", f"${candidate_firm_decision.planned_borrowing_amount:,.0f}")
-    row_four[4].metric("Max Backorder Units", f"{candidate_firm_decision.max_backorder_units:,}")
-
-    row_five = st.columns(5)
-    row_five[0].metric("Pipeline Projects", f"{preview.pipeline_project_count}")
-    row_five[1].metric("Launch-Ready Projects", f"{preview.launch_ready_project_count}")
-    row_five[2].metric("Tech Position vs Market", f"{preview.tech_position_vs_market:+.2f}")
-    row_five[3].metric("Products in Decline", f"{preview.decline_product_count}")
-    row_five[4].metric("Likely Cannibalization", f"{preview.likely_cannibalization_exposure_units:,.1f}")
+    row_three[0].metric("Working Capital", f"${preview.projected_working_capital_requirement:,.0f}")
+    row_three[1].metric("Cash Before Borrowing", f"${preview.projected_ending_cash_before_borrowing:,.0f}")
+    row_three[2].metric("Planned Borrowing", f"${candidate_firm_decision.planned_borrowing_amount:,.0f}")
+    launch_requests = [
+        project for project in candidate_projects if project.is_defined() and project.launch_now
+    ]
+    if launch_requests:
+        launch_gate_ready_count = sum(
+            1
+            for project in launch_requests
+            if bool(
+                estimate_development_project(
+                    project,
+                    include_current_round_investment=True,
+                    current_round=current_round,
+                ).get("launch_gate_met", False)
+            )
+        )
+        row_three[3].metric(
+            "Launch Requests Ready",
+            f"{launch_gate_ready_count}/{len(launch_requests)}",
+        )
+    else:
+        row_three[3].metric("Launch-Ready Projects", f"{preview.launch_ready_project_count}")
+    row_three[4].metric("Products in Decline", f"{preview.decline_product_count}")
 
     st.caption(
         f"Weighted supplier mix: {preview.weighted_supplier_mix_text} | "
-        f"Projected portfolio segment mix: {preview.segment_mix_summary}"
+        f"Projected portfolio segment mix: {preview.segment_mix_summary} | "
+        f"Weighted lead time: {preview.weighted_lead_time:.2f} rounds | "
+        f"Projected innovation spend: ${preview.projected_innovation_investment:,.0f} | "
+        f"Max backorder units: {candidate_firm_decision.max_backorder_units:,}"
     )
 
     for warning_message in preview.warnings:
@@ -702,16 +1766,11 @@ def _render_preview(candidate_firm_decision: TeamDecision, preview) -> None:
 
     product_preview_frame = pd.DataFrame(preview.product_rows)
     if not product_preview_frame.empty:
-        st.markdown("#### Portfolio Scenario Preview")
-        st.dataframe(product_preview_frame, use_container_width=True, hide_index=True)
+        with st.expander("Portfolio scenario preview", expanded=False):
+            st.dataframe(product_preview_frame, use_container_width=True, hide_index=True)
 
     project_preview_frame = pd.DataFrame(preview.project_rows)
     if not project_preview_frame.empty:
-        st.markdown("#### Development Pipeline Estimate Preview")
-        st.caption(
-            "Use this table before saving: it shows estimated project cost, remaining funding, "
-            "readiness after this round's investment/testing, earliest launch timing, and launch risk."
-        )
         preferred_columns = [
             "project_slot_name",
             "project_name",
@@ -739,11 +1798,15 @@ def _render_preview(candidate_firm_decision: TeamDecision, preview) -> None:
         visible_columns = [
             column for column in preferred_columns if column in project_preview_frame.columns
         ]
-        st.dataframe(
-            project_preview_frame[visible_columns],
-            use_container_width=True,
-            hide_index=True,
-        )
+        with st.expander("Development pipeline estimate preview", expanded=False):
+            st.caption(
+                "Estimated cost, remaining funding, readiness, launch timing, and launch risk before saving."
+            )
+            st.dataframe(
+                project_preview_frame[visible_columns],
+                use_container_width=True,
+                hide_index=True,
+            )
 
 
 def _render_project_launch_gate_guidance(
@@ -783,9 +1846,22 @@ def _render_project_launch_gate_guidance(
     st.markdown("#### Launch Gate Checklist")
     st.caption(
         "A project can launch only when all three gates pass: funding, readiness, and timing. "
-        "If the table says Can Launch Now = Yes, check Launch Now If Ready before saving."
+        "If the table says Can Launch Now = Yes, check Launch Now before saving."
     )
-    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+    launch_gate_frame = pd.DataFrame(rows).rename(
+        columns={
+            "project": "Project",
+            "funding_gate": "Funding",
+            "readiness_gate": "Readiness",
+            "timing_gate": "Timing",
+            "can_launch_now": "Can Launch Now",
+            "funding_progress_pct": "Funding %",
+            "readiness_after_this_round": "Readiness After This Round",
+            "readiness_needed": "Readiness Needed",
+            "what_to_do_next": "Next Step",
+        }
+    )
+    st.dataframe(launch_gate_frame, width="stretch", hide_index=True)
 
 
 def _validation_messages(
@@ -852,14 +1928,84 @@ def _validation_messages(
     return messages
 
 
+def _save_stage_b_submission(
+    candidate_firm_decision: TeamDecision,
+    candidate_product_decisions: list[ProductDecision],
+    candidate_projects: list[ProductDevelopmentProject],
+    product_lines: list[ProductLine],
+    current_round: int,
+    submitted_by_user_id: str,
+) -> str:
+    """Persist the firm, product, forecast, pipeline, and product-line submission."""
+    save_team_decision(
+        decision=candidate_firm_decision,
+        round_number=current_round,
+        submitted_by_user_id=submitted_by_user_id,
+    )
+    save_product_decisions(product_decisions=candidate_product_decisions, round_number=current_round)
+    save_product_forecasts(_build_product_forecasts(current_round, candidate_product_decisions))
+    save_product_development_projects(candidate_projects)
+    save_product_lines(_merge_product_lines(product_lines, candidate_product_decisions))
+    return (
+        f"Saved the Stage C portfolio, forecast, and pipeline submission for "
+        f"`{candidate_firm_decision.team_name}` in round `{current_round}`."
+    )
+
+
+@st.dialog("Kiki found unfinished checks")
+def _render_kiki_submit_warning_dialog(
+    warning_messages: list[str],
+    candidate_firm_decision: TeamDecision,
+    candidate_product_decisions: list[ProductDecision],
+    candidate_projects: list[ProductDevelopmentProject],
+    product_lines: list[ProductLine],
+    current_round: int,
+    submitted_by_user_id: str,
+) -> None:
+    """Ask students to confirm before saving a plan with soft OM warnings."""
+    header_cols = st.columns([0.25, 0.75])
+    mascot_path = KIKI_CHECKLIST_MASCOT_DIR / "service_qc_cash_kiki.png"
+    if mascot_path.exists():
+        header_cols[0].image(str(mascot_path), width=78)
+    header_cols[1].markdown("### Review before submit")
+    header_cols[1].caption(
+        "These are soft OM warnings. Hard validation errors still block saving."
+    )
+
+    st.error(f"Kiki found {len(warning_messages)} unfinished check(s).")
+    for message in warning_messages:
+        st.markdown(f"- {message}")
+
+    action_cols = st.columns(2)
+    if action_cols[0].button("Go Back and Fix", key="stage_b_submit_warning_fix"):
+        _clear_submit_warning_state()
+        st.rerun()
+    if action_cols[1].button(
+        "Submit Anyway",
+        type="primary",
+        key="stage_b_submit_warning_confirm",
+    ):
+        st.session_state[SUBMIT_SUCCESS_MESSAGE_KEY] = _save_stage_b_submission(
+            candidate_firm_decision,
+            candidate_product_decisions,
+            candidate_projects,
+            product_lines,
+            current_round,
+            submitted_by_user_id,
+        )
+        _clear_submit_warning_state()
+        st.rerun()
+
+
 def main() -> None:
     """Render the Stage B team decision editor."""
     ensure_app_storage()
     user = require_authenticated_user()
+    _inject_compact_decision_css()
 
     st.title("Team Decisions")
     st.caption(
-        "Set firm-level operations and finance, submit product-level forecasts, manage the active three-slot portfolio, and invest in up to two future development projects."
+        "Set firm controls, compare Product A/B/C, manage development projects, and check the live planning preview before saving."
     )
 
     market_report = load_market_report()
@@ -884,19 +2030,20 @@ def main() -> None:
             f"Round {current_round} submissions are closed. Team leaders can review their plan, but cannot save changes unless the instructor reopens the round."
         )
 
-    st.markdown("### 1. Team Identity")
+    st.markdown("### 1. Team Setup")
+    identity_cols = st.columns([1.25, 1.35, 0.9, 1.05])
     if user.role == "team_leader":
         if not user.team_name:
             st.error("Your account does not have a team assignment yet.")
             st.stop()
         team_name = user.team_name
-        st.text_input("Team Name", value=team_name, disabled=True)
+        identity_cols[0].text_input("Team Name", value=team_name, disabled=True)
     else:
         team_options = _build_team_options(current_round)
         if team_options:
-            team_name = st.selectbox("Team", options=team_options)
+            team_name = identity_cols[0].selectbox("Team", options=team_options)
         else:
-            team_name = st.text_input("Team Name", placeholder="Team Alpha")
+            team_name = identity_cols[0].text_input("Team Name", placeholder="Team Alpha")
 
     team_name_key = team_name.strip().lower()
     if not team_name_key:
@@ -920,16 +2067,27 @@ def main() -> None:
     saved_projects = ensure_development_projects_for_team(team_name)
 
     current_context = f"{current_round}:{team_name_key}"
-    if st.session_state.get(SESSION_CONTEXT_KEY) != current_context:
+    if (
+        st.session_state.get(SESSION_CONTEXT_KEY) != current_context
+        or _decision_widgets_look_unseeded(product_lines)
+    ):
+        previous_firm_decision = _latest_previous_firm_decision(current_round, team_name)
         seed_firm_decision = (
             existing_firm_decision
             if existing_firm_decision is not None
+            else previous_firm_decision
+            if previous_firm_decision is not None
             else _suggested_firm_decision(team_name, archetype_lookup[default_archetype_name])
         )
         seed_product_decisions = (
             saved_product_decisions
             if saved_product_decisions
-            else _suggested_product_decisions(team_name, archetype_lookup[default_archetype_name], product_lines)
+            else _seed_product_decisions_for_round(
+                team_name,
+                archetype_lookup[default_archetype_name],
+                product_lines,
+                current_round,
+            )
         )
         seed_projects = saved_projects if saved_projects else _seed_projects(team_name, current_round)
         # This is safe here because the archetype widget has not been created
@@ -945,7 +2103,7 @@ def main() -> None:
             or bool(existing_state and existing_state.completed_rounds)
         )
     )
-    selected_archetype_name = st.selectbox(
+    selected_archetype_name = identity_cols[1].selectbox(
         "Archetype",
         options=archetype_names,
         index=archetype_names.index(st.session_state.get(ARCHETYPE_KEY, default_archetype_name)),
@@ -954,15 +2112,17 @@ def main() -> None:
     )
     selected_archetype = archetype_lookup[selected_archetype_name]
 
-    identity_actions = st.columns(2)
-    if identity_actions[0].button("Apply Archetype Suggestions"):
+    if identity_cols[2].button("Apply Suggestions"):
         _load_decisions_into_session(
             _suggested_firm_decision(team_name, selected_archetype),
             _suggested_product_decisions(team_name, selected_archetype, product_lines),
             saved_projects,
         )
         st.rerun()
-    if saved_product_decisions and existing_firm_decision and identity_actions[1].button("Load Saved Round Submission"):
+    if identity_cols[3].button(
+        "Load Saved Round",
+        disabled=not (saved_product_decisions and existing_firm_decision),
+    ):
         _load_decisions_into_session(
             existing_firm_decision,
             saved_product_decisions,
@@ -977,194 +2137,9 @@ def main() -> None:
         f"Premium tech adoption is {market_report.premium_tech_adoption:.0%} and mid-market tech adoption is {market_report.mid_market_tech_adoption:.0%}."
     )
 
-    st.markdown("### 3. Firm-Level Operations and Finance")
-    firm_row_one = st.columns(3)
-    firm_row_one[0].number_input("Overtime Capacity Units", min_value=0, step=10, key=FIRM_WIDGET_KEYS["overtime_capacity_units"])
-    firm_row_one[1].number_input("Capacity Expansion Units", min_value=0, step=10, key=FIRM_WIDGET_KEYS["capacity_expansion_units"])
-    firm_row_one[2].number_input("Max Backorder Units", min_value=0, step=10, key=FIRM_WIDGET_KEYS["max_backorder_units"])
-
-    firm_row_two = st.columns(3)
-    firm_row_two[0].number_input("Raw Material Order Quantity", min_value=0, step=10, key=FIRM_WIDGET_KEYS["raw_material_order_qty"])
-    firm_row_two[1].slider("Expedited Order Share %", min_value=0.0, max_value=100.0, step=1.0, key=FIRM_WIDGET_KEYS["expedited_order_share_pct"])
-    firm_row_two[2].number_input("Planned Borrowing Amount", min_value=0.0, step=500.0, key=FIRM_WIDGET_KEYS["planned_borrowing_amount"])
-
-    st.caption("Supplier mix must sum to 100% across the whole firm.")
-    supplier_cols = st.columns(3)
-    supplier_cols[0].number_input("Offshore Mix %", min_value=0.0, max_value=100.0, step=1.0, key=FIRM_WIDGET_KEYS["supplier_mix_offshore_pct"])
-    supplier_cols[1].number_input("Balanced Mix %", min_value=0.0, max_value=100.0, step=1.0, key=FIRM_WIDGET_KEYS["supplier_mix_balanced_pct"])
-    supplier_cols[2].number_input("Premium Mix %", min_value=0.0, max_value=100.0, step=1.0, key=FIRM_WIDGET_KEYS["supplier_mix_premium_pct"])
-
-    st.markdown("### 4. Active Product Portfolio and Forecasts")
-    line_by_slot = {line.slot_name: line for line in product_lines}
-    for slot_name in PRODUCT_SLOT_NAMES:
-        product_line = line_by_slot[slot_name]
-        is_retired_slot = product_line.retirement_flag and not product_line.is_active
-        with st.container(border=True):
-            heading_suffix = " - Retired / Empty Slot" if is_retired_slot else ""
-            st.markdown(f"#### Product {slot_name}{heading_suffix}")
-            if is_retired_slot:
-                st.info(
-                    f"This product was retired after round {product_line.retired_round}. "
-                    "It no longer receives demand, production, backlog, or inventory. "
-                    "Launch a development project into this slot to replace it."
-                )
-            meta_cols = st.columns(5)
-            meta_cols[0].metric("Lifecycle", product_line.lifecycle_stage.title())
-            meta_cols[1].metric("Age (Rounds)", f"{product_line.age_in_rounds}")
-            meta_cols[2].metric("Tech Gen", f"Gen {product_line.tech_generation}")
-            meta_cols[3].metric("FG Inventory", f"{product_line.inventory_units:,}")
-            meta_cols[4].metric("Backlog", f"{product_line.backlog_units:,}")
-
-            top_row = st.columns([2, 1, 1, 1])
-            top_row[0].text_input(
-                "Product Name",
-                key=_product_widget_key(slot_name, "product_name"),
-                disabled=is_retired_slot,
-            )
-            active_value = bool(st.session_state.get(_product_widget_key(slot_name, "is_active"), product_line.is_active))
-            top_row[1].checkbox(
-                "Active",
-                key=_product_widget_key(slot_name, "is_active"),
-                value=False if is_retired_slot else active_value,
-                disabled=is_retired_slot,
-                help=(
-                    "Retired slots stay inactive until a development project launches into this slot."
-                    if is_retired_slot
-                    else None
-                ),
-            )
-            current_segment = str(st.session_state.get(_product_widget_key(slot_name, "target_segment"), product_line.target_segment))
-            top_row[2].selectbox(
-                "Target Segment",
-                options=list(TARGET_SEGMENTS),
-                index=list(TARGET_SEGMENTS).index(current_segment),
-                key=_product_widget_key(slot_name, "target_segment"),
-                disabled=is_retired_slot,
-            )
-            top_row[3].checkbox(
-                "Retire After Round",
-                key=_product_widget_key(slot_name, "retire_flag"),
-                disabled=is_retired_slot,
-                help=(
-                    "This slot has already been retired."
-                    if is_retired_slot
-                    else "If checked, the product sells through this round, then any remaining inventory is liquidated and the slot becomes inactive."
-                ),
-            )
-
-            numeric_row = st.columns(5)
-            numeric_row[0].number_input("Selling Price / Unit", min_value=0.0, step=1.0, key=_product_widget_key(slot_name, "selling_price_per_unit"), disabled=is_retired_slot)
-            numeric_row[1].number_input("Forecast Units", min_value=0, step=10, key=_product_widget_key(slot_name, "forecast_units"), disabled=is_retired_slot)
-            numeric_row[2].number_input("Planned Production Units", min_value=0, step=10, key=_product_widget_key(slot_name, "planned_production_units"), disabled=is_retired_slot)
-            numeric_row[3].number_input("QC Budget / Unit", min_value=0.0, step=0.25, key=_product_widget_key(slot_name, "qc_budget_per_unit"), disabled=is_retired_slot)
-            numeric_row[4].number_input("Target FG Inventory", min_value=0, step=5, key=_product_widget_key(slot_name, "target_finished_goods_inventory"), disabled=is_retired_slot)
-
-    st.markdown("### 5. Development Pipeline")
-    st.caption(
-        "Use up to two project slots to invest ahead of launch. Project charter settings become fixed once work starts; investment and testing remain controllable each round."
-    )
-    st.info(
-        "How to think about NPD: choose the product concept once, then manage the project. "
-        "More investment improves funding progress, higher testing intensity improves launch readiness, "
-        "and newer technology generations usually require more money and development time. "
-        "The planned launch round is a target date; if a project is late, it can still launch later once funding, readiness, and timing gates pass. "
-        "After launch, the new product moves into its portfolio slot and the project slot resets so you can start the next development project. "
-        "See the Model Formula Guide page for the exact readiness and cost-estimate formulas."
-    )
-    existing_projects = load_product_development_projects(team_name=team_name)
-    existing_project_by_slot = {project.project_slot_name: project for project in existing_projects}
-    for project_slot_name in PROJECT_SLOT_NAMES:
-        project = existing_project_by_slot[project_slot_name]
-        fixed_settings_locked = _project_fixed_settings_locked(project)
-        if fixed_settings_locked:
-            _sync_locked_project_fields(project)
-        with st.container(border=True):
-            st.markdown(f"#### Project {project_slot_name}")
-            project_meta = st.columns(5)
-            project_meta[0].metric("Status", project.status.replace("_", " ").title())
-            project_meta[1].metric("Cumulative Investment", f"${project.cumulative_investment:,.0f}")
-            project_meta[2].metric("Saved Readiness", f"{project.launch_readiness_score:.1f}%")
-            project_meta[3].metric("Earliest Launch", f"Round {project.earliest_launch_round}")
-            project_meta[4].metric("Last Launch", f"{project.launched_round or '-'}")
-            st.caption(
-                "Top metrics show the saved project state entering this round. "
-                "Your new investment/testing choices are reflected in the Launch Gate Checklist below."
-            )
-
-            st.caption(
-                "Fixed project settings are locked after investment/testing begins. "
-                "Round decisions remain adjustable so teams can speed up or stabilize the project."
-                if fixed_settings_locked
-                else "Set the fixed project charter before starting investment/testing."
-            )
-            st.caption(
-                "Fixed charter: name, segment, tech generation, target slot, planned launch round, "
-                "cannibalization group, defect goal, and demand-fit goal. "
-                "Round controls: investment this round, testing intensity, launch now if ready, or cancel."
-            )
-            project_top = st.columns([2, 1, 1, 1])
-            project_top[0].text_input(
-                "Project Name",
-                key=_project_widget_key(project_slot_name, "project_name"),
-                disabled=fixed_settings_locked,
-            )
-            current_segment = str(st.session_state.get(_project_widget_key(project_slot_name, "target_segment"), project.target_segment))
-            project_top[1].selectbox(
-                "Target Segment",
-                options=list(TARGET_SEGMENTS),
-                index=list(TARGET_SEGMENTS).index(current_segment),
-                key=_project_widget_key(project_slot_name, "target_segment"),
-                disabled=fixed_settings_locked,
-            )
-            project_top[2].number_input(
-                "Target Tech Generation",
-                min_value=MIN_TECH_GENERATION,
-                max_value=MAX_TECH_GENERATION,
-                step=1,
-                key=_project_widget_key(project_slot_name, "target_tech_generation"),
-                disabled=fixed_settings_locked,
-            )
-            current_slot = str(st.session_state.get(_project_widget_key(project_slot_name, "intended_slot_name"), project.intended_slot_name))
-            project_top[3].selectbox(
-                "Intended Product Slot",
-                options=list(PRODUCT_SLOT_NAMES),
-                index=list(PRODUCT_SLOT_NAMES).index(current_slot),
-                key=_project_widget_key(project_slot_name, "intended_slot_name"),
-                disabled=fixed_settings_locked,
-            )
-
-            project_mid = st.columns(4)
-            project_mid[0].number_input(
-                "Planned Launch Round",
-                min_value=min(current_round, int(project.planned_launch_round)),
-                step=1,
-                key=_project_widget_key(project_slot_name, "planned_launch_round"),
-                disabled=fixed_settings_locked,
-            )
-            project_mid[1].number_input("Investment This Round", min_value=0.0, step=250.0, key=_project_widget_key(project_slot_name, "investment_this_round"))
-            project_mid[2].slider("Testing Intensity", min_value=0.0, max_value=1.0, step=0.05, key=_project_widget_key(project_slot_name, "testing_intensity"))
-            project_mid[3].text_input(
-                "Cannibalization Group",
-                key=_project_widget_key(project_slot_name, "cannibalization_group"),
-                disabled=fixed_settings_locked,
-            )
-
-            project_bottom = st.columns(4)
-            project_bottom[0].number_input(
-                "Projected Defect Modifier",
-                step=0.002,
-                key=_project_widget_key(project_slot_name, "projected_base_defect_modifier"),
-                disabled=fixed_settings_locked,
-            )
-            project_bottom[1].number_input(
-                "Projected Demand-Fit Modifier",
-                min_value=0.1,
-                step=0.05,
-                key=_project_widget_key(project_slot_name, "projected_demand_fit_modifier"),
-                disabled=fixed_settings_locked,
-            )
-            project_bottom[2].checkbox("Launch Now If Ready", key=_project_widget_key(project_slot_name, "launch_now"))
-            project_bottom[3].checkbox("Cancel Project", key=_project_widget_key(project_slot_name, "cancel_now"))
+    _render_firm_controls(market_report)
+    _render_product_profile(product_lines)
+    _render_development_pipeline(team_name, current_round)
 
     candidate_firm_decision = _current_firm_decision(team_name, selected_archetype_name)
     candidate_product_decisions = _current_product_decisions(team_name, product_lines)
@@ -1183,14 +2158,50 @@ def main() -> None:
     )
 
     st.markdown("### 6. Planning Analytics Preview")
-    _render_preview(candidate_firm_decision, preview)
+    _render_preview(candidate_firm_decision, candidate_projects, current_round, preview)
+
+    st.markdown("### 7. Pre-Submit Check")
+    kiki_submit_sections = _build_kiki_submit_checklist(
+        candidate_firm_decision,
+        candidate_product_decisions,
+        candidate_projects,
+        preview,
+        current_round,
+    )
+    kiki_warning_messages = _kiki_submit_warning_messages(kiki_submit_sections)
+    pending_warning_messages = st.session_state.get(SUBMIT_WARNING_MESSAGES_KEY, [])
+    pending_warning_context = st.session_state.get(SUBMIT_WARNING_CONTEXT_KEY)
+    pending_warning_active = (
+        pending_warning_context == current_context
+        and pending_warning_messages == kiki_warning_messages
+        and bool(kiki_warning_messages)
+    )
+    if pending_warning_messages and not pending_warning_active:
+        _clear_submit_warning_state()
+        pending_warning_active = False
+    _render_kiki_submit_checklist(kiki_submit_sections)
+
+    success_message = st.session_state.pop(SUBMIT_SUCCESS_MESSAGE_KEY, None)
+    if success_message:
+        st.success(success_message)
+
+    if pending_warning_active:
+        _render_kiki_submit_warning_dialog(
+            warning_messages=kiki_warning_messages,
+            candidate_firm_decision=candidate_firm_decision,
+            candidate_product_decisions=candidate_product_decisions,
+            candidate_projects=candidate_projects,
+            product_lines=product_lines,
+            current_round=current_round,
+            submitted_by_user_id=user.user_id,
+        )
 
     save_col, note_col = st.columns([1, 2])
     save_disabled = user.role == "team_leader" and not round_status.submissions_open
     if save_col.button(
         "Save Portfolio and Pipeline Decision",
         type="primary",
-        disabled=save_disabled,
+        disabled=save_disabled or pending_warning_active,
     ):
         if user.role == "team_leader" and not round_status.submissions_open:
             st.error("Submissions are closed for this round.")
@@ -1204,18 +2215,21 @@ def main() -> None:
         if errors:
             for error_message in errors:
                 st.error(error_message)
+            _clear_submit_warning_state()
+        elif kiki_warning_messages:
+            st.session_state[SUBMIT_WARNING_CONTEXT_KEY] = current_context
+            st.session_state[SUBMIT_WARNING_MESSAGES_KEY] = kiki_warning_messages
+            st.rerun()
         else:
-            save_team_decision(
-                decision=candidate_firm_decision,
-                round_number=current_round,
-                submitted_by_user_id=user.user_id,
-            )
-            save_product_decisions(product_decisions=candidate_product_decisions, round_number=current_round)
-            save_product_forecasts(_build_product_forecasts(current_round, candidate_product_decisions))
-            save_product_development_projects(candidate_projects)
-            save_product_lines(_merge_product_lines(product_lines, candidate_product_decisions))
             st.success(
-                f"Saved the Stage C portfolio, forecast, and pipeline submission for `{candidate_firm_decision.team_name}` in round `{current_round}`."
+                _save_stage_b_submission(
+                    candidate_firm_decision,
+                    candidate_product_decisions,
+                    candidate_projects,
+                    product_lines,
+                    current_round,
+                    user.user_id,
+                )
             )
 
     note_col.caption(
