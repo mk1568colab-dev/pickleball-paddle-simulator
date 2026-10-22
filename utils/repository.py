@@ -193,7 +193,11 @@ def load_round_status(round_number: int | None = None) -> ClassroomRoundStatus:
         ).fetchone()
 
     if row is None:
-        return ClassroomRoundStatus(round_number=effective_round, submissions_open=True)
+        return ClassroomRoundStatus(round_number=effective_round, submissions_open=False)
+    with get_connection() as connection:
+        committed = connection.execute("SELECT locked_at FROM demand_commitments WHERE round_number=?", (effective_round,)).fetchone()
+    if not committed or not committed[0]:
+        return ClassroomRoundStatus(round_number=effective_round, submissions_open=False)
     return ClassroomRoundStatus.from_dict(dict(row))
 
 
@@ -201,6 +205,18 @@ def save_round_status(status: ClassroomRoundStatus) -> None:
     """Persist instructor-controlled submission status for a round."""
     ensure_app_storage()
     with get_connection() as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        if status.submissions_open:
+            commitment = connection.execute("SELECT * FROM demand_commitments WHERE round_number=?", (status.round_number,)).fetchone()
+            if not commitment:
+                raise ValueError("Save a public demand outlook before opening submissions.")
+            if commitment["completed_at"]:
+                raise ValueError("A completed round cannot reopen.")
+            if not commitment["locked_at"]:
+                report = connection.execute("SELECT total_demand FROM market_reports WHERE round_number=?", (status.round_number,)).fetchone()
+                if report is None:
+                    raise ValueError("Save the market report first.")
+                connection.execute("UPDATE demand_commitments SET actual_demand=?, locked_at=CURRENT_TIMESTAMP WHERE round_number=?", (report[0], status.round_number))
         connection.execute(
             """
             INSERT INTO classroom_rounds (
@@ -1835,6 +1851,7 @@ def factory_reset_game_data() -> MarketReport:
     """Reset all gameplay data to a fresh Round 1 state while preserving accounts."""
     ensure_app_storage()
     with get_connection() as connection:
+        connection.execute("DELETE FROM demand_commitments")
         connection.execute("DELETE FROM classroom_rounds")
         connection.execute("DELETE FROM market_reports")
         connection.execute("DELETE FROM product_decisions")
@@ -1850,7 +1867,7 @@ def factory_reset_game_data() -> MarketReport:
     save_market_report(DEFAULT_MARKET_REPORT)
     set_round_submissions_open(
         DEFAULT_MARKET_REPORT.round_number,
-        True,
+        False,
         "Factory reset created a fresh Round 1.",
     )
     return DEFAULT_MARKET_REPORT
