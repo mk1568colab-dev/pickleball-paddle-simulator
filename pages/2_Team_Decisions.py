@@ -34,6 +34,7 @@ from models.schemas import (
 )
 from utils.auth import require_authenticated_user
 from utils.bootstrap import ensure_app_storage
+from utils.demand_protocol import planning_market_report
 from utils.repository import (
     ensure_development_projects_for_team,
     ensure_product_lines_for_team,
@@ -2008,7 +2009,8 @@ def main() -> None:
         "Set firm controls, compare Product A/B/C, manage development projects, and check the live planning preview before saving."
     )
 
-    market_report = load_market_report()
+    market_report = planning_market_report(load_market_report())
+    st.caption("Planning previews use the public demand outlook midpoint, not actual market demand. Final results depend on competitors and the instructor's committed market demand.")
     current_round = market_report.round_number
     round_status = load_round_status(current_round)
     team_states = load_team_states()
