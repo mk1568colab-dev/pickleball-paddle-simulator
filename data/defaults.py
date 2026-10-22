@@ -1,6 +1,7 @@
 """Default data used to bootstrap the simulator."""
 
 from models.schemas import MarketReport, ProductTemplate, TeamArchetype
+from data.classroom_start import COMMON_PROFILE
 
 
 DEFAULT_MARKET_REPORT = MarketReport(
@@ -21,7 +22,7 @@ DEFAULT_MARKET_REPORT = MarketReport(
 )
 
 
-DEFAULT_TEAM_ARCHETYPES = [
+LEGACY_TEAM_ARCHETYPES = [
     TeamArchetype(
         name="Premium Quality",
         description="Targets premium buyers through stronger engineering, quality spend, and tighter supply reliability.",
@@ -311,7 +312,7 @@ DEFAULT_TEAM_ARCHETYPES = [
         ],
     ),
     TeamArchetype(
-        name="Community / Club",
+        name="Legacy Club (archived)",
         description="Builds dependable club demand through balanced pricing, reasonable service, and solid operations.",
         base_cost=64.0,
         base_capacity=300,
@@ -383,6 +384,9 @@ DEFAULT_TEAM_ARCHETYPES = [
         ],
     ),
 ]
+
+
+DEFAULT_TEAM_ARCHETYPES = [COMMON_PROFILE]
 
 
 DEMO_USER_SEEDS = [
