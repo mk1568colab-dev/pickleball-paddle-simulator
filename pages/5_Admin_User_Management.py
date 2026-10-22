@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-import secrets
 import hashlib
 import sqlite3
-import string
 
 import pandas as pd
 import streamlit as st
@@ -30,7 +28,6 @@ CREDENTIAL_NOTICE_KEY = "admin_credentials_notice"
 BULK_IMPORT_SUMMARY_KEY = "bulk_import_summary"
 TEAM_GENERATION_SUMMARY_KEY = "team_generation_summary"
 REMOVE_TEAM_SUMMARY_KEY = "remove_team_summary"
-PASSWORD_WORDS = ["Paddle", "Rally", "Volley", "Court", "Dink", "Serve"]
 DEFAULT_STARTING_CASH = 50_000.0
 
 
@@ -205,14 +202,8 @@ def _slugify_username_suffix(value: str) -> str:
 
 
 def _generate_temporary_password(team_number: int) -> str:
-    """Generate a readable one-time password that passes local strength rules."""
-    word = secrets.choice(PASSWORD_WORDS)
-    random_digits = secrets.randbelow(900) + 100
-    random_tail = "".join(
-        secrets.choice(string.ascii_letters + string.digits)
-        for _ in range(4)
-    )
-    return f"Team{team_number:02d}-{word}{random_digits}{random_tail}"
+    """Return the instructor-requested classroom password for a team number."""
+    return f"team{team_number}"
 
 
 def _save_initial_team_state(team_name: str, starting_cash_balance: float) -> None:
@@ -343,7 +334,9 @@ def main() -> None:
         st.subheader("Quick Team Account Generator")
         st.caption(
             "Use this when you want to start a class quickly, for example with "
-            "`Team 1` through `Team 6` and matching team-leader logins."
+            "`Team 1` through `Team 6` and matching team-leader logins. "
+            "Passwords use the team number: Team 1 = team1, Team 2 = team2, "
+            "and so on (lowercase, no spaces)."
         )
 
         with st.form("generate_team_accounts_form"):
@@ -741,17 +734,8 @@ def _run_team_account_generation(
         username = f"{normalized_username_prefix}{team_number}{normalized_username_suffix}"
         password = _generate_temporary_password(team_number)
 
-        password_errors = validate_password_strength(password)
-        if password_errors:
-            error_rows.append(
-                {
-                    "team_name": team_name,
-                    "username": username,
-                    "error": " ".join(password_errors),
-                }
-            )
-            continue
-
+        # Numbered classroom passwords are intentional in this generator only.
+        # Manual account creation, imports, and password changes keep validation.
         existing_user = get_user_by_username(username)
         existing_team_user = existing_team_users.get(team_name.strip().lower())
         if (
