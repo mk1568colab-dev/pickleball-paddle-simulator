@@ -8,6 +8,7 @@ import streamlit as st
 from engine.simulator import build_round_validation_rows, run_round
 from utils.auth import require_admin, require_authenticated_user
 from utils.bootstrap import ensure_app_storage
+from utils.demand_protocol import committed_report, complete_demand_round, demand_status
 from utils.repository import (
     advance_market_report_to_next_round,
     factory_reset_game_data,
@@ -347,6 +348,14 @@ def _run_round_and_advance(
     team_states,
 ) -> None:
     """Run the deterministic engine and advance the classroom round."""
+    if load_round_status(market_report.round_number).submissions_open:
+        st.error("Close submissions before running the round.")
+        return
+    try:
+        market_report = committed_report(market_report)
+    except ValueError as exc:
+        st.error(str(exc))
+        return
     (
         round_results,
         product_results,
@@ -368,6 +377,7 @@ def _run_round_and_advance(
     save_team_states(updated_states)
     save_product_lines(updated_product_lines)
     save_product_development_projects(updated_projects)
+    complete_demand_round(market_report.round_number)
     next_market_report = advance_market_report_to_next_round(market_report)
     set_round_submissions_open(
         market_report.round_number,
@@ -376,8 +386,8 @@ def _run_round_and_advance(
     )
     set_round_submissions_open(
         next_market_report.round_number,
-        True,
-        "Next round opened automatically after round execution.",
+        False,
+        "Prepare the next outlook and actual demand before opening submissions.",
     )
     _clear_game_editor_session_state()
     st.session_state["instructor_panel_notice"] = (
@@ -494,7 +504,7 @@ def main() -> None:
             )
 
             button_cols = st.columns([1, 1, 1])
-            if button_cols[0].button("Open Team Submissions"):
+            if button_cols[0].button("Open Team Submissions", disabled=not demand_status(current_round)):
                 set_round_submissions_open(
                     current_round,
                     True,
@@ -524,7 +534,7 @@ def main() -> None:
                     )
             if round_status.submissions_open:
                 st.info(
-                    "Submissions are still open. Closing submissions first is cleaner for classroom use, but the round can still run."
+                    "Submissions are open. Actual demand and market settings are locked. Close submissions before running."
                 )
 
     with control_sections[2]:

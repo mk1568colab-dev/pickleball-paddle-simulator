@@ -26,6 +26,14 @@ _logged_database_paths: set[str] = set()
 
 
 SCHEMA_SQL = """
+CREATE TABLE IF NOT EXISTS demand_commitments (
+    round_number INTEGER PRIMARY KEY,
+    outlook_low INTEGER NOT NULL CHECK(outlook_low >= 0),
+    outlook_high INTEGER NOT NULL CHECK(outlook_high > outlook_low),
+    actual_demand INTEGER,
+    locked_at TEXT,
+    completed_at TEXT
+);
 CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE COLLATE NOCASE,
@@ -83,6 +91,16 @@ CREATE TABLE IF NOT EXISTS classroom_rounds (
     notes TEXT NOT NULL DEFAULT '',
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TRIGGER IF NOT EXISTS protect_committed_market
+BEFORE UPDATE ON market_reports
+WHEN EXISTS (SELECT 1 FROM demand_commitments WHERE round_number=OLD.round_number AND locked_at IS NOT NULL)
+BEGIN SELECT RAISE(ABORT, 'Market settings are locked after submissions first open.'); END;
+
+CREATE TRIGGER IF NOT EXISTS protect_committed_demand
+BEFORE UPDATE OF actual_demand, outlook_low, outlook_high, locked_at ON demand_commitments
+WHEN OLD.locked_at IS NOT NULL
+BEGIN SELECT RAISE(ABORT, 'Demand commitment cannot be changed.'); END;
 
 CREATE TABLE IF NOT EXISTS team_decisions (
     round_number INTEGER NOT NULL,

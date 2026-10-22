@@ -12,6 +12,7 @@ from engine.teaching import (
 )
 from utils.auth import require_authenticated_user
 from utils.bootstrap import ensure_app_storage
+from utils.demand_protocol import public_market_row, revealed_demands
 from utils.repository import (
     load_forecast_accuracy_results,
     load_market_report,
@@ -521,7 +522,12 @@ def main() -> None:
     project_frame = _frame([item.to_dict() for item in development_projects if item.is_defined()])
 
     st.subheader("Current Market Report")
-    st.table(_frame([market_report.to_dict()]))
+    st.table(_frame([market_report.to_dict() if user.role == "admin" else public_market_row(market_report)]))
+    if revealed_demands():
+        st.subheader("Actual Market Demand After Results")
+        st.dataframe(_frame(revealed_demands()), hide_index=True)
+    if team_results:
+        market_report = load_market_report(max(item.round_number for item in team_results))
 
     if user.role == "admin":
         (

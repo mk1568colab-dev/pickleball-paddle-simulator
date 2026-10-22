@@ -73,6 +73,8 @@ class EqualStartTests(unittest.TestCase):
         create_user("ui_admin", "not-a-login-hash", "admin", None, True)
         create_user("ui_student", "not-a-login-hash", "team_leader", "UI Team", True)
         from utils.repository import set_round_submissions_open, load_team_decision
+        from utils.demand_protocol import save_outlook
+        save_outlook(1, 1000, 1400)
         set_round_submissions_open(1, True)
         root = Path(__file__).resolve().parents[1]
         for page in ["11_Market_Catalog.py", "12_Company_Brief.py", "2_Team_Decisions.py"]:

@@ -9,6 +9,7 @@ from models.schemas import MAX_TECH_GENERATION, MIN_TECH_GENERATION, MarketRepor
 from utils.auth import require_authenticated_user
 from utils.bootstrap import ensure_app_storage
 from utils.repository import load_market_report, save_market_report
+from utils.demand_protocol import demand_status, public_market_row, save_outlook, revealed_demands
 
 
 def _render_report_table(report: MarketReport) -> None:
@@ -34,8 +35,35 @@ def main() -> None:
 
     if user.role != "admin":
         st.info("This page is view-only for team leaders.")
-        _render_report_table(current_report)
+        st.caption("The outlook range describes the current decision round. Actual market demand is revealed only after results. It is not your team's guaranteed demand.")
+        public = public_market_row(current_report)
+        cols = st.columns(2)
+        cols[0].metric("Decision Round", current_report.round_number)
+        cols[1].metric("Market Demand Outlook", f"{public.pop('demand_outlook_low')} to {public.pop('demand_outlook_high')} units")
+        public.pop("round_number", None)
+        st.table([{"Market factor": key.replace("_", " ").title(), "Value": str(value)} for key, value in public.items()])
+        if revealed_demands():
+            st.subheader("Completed Round Demand")
+            st.table(revealed_demands())
         return
+
+    status = demand_status(current_report.round_number)
+    if status and status["locked_at"]:
+        st.info("Market settings and actual demand are locked. Closing or reopening submissions does not unlock them.")
+        _render_report_table(current_report)
+        st.table([status])
+        return
+
+    st.warning("Save the demand outlook and market settings before opening submissions. Opening commits actual demand and freezes this round's market settings.")
+    with st.form("demand_outlook"):
+        low = st.number_input("Public demand outlook lower bound", min_value=0, value=int(status["outlook_low"]) if status else 1000)
+        high = st.number_input("Public demand outlook upper bound", min_value=1, value=int(status["outlook_high"]) if status else 1400)
+        if st.form_submit_button("Save Public Outlook"):
+            try:
+                save_outlook(current_report.round_number, int(low), int(high))
+                st.success("Public outlook saved. Actual demand remains private.")
+            except ValueError as exc:
+                st.error(str(exc))
 
     st.subheader("Instructor Scenario Presets")
     preset_names = list(MARKET_SCENARIO_PRESETS)
@@ -55,8 +83,8 @@ def main() -> None:
         st.rerun()
 
     with st.form("market_report_form"):
-        round_number = st.number_input("Round Number", min_value=1, step=1, value=current_report.round_number)
-        total_demand = st.number_input("Total Demand", min_value=0, step=50, value=current_report.total_demand)
+        round_number = st.number_input("Round Number", min_value=1, step=1, value=current_report.round_number, disabled=True)
+        total_demand = st.number_input("Actual Total Demand (instructor only)", min_value=0, step=50, value=current_report.total_demand)
 
         share_cols = st.columns(3)
         premium_share = share_cols[0].number_input("Premium Share", min_value=0.0, max_value=1.0, step=0.01, value=float(current_report.premium_share))
