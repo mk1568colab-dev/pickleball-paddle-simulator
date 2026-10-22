@@ -38,6 +38,8 @@ def _render_sidebar_navigation(user: AppUser) -> None:
         TEAM_DECISIONS_PAGE_PATH,
         label="Team Decisions",
     )
+    st.page_link("pages/11_Market_Catalog.py", label="Competitor Prices")
+    st.page_link("pages/12_Company_Brief.py", label="Company Brief & Strategy")
     if user.role == "admin":
         st.page_link(
             INSTRUCTOR_PANEL_PAGE_PATH,

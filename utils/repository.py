@@ -332,6 +332,10 @@ def save_team_decision(
 ) -> None:
     """Insert or update one team's firm-level decision for the round."""
     ensure_app_storage()
+    from data.classroom_start import COMMON_PROFILE_NAME
+    states = load_team_states(team_name=decision.team_name)
+    if states and states[0].archetype == COMMON_PROFILE_NAME and decision.archetype != COMMON_PROFILE_NAME:
+        raise ValueError("Equal-start teams cannot change their operating baseline.")
     payload = {
         "round_number": round_number,
         "team_name": decision.team_name,
@@ -2005,7 +2009,21 @@ def create_user(
     created_user = get_user_by_id(int(cursor.lastrowid))
     if created_user is None:
         raise ValueError("The user could not be loaded after creation.")
+    if created_user.role == "team_leader" and created_user.team_name:
+        ensure_equal_start_team(created_user.team_name)
     return created_user
+
+
+def ensure_equal_start_team(team_name: str) -> None:
+    """Initialize new teams only; never reset existing classroom progress."""
+    from data.classroom_start import COMMON_PROFILE_NAME, initial_state
+    if load_team_states(team_name=team_name):
+        return
+    if load_team_decisions(team_name=team_name) or load_product_lines(team_name=team_name):
+        return
+    save_team_state(initial_state(team_name))
+    ensure_product_lines_for_team(team_name, COMMON_PROFILE_NAME)
+    ensure_development_projects_for_team(team_name)
 
 
 def update_user(
