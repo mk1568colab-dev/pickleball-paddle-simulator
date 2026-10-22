@@ -1263,7 +1263,9 @@ def _prepare_team_round(
                 tech_attractiveness_adjustment=tech_adjustment,
                 launched_this_round=product_line.launch_round == market_report.round_number,
                 launch_event="; ".join(
-                    event for event in launch_events if f"slot {slot_name}" in event.lower()
+                    event
+                    for event in launch_events
+                    if f"slot {slot_name}".lower() in event.lower()
                 ),
                 retired_this_round=False,
                 retirement_liquidation_revenue=pre_launch_liquidation_by_slot.get(
@@ -2981,7 +2983,7 @@ def _launch_blocker_text(
     if current_round is not None and current_round < earliest_launch_round:
         blockers.append(f"Cannot launch before round {earliest_launch_round}")
     if not blockers:
-        return "All launch gates are met. Check Launch Now If Ready to launch this round."
+        return "All launch gates are met. Check Launch Now to launch this round."
     return "; ".join(blockers) + "."
 
 

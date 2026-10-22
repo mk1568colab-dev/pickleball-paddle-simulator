@@ -278,6 +278,24 @@ def _render_current_snapshot(team_name: str) -> None:
         row_two[2].metric("Backlog", f"{state.backlog_units:,}")
         row_two[3].metric("Completed Rounds", ", ".join(map(str, state.completed_rounds)) or "-")
         row_two[4].metric("Liquidity Warning", "On" if state.liquidity_warning_flag else "Off")
+        if state.open_material_orders:
+            incoming_rows = [
+                {
+                    "Quantity": order.quantity,
+                    "Placed Round": order.placed_round,
+                    "Scheduled Arrival": order.arrival_round,
+                    "Lead Time Used": order.weighted_lead_time,
+                    "Material Unit Cost": order.weighted_material_unit_cost,
+                }
+                for order in sorted(
+                    state.open_material_orders,
+                    key=lambda item: (item.arrival_round, item.placed_round),
+                )
+            ]
+            st.markdown("#### Incoming Raw Materials")
+            st.dataframe(pd.DataFrame(incoming_rows), use_container_width=True, hide_index=True)
+        else:
+            st.caption("Incoming raw materials: no open orders waiting to arrive.")
 
     st.markdown("#### Current Product Portfolio")
     portfolio_frame = _object_frame(load_product_lines(team_name=team_name))
