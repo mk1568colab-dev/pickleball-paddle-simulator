@@ -328,9 +328,9 @@ def run_round(
 ]:
     """Run one Stage C portfolio, planning, and finance round."""
     if any(p.slot_name not in PRODUCT_SLOT_NAMES for p in [*product_lines, *product_decisions]):
-        raise ValueError("Products must use one of the five slots A-E.")
+        raise ValueError("Products must use one of the four slots A-D.")
     if any(p.intended_slot_name not in PRODUCT_SLOT_NAMES for p in development_projects):
-        raise ValueError("Development launches must target one of the five slots A-E.")
+        raise ValueError("Development launches must target one of the four slots A-D.")
     archetype_lookup = {item.name: item for item in load_team_archetypes()}
     state_lookup = {item.team_name.lower(): item for item in existing_states}
     product_lines_by_team = _group_product_lines(product_lines)
