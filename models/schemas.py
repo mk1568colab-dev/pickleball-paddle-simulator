@@ -7,7 +7,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 
-PRODUCT_SLOT_NAMES = ("A", "B", "C", "D", "E")
+PRODUCT_SLOT_NAMES = ("A", "B", "C", "D")
 PROJECT_SLOT_NAMES = ("P1", "P2")
 TARGET_SEGMENTS = ("premium", "mid", "beginner")
 LIFECYCLE_STAGES = ("launch", "growth", "maturity", "decline")
