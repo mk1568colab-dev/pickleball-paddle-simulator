@@ -28,7 +28,8 @@ if not states or states[0].archetype != COMMON_PROFILE_NAME:
     st.info("This team belongs to an earlier game setup. Its existing state has not been changed.")
     st.stop()
 state = states[0]
-st.caption(f"{team} | SHARED OPENING CONDITIONS")
+st.caption(f"{team} | NEW-GAME OPENING CONDITIONS")
+st.caption("These are the current starting defaults for new teams. Existing teams retain their saved products and progress; see Team Decisions for your actual portfolio.")
 opening, history, strategy = st.tabs(["Opening Position", "Pre-game Records", "Strategy Direction"])
 with opening:
     cols = st.columns(4)
@@ -36,12 +37,14 @@ with opening:
         col.metric(label, value)
     st.subheader("Starting Product Portfolio")
     st.dataframe(pd.DataFrame([
-        {"Slot": "A", "Paddle": "Core Control", "Segment": "Mid-market", "Price": "$149",
-         "Technology": "Gen 2", "Lifecycle": "Growth", "Age (rounds)": "2", "Status": "Active"},
-        {"Slot": "B", "Paddle": "Starter Play", "Segment": "Beginner", "Price": "$99",
-         "Technology": "Gen 1", "Lifecycle": "Maturity", "Age (rounds)": "4", "Status": "Active"},
-        {"Slot": "C", "Paddle": "Unoccupied", "Segment": "-", "Price": "-",
-         "Technology": "-", "Lifecycle": "-", "Age (rounds)": "-", "Status": "New-product launch required"},
+        {"Slot": p.slot_name, "Paddle": p.product_name if p.is_active else "Unoccupied",
+         "Segment": p.target_segment.title() if p.is_active else "-",
+         "Price": f"${p.suggested_selling_price_per_unit:.0f}" if p.is_active else "-",
+         "Technology": f"Gen {p.tech_generation}" if p.is_active else "-",
+         "Lifecycle": p.lifecycle_stage.title() if p.is_active else "-",
+         "Age (rounds)": str(p.age_in_rounds) if p.is_active else "-",
+         "Status": "Active" if p.is_active else "New-product launch required"}
+        for p in COMMON_PROFILE.suggested_product_templates
     ]), hide_index=True, use_container_width=True)
     st.subheader("Shared Operating Baseline")
     st.dataframe(pd.DataFrame([

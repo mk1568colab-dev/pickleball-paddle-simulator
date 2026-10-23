@@ -41,7 +41,7 @@ FIGURES: list[GuideFigure] = [
     GuideFigure(
         title="Figure 3. Portfolio and Pipeline",
         file_name="Figure_3_Portfolio_and_Pipeline.png",
-        caption="Explains the difference between active Product A/B/C slots and future Project P1/P2 development work.",
+        caption="Illustrative three-slot diagram. The current portfolio supports A-E, starting with two active products; development uses P1/P2.",
         student_takeaway="You are managing today's products and tomorrow's replacement products at the same time.",
     ),
     GuideFigure(

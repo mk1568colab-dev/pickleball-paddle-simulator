@@ -751,7 +751,7 @@ def _suggested_product_decisions(
     archetype: TeamArchetype,
     product_lines: list[ProductLine],
 ) -> list[ProductDecision]:
-    """Build suggested product decisions for the three portfolio slots."""
+    """Build suggested decisions for the configured portfolio slots."""
     line_by_slot = {line.slot_name: line for line in product_lines}
     template_by_slot = {
         template.slot_name: template
@@ -1186,6 +1186,7 @@ def _current_projects(
                 intended_slot_name=intended_slot_name,
                 required_investment=existing_project.required_investment,
                 cumulative_investment=cumulative_investment,
+                cumulative_testing=0.0 if reset_pipeline else existing_project.cumulative_testing,
                 investment_this_round=investment_this_round,
                 testing_intensity=testing_intensity,
                 launch_readiness_score=launch_readiness_score,
@@ -1419,12 +1420,13 @@ def _render_firm_controls(market_report) -> None:
 
 
 def _render_product_profile(product_lines: list[ProductLine]) -> None:
-    """Render A/B/C product decisions as compact rows."""
+    """Render the five product slots as compact rows."""
     st.markdown("### 4. Product Profile")
     st.caption(
-        "All three product slots are shown together so price, forecast, production, quality, inventory, and retirement choices can be compared."
+        "Five product slots (A-E). New teams start with Beginner and Premium paddles; vacant slots require a development launch."
     )
-    header_cols = st.columns([2.7, 1.05, 0.9, 0.9, 1.0, 0.9, 0.95, 1.0])
+    profile_widths = [2.3, 1.6, 0.9, 0.9, 1.0, 0.9, 0.95, 1.4]
+    header_cols = st.columns(profile_widths)
     for column, label in zip(
         header_cols,
         [
@@ -1454,7 +1456,7 @@ def _render_product_profile(product_lines: list[ProductLine]) -> None:
             else "blue"
         )
         with st.container(border=True):
-            row_cols = st.columns([2.7, 1.05, 0.9, 0.9, 1.0, 0.9, 0.95, 1.0])
+            row_cols = st.columns(profile_widths)
             with row_cols[0]:
                 heading_suffix = " Retired / Empty" if is_retired_slot else ""
                 st.markdown(
@@ -1468,6 +1470,8 @@ def _render_product_profile(product_lines: list[ProductLine]) -> None:
                 )
                 if is_retired_slot:
                     st.caption(
+                        "Vacant slot; launch a development project here."
+                        if product_line.retired_round == 0 else
                         f"Retired after round {product_line.retired_round}; launch a project into this slot to replace it."
                     )
                 st.text_input(
@@ -1828,6 +1832,8 @@ def _render_project_launch_gate_guidance(
             {
                 "project": f"{project.project_slot_name}: {project.project_name}",
                 "funding_gate": "Pass" if estimate.get("funding_gate_met") else "Not yet",
+                "Testing Cost": estimate.get("testing_cost_this_round", 0.0),
+                "Testing Coverage": f"{estimate.get('cumulative_testing_after_this_round', 0.0):.0%}",
                 "readiness_gate": "Pass" if estimate.get("readiness_gate_met") else "Not yet",
                 "timing_gate": "Pass" if estimate.get("timing_gate_met") else "Not yet",
                 "can_launch_now": "Yes" if estimate.get("launch_gate_met") else "No",
@@ -1846,6 +1852,9 @@ def _render_project_launch_gate_guidance(
 
     st.markdown("#### Launch Gate Checklist")
     st.caption(
+        "Testing accumulates up to 100% coverage. Two rounds at 0.5 cost $500 each; one round at 1.0 costs $2,000. "
+        "Both achieve the same coverage, but spreading tests takes longer. Set testing to 0 after full coverage to avoid unnecessary costs. "
+        "Testing costs are included in development spending and do not count toward project funding. "
         "A project can launch only when all three gates pass: funding, readiness, and timing. "
         "If the table says Can Launch Now = Yes, check Launch Now before saving."
     )
@@ -2006,7 +2015,7 @@ def main() -> None:
 
     st.title("Team Decisions")
     st.caption(
-        "Set firm controls, compare Product A/B/C, manage development projects, and check the live planning preview before saving."
+        "Set firm controls, compare Product A-E, manage development projects, and check the live planning preview before saving."
     )
 
     market_report = planning_market_report(load_market_report())
