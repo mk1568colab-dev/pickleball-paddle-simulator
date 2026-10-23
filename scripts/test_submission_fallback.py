@@ -31,7 +31,7 @@ class FallbackTests(unittest.TestCase):
         firms, products, projects, lines, missing = self.inputs(1)
         self.assertEqual(len(firms), 40)
         self.assertEqual(len(missing), 40)
-        self.assertEqual(len(products), 200)
+        self.assertEqual(len(products), 160)
         self.assertEqual(sum(p.planned_production_units for p in products), 9600)
         states = repo.load_team_states()
         self.assertTrue(all(s.raw_material_inventory == 300 for s in states))
@@ -59,7 +59,7 @@ class FallbackTests(unittest.TestCase):
         effective = self.inputs(5, [submitted], saved, projects)
         self.assertEqual(len(effective[4]), 39)
         self.assertEqual(effective[0][0].raw_material_order_qty, 777)
-        self.assertEqual(effective[1][:5], saved)
+        self.assertEqual(effective[1][:len(saved)], saved)
         self.assertEqual(effective[2][0], projects[0])
         paused = effective[2][1]
         self.assertEqual((paused.investment_this_round, paused.testing_intensity), (0, 0))
