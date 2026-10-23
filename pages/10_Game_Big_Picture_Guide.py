@@ -20,11 +20,11 @@ SLIDES = [
         ("OPEN", "Demand locked", "The instructor's actual demand is fixed when submissions first open."),
         ("AFTER", "Actual revealed", "Completed-round demand is disclosed after results."),
     ], "Closing and reopening submissions does not unlock demand. Market demand is not guaranteed team sales."),
-    ("Five Slots, Two Starting Products", "New teams start equally. Existing teams keep their saved portfolio.", [
+    ("Four Slots, Two Starting Products", "New teams start equally. Existing teams keep their saved portfolio.", [
         ("A", "Premium Control", "Premium segment | $189 | active at a new start."),
         ("B", "Starter Play", "Beginner segment | $99 | active at a new start."),
-        ("C / D / E", "Vacant slots", "Develop and launch a paddle to fill an empty slot."),
-    ], "Five products maximum, with up to two development projects. A launch into an occupied slot replaces its current product."),
+        ("C / D", "Vacant slots", "Develop and launch a paddle to fill an empty slot."),
+    ], "Four products maximum, with up to two development projects. A launch into an occupied slot replaces its current product."),
     ("Four Checks Before Submission", "Coordinate operations, not just individual numbers.", [
         ("MARKET", "Products", "Segment, price, forecast, quality, inventory target and retirement."),
         ("SUPPLY", "Operations", "Supplier mix, order arrivals, materials, capacity and production."),

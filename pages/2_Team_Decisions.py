@@ -1431,10 +1431,10 @@ def _render_firm_controls(market_report) -> None:
 
 
 def _render_product_profile(product_lines: list[ProductLine]) -> None:
-    """Render the five product slots as compact rows."""
+    """Render the four product slots as compact rows."""
     st.markdown("### 4. Product Profile")
     st.caption(
-        "Five product slots (A-E). New teams start with Beginner and Premium paddles; vacant slots require a development launch."
+        "Four product slots (A-D). New teams start with Beginner and Premium paddles; vacant slots require a development launch."
     )
     profile_widths = [2.3, 1.6, 0.9, 0.9, 1.0, 0.9, 0.95, 1.4]
     header_cols = st.columns(profile_widths)
@@ -2026,7 +2026,7 @@ def main() -> None:
 
     st.title("Team Decisions")
     st.caption(
-        "Set firm controls, compare Product A-E, manage development projects, and check the live planning preview before saving."
+        "Set firm controls, compare Product A-D, manage development projects, and check the live planning preview before saving."
     )
 
     market_report = planning_market_report(load_market_report())
