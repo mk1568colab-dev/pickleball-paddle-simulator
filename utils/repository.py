@@ -509,7 +509,11 @@ def load_product_lines(team_name: str | None = None) -> list[ProductLine]:
     with get_connection() as connection:
         rows = connection.execute(query, tuple(parameters)).fetchall()
 
-    return [ProductLine.from_dict(dict(row)) for row in rows]
+    # Keep legacy empty E records in storage without exposing a fifth slot.
+    return [ProductLine.from_dict(dict(row)) for row in rows if not (
+        row["slot_name"] == "E" and row["product_name"] == "Open Product Slot"
+        and not row["is_active"] and not row["inventory_units"] and not row["backlog_units"]
+    )]
 
 
 def save_product_lines(product_lines: list[ProductLine]) -> None:
@@ -679,7 +683,11 @@ def load_product_decisions(
     with get_connection() as connection:
         rows = connection.execute(query, tuple(parameters)).fetchall()
 
-    return [ProductDecision.from_dict(dict(row)) for row in rows]
+    return [ProductDecision.from_dict(dict(row)) for row in rows if not (
+        row["slot_name"] == "E" and row["product_name"] == "Open Product Slot"
+        and not row["is_active"] and not row["forecast_units"]
+        and not row["planned_production_units"] and not row["target_finished_goods_inventory"]
+    )]
 
 
 def save_product_decisions(
