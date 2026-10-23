@@ -576,8 +576,13 @@ def preview_team_decision(
         )
     warnings.extend(planning_snapshot.warnings)
 
+    # Include products launched by this plan, but never vacant/inactive slots.
+    active_preview_slots = {
+        product.decision.slot_name for product in prepared_preview_team.products
+        if product.decision.is_active
+    }
     for item in team_product_results:
-        if item.contribution_margin_per_unit < 0:
+        if item.slot_name in active_preview_slots and item.contribution_margin_per_unit < 0:
             warnings.append(
                 f"{item.product_name} is priced below its projected variable cost."
             )
