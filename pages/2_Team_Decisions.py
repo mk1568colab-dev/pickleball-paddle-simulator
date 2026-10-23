@@ -1290,18 +1290,28 @@ def _render_state_snapshot(
         / max(sum(1 for line in product_lines if line.is_active), 1)
     )
 
-    snapshot_cols = st.columns(8)
+    snapshot_cols = st.columns(7)
     snapshot_cols[0].metric("Capacity", f"{installed_capacity:,}")
     snapshot_cols[1].metric("FG Inv.", f"{beginning_inventory:,}")
-    snapshot_cols[2].metric("RM Inv.", f"{raw_material_inventory:,}")
-    snapshot_cols[3].metric("Backlog", f"{beginning_backlog:,}")
-    snapshot_cols[4].metric("Reputation", f"{reputation:.1f}")
-    snapshot_cols[5].metric("Cash", f"${cash_balance:,.0f}")
-    snapshot_cols[6].metric("Debt", f"${short_term_debt:,.0f}")
-    snapshot_cols[7].metric(
+    snapshot_cols[2].metric("Backlog", f"{beginning_backlog:,}")
+    snapshot_cols[3].metric("Reputation", f"{reputation:.1f}")
+    snapshot_cols[4].metric("Cash", f"${cash_balance:,.0f}")
+    snapshot_cols[5].metric("Debt", f"${short_term_debt:,.0f}")
+    snapshot_cols[6].metric(
         "Tech vs Market",
         f"{average_tech - market_report.current_market_generation:+.1f}",
     )
+    arriving_units = sum(
+        order.quantity for order in (existing_state.open_material_orders if existing_state else [])
+        if order.arrival_round <= market_report.round_number
+    )
+    material_cols = st.columns(3)
+    material_cols[0].metric("RM Carried Over", f"{raw_material_inventory:,}",
+                            help="Raw materials remaining after the previous round.")
+    material_cols[1].metric("RM Arriving This Round", f"{arriving_units:,}",
+                            help="Previously placed orders due by this round; usable in this round's production.")
+    material_cols[2].metric("RM Available for Production", f"{raw_material_inventory + arriving_units:,}",
+                            help="Carried-over materials plus orders arriving this round, before production consumption.")
     st.caption(
         f"Last-round interest expense: ${interest_last_round:,.0f} | "
         f"Liquidity warning flag: {'On' if liquidity_flag else 'Off'}"
@@ -1312,6 +1322,7 @@ def _render_state_snapshot(
                 "Quantity": order.quantity,
                 "Placed Round": order.placed_round,
                 "Scheduled Arrival": order.arrival_round,
+                "Availability": "This round" if order.arrival_round <= market_report.round_number else "Future round",
                 "Lead Time Used": order.weighted_lead_time,
                 "Material Unit Cost": order.weighted_material_unit_cost,
             }
