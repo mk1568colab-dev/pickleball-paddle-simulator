@@ -40,8 +40,8 @@ SLIDES = [
         ("GATE 1", "Funding", "Cumulative development investment meets the required amount."),
         ("GATE 2", "Readiness", "Development and accumulated testing meet the readiness threshold."),
         ("GATE 3", "Timing", "The earliest eligible launch round has arrived."),
-        ("ACTION", "Launch Now", "Request the launch before saving. At most one launch per team per round."),
-    ], "A planned launch date alone does not launch a product. Check the launch preview and the intended replacement slot."),
+        ("ACTION", "Launch Now", "Select a ready project, then set its slot's price, demand forecast, production and QC before saving."),
+    ], "Complete development in earlier rounds. A Round 3 launch can be planned and sold in Round 3. At most one launch per team per round; a planned date alone does not launch a product."),
     ("Read the Planning Preview", "These numbers are planning estimates, not completed results.", [
         ("PLAN", "Forecast vs. output", "Forecast Gap compares production with your forecast."),
         ("MATERIALS", "RM Gap", "Available raw materials minus planned production. Positive means a buffer."),

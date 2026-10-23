@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+from dataclasses import replace
 from functools import lru_cache
 from html import escape
 from pathlib import Path
@@ -17,7 +18,7 @@ from engine.config import (
     SUPPLIER_NAMES,
     SUPPLY_RISK_INDEX,
 )
-from engine.simulator import estimate_development_project, preview_team_decision
+from engine.simulator import estimate_development_project, preview_team_decision, project_ready_at_round_start
 from models.schemas import (
     MAX_TECH_GENERATION,
     MIN_TECH_GENERATION,
@@ -400,13 +401,7 @@ def _build_kiki_submit_checklist(
     launch_gate_ready_count = sum(
         1
         for project in launch_requests
-        if bool(
-            estimate_development_project(
-                project,
-                include_current_round_investment=True,
-                current_round=current_round,
-            ).get("launch_gate_met", False)
-        )
+        if project_ready_at_round_start(project, current_round)
     )
 
     if not active_products:
@@ -1430,6 +1425,56 @@ def _render_firm_controls(market_report) -> None:
     )
 
 
+def _launch_planning_lines(product_lines, projects, current_round, archetype):
+    """Expose launch drafts without replacing persistent products before round execution."""
+    context = st.session_state[SESSION_CONTEXT_KEY]
+    backup_key = f"launch_plan_backups:{context}"
+    backups = st.session_state.setdefault(backup_key, {})
+    launches = [p for p in projects if p.launch_now and project_ready_at_round_start(p, current_round)]
+    if len(launches) > 1:
+        st.warning("Choose only one project to launch this round.")
+        launches = []
+    by_slot = {p.intended_slot_name: p for p in launches}
+    original_defaults = {p.slot_name: p for p in _seed_product_decisions_for_round(
+        product_lines[0].team_name, archetype, product_lines, current_round
+    )} if product_lines else {}
+    planning_lines = []
+    for line in product_lines:
+        slot = line.slot_name
+        project = by_slot.get(slot)
+        token = project.project_id + ':' + project.project_name if project else None
+        previous = backups.get(slot)
+        if previous and previous['token'] != token:
+            for field, value in previous['values'].items():
+                st.session_state[_product_widget_key(slot, field)] = value
+            del backups[slot]
+        if project:
+            if slot not in backups:
+                backups[slot] = {'token': token, 'values': {
+                    field: st.session_state.get(_product_widget_key(slot, field))
+                    for field in PRODUCT_FIELDS
+                }}
+                if (backups[slot]['values']['product_name'] == project.project_name
+                        and line.product_name != project.project_name):
+                    backups[slot]['values'] = {
+                        field: getattr(original_defaults[slot], field) for field in PRODUCT_FIELDS
+                    }
+            for field, value in dict(product_name=project.project_name,
+                                     target_segment=project.target_segment,
+                                     is_active=True, retire_flag=False).items():
+                st.session_state[_product_widget_key(slot, field)] = value
+            planning_lines.append(replace(
+                line, product_name=project.project_name, target_segment=project.target_segment,
+                is_active=True, retirement_flag=False, retired_round=None,
+                lifecycle_stage='launch', age_in_rounds=0,
+                tech_generation=project.target_tech_generation, launch_round=current_round,
+                inventory_units=0, backlog_units=0,
+            ))
+        else:
+            planning_lines.append(line)
+    return planning_lines
+
+
 def _render_product_profile(product_lines: list[ProductLine]) -> None:
     """Render the four product slots as compact rows."""
     st.markdown("### 4. Product Profile")
@@ -1444,7 +1489,7 @@ def _render_product_profile(product_lines: list[ProductLine]) -> None:
             "Product Slot and State",
             "Segment",
             "Price",
-            "Forecast",
+            "Demand Forecast",
             "Production",
             "QC",
             "Target FG",
@@ -1459,6 +1504,9 @@ def _render_product_profile(product_lines: list[ProductLine]) -> None:
         product_line = line_by_slot[slot_name]
         is_retired_slot = product_line.retirement_flag and not product_line.is_active
         lifecycle = product_line.lifecycle_stage.title()
+        launch_draft = slot_name in st.session_state.get(
+            f"launch_plan_backups:{st.session_state.get(SESSION_CONTEXT_KEY)}", {}
+        )
         lifecycle_tone = (
             "green"
             if product_line.lifecycle_stage == "launch"
@@ -1488,7 +1536,7 @@ def _render_product_profile(product_lines: list[ProductLine]) -> None:
                 st.text_input(
                     "Product Name",
                     key=_product_widget_key(slot_name, "product_name"),
-                    disabled=is_retired_slot,
+                    disabled=is_retired_slot or launch_draft,
                     label_visibility="collapsed",
                 )
             active_value = bool(
@@ -1509,7 +1557,7 @@ def _render_product_profile(product_lines: list[ProductLine]) -> None:
                     options=segment_options,
                     index=_safe_option_index(segment_options, current_segment),
                     key=_product_widget_key(slot_name, "target_segment"),
-                    disabled=is_retired_slot,
+                    disabled=is_retired_slot or launch_draft,
                     label_visibility="collapsed",
                 )
             with row_cols[2]:
@@ -1523,7 +1571,7 @@ def _render_product_profile(product_lines: list[ProductLine]) -> None:
                 )
             with row_cols[3]:
                 st.number_input(
-                    "Forecast Units",
+                    "Demand Forecast",
                     min_value=0,
                     step=10,
                     key=_product_widget_key(slot_name, "forecast_units"),
@@ -1562,7 +1610,7 @@ def _render_product_profile(product_lines: list[ProductLine]) -> None:
                     "Active",
                     key=_product_widget_key(slot_name, "is_active"),
                     value=False if is_retired_slot else active_value,
-                    disabled=is_retired_slot,
+                    disabled=is_retired_slot or launch_draft,
                     help=(
                         "Retired slots stay inactive until a development project launches into this slot."
                         if is_retired_slot
@@ -1572,7 +1620,7 @@ def _render_product_profile(product_lines: list[ProductLine]) -> None:
                 st.checkbox(
                     "Retire",
                     key=_product_widget_key(slot_name, "retire_flag"),
-                    disabled=is_retired_slot,
+                    disabled=is_retired_slot or launch_draft,
                     help=(
                         "This slot has already been retired."
                         if is_retired_slot
@@ -1753,13 +1801,7 @@ def _render_preview(
         launch_gate_ready_count = sum(
             1
             for project in launch_requests
-            if bool(
-                estimate_development_project(
-                    project,
-                    include_current_round_investment=True,
-                    current_round=current_round,
-                ).get("launch_gate_met", False)
-            )
+            if project_ready_at_round_start(project, current_round)
         )
         row_three[3].metric(
             "Launch Requests Ready",
@@ -1847,7 +1889,7 @@ def _render_project_launch_gate_guidance(
                 "Testing Coverage": f"{estimate.get('cumulative_testing_after_this_round', 0.0):.0%}",
                 "readiness_gate": "Pass" if estimate.get("readiness_gate_met") else "Not yet",
                 "timing_gate": "Pass" if estimate.get("timing_gate_met") else "Not yet",
-                "can_launch_now": "Yes" if estimate.get("launch_gate_met") else "No",
+                "can_launch_now": "Yes" if project_ready_at_round_start(project, current_round) else "No",
                 "funding_progress_pct": estimate.get("funding_progress_pct", 0.0),
                 "readiness_after_this_round": estimate.get(
                     "projected_readiness_after_this_round",
@@ -1867,7 +1909,7 @@ def _render_project_launch_gate_guidance(
         "Both achieve the same coverage, but spreading tests takes longer. Set testing to 0 after full coverage to avoid unnecessary costs. "
         "Testing costs are included in development spending and do not count toward project funding. "
         "A project can launch only when all three gates pass: funding, readiness, and timing. "
-        "If the table says Can Launch Now = Yes, check Launch Now before saving."
+        "Can Launch Now uses development completed before this round. Select Launch Now, then set the new product's price, demand forecast and production before saving."
     )
     launch_gate_frame = pd.DataFrame(rows).rename(
         columns={
@@ -1942,6 +1984,8 @@ def _validation_messages(
             messages.append(f"Project {project.project_slot_name} demand-fit modifier must be positive.")
         if project.launch_now:
             launch_requests += 1
+            if not project_ready_at_round_start(project, current_round):
+                messages.append(f"Project {project.project_slot_name} must finish development before this round to launch now.")
 
     if launch_requests > 1:
         messages.append("Only one launch request per team is allowed per round.")
@@ -1966,7 +2010,12 @@ def _save_stage_b_submission(
     save_product_decisions(product_decisions=candidate_product_decisions, round_number=current_round)
     save_product_forecasts(_build_product_forecasts(current_round, candidate_product_decisions))
     save_product_development_projects(candidate_projects)
-    save_product_lines(_merge_product_lines(product_lines, candidate_product_decisions))
+    launch_slots = {p.intended_slot_name for p in candidate_projects if p.launch_now}
+    original_by_slot = {p.slot_name: p for p in product_lines}
+    save_product_lines([
+        original_by_slot[p.slot_name] if p.slot_name in launch_slots else p
+        for p in _merge_product_lines(product_lines, candidate_product_decisions)
+    ])
     return (
         f"Saved the Stage C portfolio, forecast, and pipeline submission for "
         f"`{candidate_firm_decision.team_name}` in round `{current_round}`."
@@ -2149,11 +2198,22 @@ def main() -> None:
     )
 
     _render_firm_controls(market_report)
-    _render_product_profile(product_lines)
+    planning_projects = _current_projects(team_name, current_round, saved_projects)
+    for project in planning_projects:
+        if project_ready_at_round_start(project, current_round) and not project.launch_now:
+            if st.button(
+                f"Launch {project.project_name} in Product {project.intended_slot_name}",
+                key=f"plan_launch_{current_context}_{project.project_slot_name}",
+                disabled=any(p.launch_now for p in planning_projects),
+            ):
+                st.session_state[_project_widget_key(project.project_slot_name, 'launch_now')] = True
+                st.rerun()
+    planning_lines = _launch_planning_lines(product_lines, planning_projects, current_round, selected_archetype)
+    _render_product_profile(planning_lines)
     _render_development_pipeline(team_name, current_round)
 
     candidate_firm_decision = _current_firm_decision(team_name, selected_archetype_name)
-    candidate_product_decisions = _current_product_decisions(team_name, product_lines)
+    candidate_product_decisions = _current_product_decisions(team_name, planning_lines)
     candidate_projects = _current_projects(team_name, current_round, saved_projects)
     _render_project_launch_gate_guidance(candidate_projects, current_round)
     preview = preview_team_decision(
