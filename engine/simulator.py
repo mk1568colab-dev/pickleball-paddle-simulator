@@ -6,6 +6,7 @@ import math
 from dataclasses import dataclass, field, replace
 
 from engine.config import (
+    TESTING_FULL_INTENSITY_COST,
     ARCHETYPE_FIT_WEIGHT,
     BACKLOG_PENALTY_PER_UNIT,
     BASE_CANNIBALIZATION_RATE,
@@ -96,6 +97,7 @@ from engine.config import (
     DEBT_TO_REVENUE_STRESS_THRESHOLD,
 )
 from models.schemas import (
+    PRODUCT_SLOT_NAMES,
     ForecastAccuracyResult,
     MarketReport,
     OpenMaterialOrder,
@@ -325,6 +327,10 @@ def run_round(
     list[ForecastAccuracyResult],
 ]:
     """Run one Stage C portfolio, planning, and finance round."""
+    if any(p.slot_name not in PRODUCT_SLOT_NAMES for p in [*product_lines, *product_decisions]):
+        raise ValueError("Products must use one of the five slots A-E.")
+    if any(p.intended_slot_name not in PRODUCT_SLOT_NAMES for p in development_projects):
+        raise ValueError("Development launches must target one of the five slots A-E.")
     archetype_lookup = {item.name: item for item in load_team_archetypes()}
     state_lookup = {item.team_name.lower(): item for item in existing_states}
     product_lines_by_team = _group_product_lines(product_lines)
@@ -578,9 +584,9 @@ def preview_team_decision(
 
     projected_innovation_investment = round(
         sum(
-            max(project.investment_this_round, 0.0)
+            max(project.investment_this_round, 0.0) + _testing_cost(project)
             for project in candidate_projects
-            if project.is_defined() and project.status != "canceled"
+            if project.is_pipeline_active() and not project.cancel_now
         ),
         2,
     )
@@ -975,7 +981,7 @@ def _ensure_team_product_lines(
     archetype: TeamArchetype,
     existing_product_lines: list[ProductLine],
 ) -> list[ProductLine]:
-    """Ensure that the team has all three product slots in memory."""
+    """Ensure that the team has all configured product slots in memory."""
     line_by_slot = {item.slot_name: item for item in existing_product_lines}
     ensured_lines = list(existing_product_lines)
 
@@ -1169,10 +1175,10 @@ def _prepare_team_round(
     )
     innovation_investment = _round_currency(
         sum(
-            max(project.project.investment_this_round, 0.0)
+            max(project.project.investment_this_round, 0.0) + _testing_cost(project.project)
             for project in prepared_projects
             if project.project.is_defined()
-            and project.project.status not in {"canceled", "launched"}
+            and (project.project.status not in {"canceled", "launched"} or project.launched_this_round)
         )
     )
     total_planned_units = sum(
@@ -1354,6 +1360,7 @@ def _progress_projects(
             if normalized_project.investment_this_round > 0 or normalized_project.testing_intensity > 0:
                 normalized_project.status = "concept"
                 normalized_project.cumulative_investment = 0.0
+                normalized_project.cumulative_testing = 0.0
                 normalized_project.launch_readiness_score = 0.0
                 normalized_project.launched_round = None
                 normalized_project.canceled_round = None
@@ -1372,6 +1379,7 @@ def _progress_projects(
         if not normalized_project.is_defined():
             normalized_project.status = "concept"
             normalized_project.required_investment = 0.0
+            normalized_project.cumulative_testing = 0.0
             normalized_project.cumulative_investment = 0.0
             normalized_project.launch_readiness_score = 0.0
             normalized_project.launch_now = False
@@ -1411,6 +1419,7 @@ def _progress_projects(
             normalized_project.cumulative_investment + normalized_project.investment_this_round,
             0.0,
         )
+        normalized_project.cumulative_testing = _testing_after_round(normalized_project)
         normalized_project.launch_readiness_score = _project_readiness_score(
             project=normalized_project,
             required_investment=required_investment,
@@ -2554,6 +2563,7 @@ def _update_projects_after_round(
         project.launch_now = False
         project.cancel_now = False
         project.investment_this_round = 0.0
+        project.testing_intensity = 0.0
         if project.status == "canceled":
             project.canceled_round = project.canceled_round or round_number
         updated_projects.append(project)
@@ -2768,6 +2778,11 @@ def estimate_development_project(
 
     projected_project = replace(
         project,
+        cumulative_testing=(
+            _testing_after_round(project)
+            if include_current_round_investment and project.is_pipeline_active() and not project.cancel_now
+            else project.cumulative_testing
+        ),
         required_investment=required_investment,
         cumulative_investment=projected_cumulative_investment,
     )
@@ -2823,13 +2838,15 @@ def estimate_development_project(
     launch_blockers = _launch_blocker_text(
         remaining_investment=remaining_investment,
         readiness_gap=readiness_gap,
-        testing_intensity=project.testing_intensity,
+        testing_intensity=projected_project.cumulative_testing,
         current_round=current_round,
         earliest_launch_round=earliest_launch_round,
     )
 
     return {
         "required_investment": required_investment,
+        "testing_cost_this_round": _testing_cost(project) if project.is_pipeline_active() and not project.cancel_now else 0.0,
+        "cumulative_testing_after_this_round": projected_project.cumulative_testing,
         "estimated_low_cost": low_estimate,
         "estimated_high_cost": high_estimate,
         "remaining_investment_after_this_round": remaining_investment,
@@ -2837,7 +2854,7 @@ def estimate_development_project(
         "projected_readiness_after_this_round": round(projected_readiness, 1),
         "readiness_threshold": LAUNCH_READINESS_THRESHOLD,
         "readiness_gap_points": readiness_gap,
-        "testing_adequacy": _testing_adequacy_label(project.testing_intensity),
+        "testing_adequacy": _testing_adequacy_label(projected_project.cumulative_testing),
         "launch_risk": _launch_risk_label(projected_project, projected_readiness),
         "funding_gate_met": funding_gate_met,
         "readiness_gate_met": readiness_gate_met,
@@ -2856,6 +2873,15 @@ def estimate_development_project(
     }
 
 
+def _testing_after_round(project: ProductDevelopmentProject) -> float:
+    return min(1.0, max(project.cumulative_testing, 0.0) + min(max(project.testing_intensity, 0.0), 1.0))
+
+
+def _testing_cost(project: ProductDevelopmentProject) -> float:
+    # Rush testing is more expensive; extra effort beyond full coverage has no benefit.
+    return _round_currency(TESTING_FULL_INTENSITY_COST * min(max(project.testing_intensity, 0.0), 1.0) ** 2)
+
+
 def _project_readiness_score(
     project: ProductDevelopmentProject,
     required_investment: float,
@@ -2869,7 +2895,7 @@ def _project_readiness_score(
     readiness_from_investment = READINESS_INVESTMENT_SCALE * (
         1.0 - math.exp(-READINESS_INVESTMENT_RATE * investment_progress)
     )
-    testing_bonus = min(max(project.testing_intensity, 0.0), 1.0) * READINESS_TESTING_BONUS_MAX
+    testing_bonus = min(max(project.cumulative_testing, 0.0), 1.0) * READINESS_TESTING_BONUS_MAX
     complexity_penalty = (
         max(project.target_tech_generation - 1, 0)
         * READINESS_COMPLEXITY_PENALTY_PER_TECH
@@ -2914,7 +2940,7 @@ def _project_expedite_round_credit(
         return 0
 
     funding_progress = project.cumulative_investment / required_investment
-    testing_intensity = min(max(project.testing_intensity, 0.0), 1.0)
+    testing_intensity = min(max(project.cumulative_testing, 0.0), 1.0)
     if (
         funding_progress < NPD_EXPEDITE_PROGRESS_THRESHOLD
         or testing_intensity < NPD_EXPEDITE_TESTING_THRESHOLD
@@ -3002,7 +3028,7 @@ def _launch_risk_label(
     readiness_score: float,
 ) -> str:
     """Return a simple launch-risk label from readiness, testing, and tech complexity."""
-    testing_label = _testing_adequacy_label(project.testing_intensity)
+    testing_label = _testing_adequacy_label(project.cumulative_testing)
     if (
         readiness_score >= LAUNCH_READINESS_THRESHOLD
         and testing_label == "Good"

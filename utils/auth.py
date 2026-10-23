@@ -8,6 +8,7 @@ from models.schemas import AppUser
 from utils.branding import APP_NAME, APP_TAGLINE, MASCOT_IMAGE_PATH, MASCOT_NAME
 from utils.repository import get_user_by_username, has_active_admin
 from utils.security import verify_password
+from utils.student_guide import big_picture_download
 
 
 SESSION_USER_KEY = "authenticated_username"
@@ -30,6 +31,12 @@ def _render_sidebar_navigation(user: AppUser) -> None:
     """Render role-aware sidebar navigation links."""
     st.markdown("### Navigation")
     st.page_link(HOME_PAGE_PATH, label="Home")
+    st.download_button(
+        "Game Big Picture", data=big_picture_download(),
+        file_name="Kiki_Game_Big_Picture.html", mime="text/html",
+        icon=":material/download:", key="big_picture_download",
+    )
+    st.page_link(ACCOUNT_PAGE_PATH, label="My Account")
     st.page_link(
         PUBLIC_MARKET_REPORT_PAGE_PATH,
         label="Public Market Report",
@@ -58,21 +65,11 @@ def _render_sidebar_navigation(user: AppUser) -> None:
         label="My Team Tracker",
     )
     st.page_link(
-        GAME_BIG_PICTURE_GUIDE_PAGE_PATH,
-        label="Game Big Picture",
-    )
-    st.page_link(
         FINANCE_DETAIL_PAGE_PATH,
         label="Finance Detail",
     )
-    st.page_link(
-        MODEL_FORMULA_GUIDE_PAGE_PATH,
-        label="Model Formula Guide",
-    )
-    st.page_link(
-        ACCOUNT_PAGE_PATH,
-        label="My Account",
-    )
+    if user.role == "admin":
+        st.page_link(MODEL_FORMULA_GUIDE_PAGE_PATH, label="Model Formula Guide")
 
 
 def system_requires_initial_setup() -> bool:

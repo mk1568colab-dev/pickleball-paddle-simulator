@@ -16,13 +16,19 @@ COMMON_PROFILE = TeamArchetype(
     suggested_supplier_mix_premium_pct=20.0,
     suggested_expedited_order_share_pct=0.0,
     suggested_product_templates=[
-        ProductTemplate("A", "Core Control", True, "mid", "growth", 2,
-                        0.0, 1.0, 149.0, 130, 3.0, 0, tech_generation=2,
-                        cannibalization_group="control"),
+        ProductTemplate("A", "Premium Control", True, "premium", "growth", 2,
+                        0.0, 1.0, 189.0, 130, 3.0, 0, tech_generation=2,
+                        cannibalization_group="premium"),
         ProductTemplate("B", "Starter Play", True, "beginner", "maturity", 4,
                         0.0, 1.0, 99.0, 110, 3.0, 0, tech_generation=1,
                         cannibalization_group="entry"),
         ProductTemplate("C", "Open Product Slot", False, "mid", "launch", 0,
+                        0.0, 1.0, 149.0, 0, 3.0, 0, tech_generation=2,
+                        retirement_flag=True, retired_round=0),
+        ProductTemplate("D", "Open Product Slot", False, "mid", "launch", 0,
+                        0.0, 1.0, 149.0, 0, 3.0, 0, tech_generation=2,
+                        retirement_flag=True, retired_round=0),
+        ProductTemplate("E", "Open Product Slot", False, "mid", "launch", 0,
                         0.0, 1.0, 149.0, 0, 3.0, 0, tech_generation=2,
                         retirement_flag=True, retired_round=0),
     ],
@@ -41,7 +47,7 @@ def handover_rows() -> list[dict]:
     """Planning examples only: never inserted into scored results or cash ledgers."""
     rows = []
     for period, core, starter, defects in [(-3, 112, 118, 3.2), (-2, 122, 114, 3.0), (-1, 130, 110, 2.8)]:
-        for product, units, price in [("Core Control", core, 149.0), ("Starter Play", starter, 99.0)]:
+        for product, units, price in [("Premium Control", core, 189.0), ("Starter Play", starter, 99.0)]:
             rows.append({"Period": f"Pre-game {period}", "Product": product,
                          "Price ($)": price, "Sales (units)": units,
                          "QC ($/unit)": 3.0, "Inspection defect rate (%)": defects})

@@ -528,6 +528,7 @@ PRODUCT_DECISION_MIGRATIONS = (
 )
 
 PRODUCT_PROJECT_MIGRATIONS = (
+    ("cumulative_testing", "REAL NOT NULL DEFAULT 0.0"),
     ("project_name", "TEXT NOT NULL DEFAULT ''"),
     ("target_segment", "TEXT NOT NULL DEFAULT 'mid'"),
     ("target_tech_generation", "INTEGER NOT NULL DEFAULT 1"),

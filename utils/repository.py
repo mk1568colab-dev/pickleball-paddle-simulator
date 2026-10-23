@@ -598,11 +598,12 @@ def ensure_product_lines_for_team(
     team_name: str,
     archetype_name: str,
 ) -> list[ProductLine]:
-    """Ensure that a team has the default three product slots."""
+    """Add missing configured slots without replacing existing products."""
     ensure_app_storage()
     existing_lines = load_product_lines(team_name=team_name)
     existing_by_slot = {item.slot_name: item for item in existing_lines}
-    if len(existing_by_slot) == 3:
+    from models.schemas import PRODUCT_SLOT_NAMES
+    if set(PRODUCT_SLOT_NAMES).issubset(existing_by_slot):
         return sorted(existing_lines, key=lambda item: item.slot_name)
 
     archetype_lookup = {item.name: item for item in load_team_archetypes()}
@@ -637,7 +638,7 @@ def ensure_product_lines_for_team(
             )
         )
 
-    save_product_lines(created_lines)
+    save_product_lines([line for line in created_lines if line.slot_name not in existing_by_slot])
     return sorted(created_lines, key=lambda item: item.slot_name)
 
 
@@ -838,6 +839,7 @@ def load_product_development_projects(
             intended_slot_name,
             required_investment,
             cumulative_investment,
+            cumulative_testing,
             investment_this_round,
             testing_intensity,
             launch_readiness_score,
@@ -898,6 +900,7 @@ def save_product_development_projects(
                 intended_slot_name,
                 required_investment,
                 cumulative_investment,
+                cumulative_testing,
                 investment_this_round,
                 testing_intensity,
                 launch_readiness_score,
@@ -925,6 +928,7 @@ def save_product_development_projects(
                 :intended_slot_name,
                 :required_investment,
                 :cumulative_investment,
+                :cumulative_testing,
                 :investment_this_round,
                 :testing_intensity,
                 :launch_readiness_score,
@@ -951,6 +955,7 @@ def save_product_development_projects(
                 intended_slot_name = excluded.intended_slot_name,
                 required_investment = excluded.required_investment,
                 cumulative_investment = excluded.cumulative_investment,
+                cumulative_testing = excluded.cumulative_testing,
                 investment_this_round = excluded.investment_this_round,
                 testing_intensity = excluded.testing_intensity,
                 launch_readiness_score = excluded.launch_readiness_score,

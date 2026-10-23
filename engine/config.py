@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 
-PRODUCT_SLOT_NAMES = ("A", "B", "C")
+PRODUCT_SLOT_NAMES = ("A", "B", "C", "D", "E")
 PROJECT_SLOT_NAMES = ("P1", "P2")
 SEGMENTS = ("premium", "mid", "beginner")
 LIFECYCLE_STAGES = ("launch", "growth", "maturity", "decline")
@@ -220,6 +220,8 @@ LIFECYCLE_GAP_CANNIBALIZATION_FACTOR = 1.25
 TECH_ADVANTAGE_CANNIBALIZATION_FACTOR = 0.22
 LAUNCH_CANNIBALIZATION_BOOST = 1.15
 MAX_CANNIBALIZATION_TRANSFER_SHARE = 0.18
+
+TESTING_FULL_INTENSITY_COST = 2000.0
 
 REPUTATION_UPDATE_WEIGHTS: dict[str, float] = {
     "defect_target": 0.030,

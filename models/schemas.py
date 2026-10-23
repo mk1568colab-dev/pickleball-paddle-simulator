@@ -7,7 +7,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 
-PRODUCT_SLOT_NAMES = ("A", "B", "C")
+PRODUCT_SLOT_NAMES = ("A", "B", "C", "D", "E")
 PROJECT_SLOT_NAMES = ("P1", "P2")
 TARGET_SEGMENTS = ("premium", "mid", "beginner")
 LIFECYCLE_STAGES = ("launch", "growth", "maturity", "decline")
@@ -655,6 +655,7 @@ class ProductDevelopmentProject:
     launch_now: bool = False
     cancel_now: bool = False
     replaced_product_name: str | None = None
+    cumulative_testing: float = 0.0
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> "ProductDevelopmentProject":
@@ -695,6 +696,7 @@ class ProductDevelopmentProject:
             launch_now=bool(payload.get("launch_now", False)),
             cancel_now=bool(payload.get("cancel_now", False)),
             replaced_product_name=_optional_str(payload.get("replaced_product_name")),
+            cumulative_testing=min(max(float(payload.get("cumulative_testing", 0.0)), 0.0), 1.0),
         )
 
     def is_defined(self) -> bool:

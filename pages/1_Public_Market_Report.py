@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import streamlit as st
+from engine.market_brief import market_brief
 
 from data.market_scenarios import MARKET_SCENARIO_PRESETS, apply_market_scenario
 from models.schemas import MAX_TECH_GENERATION, MIN_TECH_GENERATION, MarketReport
@@ -39,12 +40,21 @@ def main() -> None:
         public = public_market_row(current_report)
         cols = st.columns(2)
         cols[0].metric("Decision Round", current_report.round_number)
-        cols[1].metric("Market Demand Outlook", f"{public.pop('demand_outlook_low')} to {public.pop('demand_outlook_high')} units")
+        low, high = public.pop('demand_outlook_low'), public.pop('demand_outlook_high')
+        cols[1].metric("Market Demand Outlook", f"{low:,} to {high:,} units" if isinstance(low, (int, float)) else "Not published")
+        summary, scenarios = market_brief(public_market_row(current_report))
+        st.subheader("Market Brief")
+        st.write(summary)
+        if scenarios:
+            st.table(scenarios)
+            st.caption("Public-range scenarios, rounded by segment. These are not actual demand or guaranteed team sales.")
         public.pop("round_number", None)
         st.table([{"Market factor": key.replace("_", " ").title(), "Value": str(value)} for key, value in public.items()])
         if revealed_demands():
             st.subheader("Completed Round Demand")
-            st.table(revealed_demands())
+            st.table([{"Round": r["round_number"], "Outlook Low": r["outlook_low"],
+                       "Outlook High": r["outlook_high"], "Actual Market Demand": r["actual_demand"]}
+                      for r in revealed_demands()])
         return
 
     status = demand_status(current_report.round_number)

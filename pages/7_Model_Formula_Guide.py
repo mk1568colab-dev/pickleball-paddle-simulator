@@ -6,7 +6,7 @@ import pandas as pd
 import streamlit as st
 
 from engine import config
-from utils.auth import require_authenticated_user
+from utils.auth import require_authenticated_user, require_admin
 from utils.bootstrap import ensure_app_storage
 
 
@@ -18,7 +18,8 @@ def _constant_frame(rows: list[tuple[str, object, str]]) -> pd.DataFrame:
 def main() -> None:
     """Render a transparent formula guide for students and instructors."""
     ensure_app_storage()
-    require_authenticated_user()
+    user = require_authenticated_user()
+    require_admin(user)
 
     st.title("Model Formula Guide")
     st.caption(
@@ -216,7 +217,7 @@ def main() -> None:
 
         readiness_score =
             readiness_from_funding_progress
-          + testing_intensity_bonus
+          + cumulative_testing * READINESS_TESTING_BONUS_MAX
           - technology_complexity_penalty
 
         launch_ready if:
@@ -241,11 +242,16 @@ def main() -> None:
 
         ```text
         if funding_progress >= expedite_progress_threshold
-           and testing_intensity >= expedite_testing_threshold:
+           and cumulative_testing >= expedite_testing_threshold:
                earliest_launch_round can move earlier
         ```
 
-        This keeps the teaching tradeoff clear: teams can accelerate innovation, but only by spending cash and maintaining engineering discipline. High-tech products can be more attractive after launch, but they require more funding, more time, and more testing discipline.
+        Testing coverage accumulates up to 1.0. Each round costs $2,000 times testing intensity squared.
+        Two rounds at 0.5 therefore cost $1,000 in total versus $2,000 for one round at 1.0.
+        Both produce equal coverage; distributed testing takes longer. Costs remain payable even
+        beyond full coverage, so intensity resets to zero after each round. Testing expense is included
+        in innovation spending, cash flow, and profit, but does not satisfy the development funding gate.
+        Launch-round development and testing costs are also charged.
         """
     )
     st.dataframe(
