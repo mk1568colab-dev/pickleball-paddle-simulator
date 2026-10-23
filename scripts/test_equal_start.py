@@ -27,6 +27,8 @@ class EqualStartTests(unittest.TestCase):
         self.assertEqual(states[0].cash_balance, 50000)
         self.assertEqual(states[0].capacity_units, 300)
         self.assertEqual(len([p for p in load_product_lines(team_name="Team 0") if p.is_active]), 2)
+        self.assertEqual(len(load_product_lines(team_name="Team 0")), 5)
+        self.assertEqual({p.target_segment for p in load_product_lines(team_name="Team 0") if p.is_active}, {"beginner", "premium"})
         self.assertTrue(load_product_lines(team_name="Team 0")[2].retirement_flag)
         save_team_state(replace(states[0], cash_balance=43210))
         ensure_equal_start_team(states[0].team_name)
@@ -41,7 +43,7 @@ class EqualStartTests(unittest.TestCase):
         rows = initial_catalog(["Team 1", "Team 2"])
         self.assertEqual(len(rows), 4)
         self.assertEqual(set(rows[0]), {"Team", "Paddle", "Segment", "Technology", "Price ($)"})
-        self.assertEqual([r["Price ($)"] for r in rows], [149, 99, 149, 99])
+        self.assertEqual([r["Price ($)"] for r in rows], [189, 99, 189, 99])
 
     def test_completed_catalog_filters_round_inactive_and_retired(self):
         base = ProductRoundResult.from_dict({"round_number": 1, "team_name": "Team 1", "slot_name": "A", "product_name": "Public", "selling_price_per_unit": 150})
