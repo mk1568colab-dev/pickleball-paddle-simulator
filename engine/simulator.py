@@ -328,9 +328,9 @@ def run_round(
 ]:
     """Run one Stage C portfolio, planning, and finance round."""
     if any(p.slot_name not in PRODUCT_SLOT_NAMES for p in [*product_lines, *product_decisions]):
-        raise ValueError("Products must use one of the five slots A-E.")
+        raise ValueError("Products must use one of the four slots A-D.")
     if any(p.intended_slot_name not in PRODUCT_SLOT_NAMES for p in development_projects):
-        raise ValueError("Development launches must target one of the five slots A-E.")
+        raise ValueError("Development launches must target one of the four slots A-D.")
     archetype_lookup = {item.name: item for item in load_team_archetypes()}
     state_lookup = {item.team_name.lower(): item for item in existing_states}
     product_lines_by_team = _group_product_lines(product_lines)
@@ -576,8 +576,13 @@ def preview_team_decision(
         )
     warnings.extend(planning_snapshot.warnings)
 
+    # Include products launched by this plan, but never vacant/inactive slots.
+    active_preview_slots = {
+        product.decision.slot_name for product in prepared_preview_team.products
+        if product.decision.is_active
+    }
     for item in team_product_results:
-        if item.contribution_margin_per_unit < 0:
+        if item.slot_name in active_preview_slots and item.contribution_margin_per_unit < 0:
             warnings.append(
                 f"{item.product_name} is priced below its projected variable cost."
             )
@@ -1130,6 +1135,13 @@ def _prepare_team_round(
         market_report=market_report,
         development_projects=development_projects,
     )
+    original_projects = {p.project_id: p for p in development_projects}
+    for prepared in prepared_projects:
+        if prepared.launch_requested and not project_ready_at_round_start(
+            original_projects[prepared.project.project_id], market_report.round_number
+        ):
+            prepared.launch_requested = False
+            prepared.notes.append("Launch deferred: development must be ready before this round's decisions.")
     (
         working_product_lines,
         working_product_decisions,
@@ -2531,7 +2543,7 @@ def _update_product_lines(
                 tech_generation=product_line.tech_generation,
                 cannibalization_group=product_line.cannibalization_group,
                 launch_round=product_line.launch_round,
-                retirement_flag=product.retired_this_round,
+                retirement_flag=product.retired_this_round or product_line.retirement_flag,
                 retired_round=(
                     market_report.round_number if product.retired_this_round else product_line.retired_round
                 ),
@@ -2754,6 +2766,18 @@ def _technology_attractiveness_modifier(
     return max(
         TECH_MIN_ATTRACTIVENESS_MODIFIER,
         min(modifier, TECH_MAX_ATTRACTIVENESS_MODIFIER),
+    )
+
+
+def project_ready_at_round_start(project: ProductDevelopmentProject, current_round: int) -> bool:
+    """Only completed prior-round development can enter the current sales plan."""
+    return bool(
+        project.is_pipeline_active()
+        and not project.cancel_now
+        and current_round >= project.planned_launch_round
+        and estimate_development_project(
+            project, include_current_round_investment=False, current_round=current_round
+        ).get("launch_gate_met", False)
     )
 
 

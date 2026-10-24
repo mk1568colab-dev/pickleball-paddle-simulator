@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 
-PRODUCT_SLOT_NAMES = ("A", "B", "C", "D", "E")
+PRODUCT_SLOT_NAMES = ("A", "B", "C", "D")
 PROJECT_SLOT_NAMES = ("P1", "P2")
 SEGMENTS = ("premium", "mid", "beginner")
 LIFECYCLE_STAGES = ("launch", "growth", "maturity", "decline")

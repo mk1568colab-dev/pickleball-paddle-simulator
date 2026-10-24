@@ -28,9 +28,6 @@ COMMON_PROFILE = TeamArchetype(
         ProductTemplate("D", "Open Product Slot", False, "mid", "launch", 0,
                         0.0, 1.0, 149.0, 0, 3.0, 0, tech_generation=2,
                         retirement_flag=True, retired_round=0),
-        ProductTemplate("E", "Open Product Slot", False, "mid", "launch", 0,
-                        0.0, 1.0, 149.0, 0, 3.0, 0, tech_generation=2,
-                        retirement_flag=True, retired_round=0),
     ],
 )
 
