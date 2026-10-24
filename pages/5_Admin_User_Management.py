@@ -277,9 +277,17 @@ def main() -> None:
         if upload is not None:
             content = upload.getvalue()
             signature = hashlib.sha256(content).hexdigest()
+            allow_classroom_passwords = st.checkbox(
+                "Allow simple student passwords from this workbook (including first names)",
+                value=False, key=f"classroom_passwords_{signature}",
+                help="Applies only to new student accounts in this Excel import. "
+                     "Administrator accounts and password changes retain the normal password rules.")
+            if allow_classroom_passwords:
+                st.warning("First-name passwords are easy to guess. Use them only for this classroom game; "
+                           "do not reuse school passwords or publish this workbook outside the course.")
             try:
                 rows = read_team_workbook(content)
-                errors = validate_team_rows(rows)
+                errors = validate_team_rows(rows, allow_classroom_passwords=allow_classroom_passwords)
             except Exception:
                 # Do not echo parser exceptions that might contain uploaded passwords.
                 st.error("Could not read this workbook. Use the Teams sheet and three Text columns "
@@ -293,12 +301,13 @@ def main() -> None:
                     st.dataframe(pd.DataFrame(errors), hide_index=True, use_container_width=True)
                 else:
                     confirmed = st.checkbox(f"Create {len(rows)} new teams and their accounts",
-                                            key=f"confirm_excel_{signature}")
+                                            key=f"confirm_excel_{signature}_{allow_classroom_passwords}")
                     if st.button("Create Teams from Excel", type="primary", disabled=not confirmed,
                                  key=f"import_excel_{signature}"):
                         try:
                             with st.spinner("Creating teams..."):
-                                count = create_teams_from_workbook(rows)
+                                count = create_teams_from_workbook(
+                                    rows, allow_classroom_passwords=allow_classroom_passwords)
                         except (ValueError, sqlite3.Error):
                             st.error("Import canceled; no teams from this upload were saved. "
                                      "Refresh the page and check for account or team-name conflicts.")
