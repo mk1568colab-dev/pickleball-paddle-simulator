@@ -8,6 +8,8 @@ from models.schemas import AppUser
 from utils.branding import APP_NAME, APP_TAGLINE, MASCOT_IMAGE_PATH, MASCOT_NAME
 from utils.repository import get_user_by_username, has_active_admin
 from utils.security import verify_password
+from utils.classrooms import (ACTIVE_CLASSROOM_KEY, AUTH_CLASSROOM_KEY, active_classroom_id,
+                              classroom_name, render_classroom_picker)
 
 
 SESSION_USER_KEY = "authenticated_username"
@@ -51,6 +53,7 @@ def _render_sidebar_navigation(user: AppUser) -> None:
             ADMIN_USER_MANAGEMENT_PAGE_PATH,
             label="Admin User Management",
         )
+        st.page_link("pages/13_Classrooms.py", label="Classrooms")
     st.page_link(
         RESULTS_DASHBOARD_PAGE_PATH,
         label="Results Dashboard",
@@ -99,13 +102,16 @@ def login_user(username: str, password: str) -> tuple[bool, str]:
     if not verify_password(password, user.password_hash):
         return False, "Invalid username or password."
 
+    st.session_state[AUTH_CLASSROOM_KEY] = active_classroom_id()
     st.session_state[SESSION_USER_KEY] = user.username
     return True, "Login successful."
 
 
 def logout_user() -> None:
     """Clear the current user session."""
-    st.session_state.pop(SESSION_USER_KEY, None)
+    classroom_id = active_classroom_id()
+    st.session_state.clear()
+    st.session_state[ACTIVE_CLASSROOM_KEY] = classroom_id
 
 
 def render_login_form() -> None:
@@ -119,6 +125,7 @@ def render_login_form() -> None:
         st.subheader("Login")
         st.caption("Use the account created by your instructor or admin.")
 
+    render_classroom_picker()
     with st.form("login_form"):
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
@@ -138,6 +145,7 @@ def render_user_sidebar(user: AppUser) -> None:
     with st.sidebar:
         st.image(MASCOT_IMAGE_PATH, width=120)
         st.caption(APP_NAME)
+        st.markdown(f"**Classroom: {classroom_name()}**")
         st.divider()
         _render_sidebar_navigation(user)
         st.divider()

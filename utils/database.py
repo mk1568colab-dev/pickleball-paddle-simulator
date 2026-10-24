@@ -615,7 +615,7 @@ def get_simulator_env() -> str:
     return environment
 
 
-def get_database_path() -> Path:
+def get_base_database_path() -> Path:
     """Resolve the configured SQLite database path."""
     configured_path = os.getenv(DATABASE_ENV_VAR, "").strip()
     path_source = DATABASE_ENV_VAR
@@ -630,6 +630,12 @@ def get_database_path() -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     _log_database_path_once(path, path_source)
     return path
+
+
+def get_database_path() -> Path:
+    """Route each browser session to its own classroom, never a process-global DB."""
+    from utils.classrooms import classroom_database_path
+    return classroom_database_path(get_base_database_path())
 
 
 def _get_data_dir() -> tuple[Path, str]:
