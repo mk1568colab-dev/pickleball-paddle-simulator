@@ -70,10 +70,10 @@ def _existing_names(connection):
     return usernames, teams
 
 
-def validate_team_rows(rows: list[dict], connection=None) -> list[dict]:
+def validate_team_rows(rows: list[dict], connection=None, *, allow_classroom_passwords=False) -> list[dict]:
     if connection is None:
         with get_connection() as connection:
-            return validate_team_rows(rows, connection)
+            return validate_team_rows(rows, connection, allow_classroom_passwords=allow_classroom_passwords)
     usernames, teams = _existing_names(connection)
     product_ids = {row[0] for row in connection.execute("SELECT product_id FROM product_lines")}
     team_keys = {build_product_id(name, "A") for name in teams}
@@ -90,7 +90,9 @@ def validate_team_rows(rows: list[dict], connection=None) -> list[dict]:
                 messages.append(f"{key}: required; no surrounding spaces or control characters.")
             if len(value) > 128:
                 messages.append(f"{key}: maximum 128 characters.")
-        messages.extend(validate_password_strength(password))
+        # An instructor may opt in to simple student passwords for this import only.
+        if not allow_classroom_passwords:
+            messages.extend(validate_password_strength(password))
         user_key, team_key = username.casefold(), team.casefold()
         product_key = build_product_id(team, "A")
         if user_key in usernames or user_key in seen_users:
@@ -116,13 +118,13 @@ def _insert_new(connection, table: str, payload: dict) -> None:
     connection.execute(f"INSERT INTO {table} ({columns}) VALUES ({placeholders})", tuple(payload.values()))
 
 
-def create_teams_from_workbook(rows: list[dict]) -> int:
+def create_teams_from_workbook(rows: list[dict], *, allow_classroom_passwords=False) -> int:
     current_round = load_market_report().round_number
     hashes = [hash_password(row["password"]) for row in rows]
     with get_connection() as connection:
         # Recheck under the write lock: concurrent imports cannot overwrite a team.
         connection.execute("BEGIN IMMEDIATE")
-        errors = validate_team_rows(rows, connection)
+        errors = validate_team_rows(rows, connection, allow_classroom_passwords=allow_classroom_passwords)
         if errors:
             raise ValueError("Import canceled. Refresh the preview and resolve the reported conflicts.")
         for row, password_hash in zip(rows, hashes):
