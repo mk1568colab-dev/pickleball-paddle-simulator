@@ -8,6 +8,7 @@ import streamlit as st
 from engine import config
 from utils.auth import require_authenticated_user, require_admin
 from utils.bootstrap import ensure_app_storage
+from utils.sourcing_rules import load_delivery_policy
 
 
 def _constant_frame(rows: list[tuple[str, object, str]]) -> pd.DataFrame:
@@ -22,9 +23,21 @@ def main() -> None:
     require_admin(user)
 
     st.title("Model Formula Guide")
-    st.caption(
-        "This page makes the simulator logic visible. The model is deterministic and rule-based, not an AI black box."
-    )
+    policy = load_delivery_policy()
+    st.caption("Operating rules are explicit. This classroom also uses seeded, reproducible supplier delivery uncertainty."
+               if policy else "This page makes the simulator logic visible. The model is deterministic and rule-based, not an AI black box.")
+    if policy:
+        from engine.sourcing import DELAY_PROBABILITIES, DISPLAY_NAMES, NORMAL_LEAD, ordering_fee_description
+        st.subheader('Supplier Delivery and Ordering')
+        st.dataframe(pd.DataFrame([{'Supplier': DISPLAY_NAMES[name], 'Risk': risk,
+            'Normal Lead (rounds)': NORMAL_LEAD[name], 'On time': p[0], '+1 round': p[1], '+2 rounds': p[2]}
+            for name, risks in DELAY_PROBABILITIES.items() for risk, p in risks.items()]), hide_index=True)
+        st.caption(ordering_fee_description(policy) + ' '
+                   'Procurement includes material purchases and order fees, paid and expensed at order placement. '
+                   'Holding applies only to ending on-hand inventory: RM USD 2/unit; FG USD 6/unit.')
+        st.caption('Supply risk is fixed at order placement. A stored classroom seed creates one supplier shock per order round, '
+                   'shared by all teams. Each supplier shipment arrives separately. Refreshing or replaying does not reroll it. '
+                   'Future realized arrivals are hidden from students. Existing legacy orders keep their recorded schedules.')
 
     st.subheader("1. Market Demand Allocation")
     st.markdown(
@@ -109,8 +122,19 @@ def main() -> None:
 
         ```text
         effective_capacity = installed_capacity + overtime_capacity
-        feasible_production = min(total_planned_production, effective_capacity, available_raw_materials)
+        planned_materials = sum(product_planned_units * product_design_RM_per_paddle)
+        consumed_materials = sum(product_actual_units * product_design_RM_per_paddle)
+        ending_materials = carried_materials + arrivals_this_round - consumed_materials
         ```
+
+        Capacity counts whole paddles; materials are shared standard units with two-decimal precision.
+        Plans are scaled proportionally to fit both limits, then whole-paddle remainders are allocated
+        without exceeding either limit or a product's plan. Inactive and vacant products consume no materials.
+        Product material design is fixed at creation or launch, independently of later target-segment changes.
+        Administrator-set requirements are locked when submissions first open. New classrooms start with
+        Beginner 0.70, Mid 1.00 and Premium 1.20; existing classrooms retain 1.00 until explicitly changed.
+        The planning material value uses the current sourcing quote and is not charged again on consumption;
+        procurement outlay remains charged when ordering, separately from conversion and QC.
 
         Product defects depend on archetype, lifecycle, supplier pressure, utilization stress, technology risk, and QC spend:
 

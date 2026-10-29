@@ -7,6 +7,7 @@ from collections.abc import Iterable
 import pandas as pd
 import streamlit as st
 
+from engine.config import SUPPLIER_COLUMN_LABELS
 from models.schemas import AppUser
 from utils.auth import require_authenticated_user
 from utils.bootstrap import ensure_app_storage
@@ -279,19 +280,8 @@ def _render_current_snapshot(team_name: str) -> None:
         row_two[3].metric("Completed Rounds", ", ".join(map(str, state.completed_rounds)) or "-")
         row_two[4].metric("Liquidity Warning", "On" if state.liquidity_warning_flag else "Off")
         if state.open_material_orders:
-            incoming_rows = [
-                {
-                    "Quantity": order.quantity,
-                    "Placed Round": order.placed_round,
-                    "Scheduled Arrival": order.arrival_round,
-                    "Lead Time Used": order.weighted_lead_time,
-                    "Material Unit Cost": order.weighted_material_unit_cost,
-                }
-                for order in sorted(
-                    state.open_material_orders,
-                    key=lambda item: (item.arrival_round, item.placed_round),
-                )
-            ]
+            from engine.sourcing import public_incoming_orders
+            incoming_rows = public_incoming_orders(state.open_material_orders, load_market_report().round_number)
             st.markdown("#### Incoming Raw Materials")
             st.dataframe(pd.DataFrame(incoming_rows), use_container_width=True, hide_index=True)
         else:
@@ -344,7 +334,9 @@ def _render_decision_history(team_name: str) -> None:
     if firm_frame.empty:
         st.info("No firm-level decisions have been saved yet.")
     else:
-        st.dataframe(firm_frame, use_container_width=True, hide_index=True)
+        labels = {**SUPPLIER_COLUMN_LABELS,
+                  "expedited_order_share_pct": "Legacy Expedite %"}
+        st.dataframe(firm_frame.rename(columns=labels), use_container_width=True, hide_index=True)
         _download_frame(
             "Download Firm Decision History CSV",
             firm_frame,

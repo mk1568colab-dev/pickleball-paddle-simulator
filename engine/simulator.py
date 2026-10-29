@@ -15,8 +15,6 @@ from engine.config import (
     CAPACITY_EXPANSION_CAPEX_PER_UNIT,
     DECLINE_PRICE_PRESSURE_PENALTY,
     DIFFERENT_SEGMENT_CANNIBALIZATION_FACTOR,
-    EXPEDITED_LEAD_TIME_REDUCTION,
-    EXPEDITED_ORDER_COST_UPLIFT,
     FORECAST_EXCESS_PRODUCTION_RATIO,
     FORECAST_LOW_COVERAGE_RATIO,
     FORECAST_MISMATCH_WARNING_RATIO,
@@ -77,7 +75,6 @@ from engine.config import (
     SEGMENTS,
     SERVICE_READINESS_WEIGHT,
     STARTING_RAW_MATERIAL_COVERAGE,
-    SUPPLIER_BASE_LEAD_TIMES,
     SUPPLIER_DEFECT_PRESSURE,
     SUPPLIER_MATERIAL_COST_MULTIPLIERS,
     SUPPLIER_NAMES,
@@ -96,6 +93,9 @@ from engine.config import (
     WORKING_CAPITAL_TO_REVENUE_STRESS_THRESHOLD,
     DEBT_TO_REVENUE_STRESS_THRESHOLD,
 )
+from engine.sourcing import material_lead_time_rounds, material_order_timing
+from engine.sourcing import sourcing_quote, supplier_delay, NORMAL_LEAD, DELAY_PROBABILITIES
+from utils.sourcing_rules import load_delivery_policy
 from models.schemas import (
     PRODUCT_SLOT_NAMES,
     ForecastAccuracyResult,
@@ -113,6 +113,8 @@ from models.schemas import (
     build_project_id,
 )
 from utils.repository import load_team_archetypes
+from utils.material_rules import load_material_requirements
+from engine.materials import allocate_materials, material_design
 
 
 @dataclass
@@ -185,6 +187,7 @@ class PreparedProductRound:
     allocated_innovation_cost: float = 0.0
     allocated_raw_material_holding_cost: float = 0.0
     notes: list[str] = field(default_factory=list)
+    material_units_per_paddle: float = 1.0
 
     @property
     def holding_cost(self) -> float:
@@ -219,19 +222,22 @@ class PreparedTeamRound:
     supplier_metrics: SupplierMetrics
     installed_capacity_units: int
     effective_capacity_units: int
-    beginning_raw_material_inventory: int
+    beginning_raw_material_inventory: float
     raw_material_units_received: int
-    raw_material_units_available: int
+    raw_material_units_available: float
     requested_total_production_units: int
     feasible_total_production_units: int
     actual_total_production_units: int
-    raw_material_inventory_end: int
+    raw_material_inventory_end: float
+    requested_material_units: float
+    consumed_material_units: float
     raw_material_holding_cost: float
     procurement_cost: float
+    ordering_cost: float
     expansion_cost: float
     innovation_investment: float
     carryforward_material_orders: list[OpenMaterialOrder]
-    placed_material_order: OpenMaterialOrder | None
+    placed_material_orders: list[OpenMaterialOrder]
     products: list[PreparedProductRound]
     projects: list[PreparedProject]
     active_product_count: int
@@ -251,15 +257,17 @@ class PortfolioDecisionPreview:
     overtime_capacity_units: int
     effective_capacity_units: int
     beginning_finished_goods_inventory: int
-    beginning_raw_material_inventory: int
+    beginning_raw_material_inventory: float
     raw_material_units_received: int
-    raw_material_units_available: int
+    raw_material_units_available: float
     total_forecast_units: int
     total_planned_production_units: int
     forecast_production_gap_units: int
     projected_max_feasible_production: int
     weighted_supplier_mix_text: str
     weighted_material_unit_cost: float
+    projected_procurement_cost: float
+    projected_ordering_cost: float
     weighted_lead_time: float
     projected_weighted_defect_rate: float
     projected_weighted_margin_per_unit: float
@@ -279,6 +287,8 @@ class PortfolioDecisionPreview:
     warnings: list[str]
     product_rows: list[dict[str, object]]
     project_rows: list[dict[str, object]]
+    total_material_required: float = 0.0
+    material_rows: list[dict[str, object]] = field(default_factory=list)
 
 
 @dataclass
@@ -332,6 +342,7 @@ def run_round(
     if any(p.intended_slot_name not in PRODUCT_SLOT_NAMES for p in development_projects):
         raise ValueError("Development launches must target one of the four slots A-D.")
     archetype_lookup = {item.name: item for item in load_team_archetypes()}
+    material_requirements = load_material_requirements(market_report.round_number)
     state_lookup = {item.team_name.lower(): item for item in existing_states}
     product_lines_by_team = _group_product_lines(product_lines)
     product_decisions_by_team = _group_product_decisions(product_decisions)
@@ -377,6 +388,7 @@ def run_round(
                 product_lines=team_product_lines,
                 product_decisions=team_product_decisions,
                 development_projects=team_projects,
+                material_requirements=material_requirements,
             )
         )
 
@@ -525,11 +537,7 @@ def preview_team_decision(
         for item in updated_projects
         if item.team_name.lower() == candidate_team_decision.team_name.lower()
     ]
-    supplier_metrics = _compute_supplier_metrics(
-        candidate_team_decision,
-        market_report,
-        archetype,
-    )
+    supplier_metrics = prepared_preview_team.supplier_metrics
     inbound_orders, _ = _split_open_material_orders(
         market_report.round_number,
         starting_state.open_material_orders if starting_state else [],
@@ -547,11 +555,8 @@ def preview_team_decision(
             round(archetype.base_capacity * STARTING_RAW_MATERIAL_COVERAGE)
         )
     raw_material_units_received = sum(order.quantity for order in inbound_orders)
-    total_planned_production_units = sum(
-        item.planned_production_units
-        for item in candidate_product_decisions
-        if item.is_active
-    )
+    total_planned_production_units = prepared_preview_team.requested_total_production_units
+    total_material_required = prepared_preview_team.requested_material_units
 
     warnings: list[str] = []
     if not candidate_team_decision.supplier_mix_valid():
@@ -568,8 +573,8 @@ def preview_team_decision(
         )
 
     if (
-        candidate_team_decision.raw_material_order_qty < total_planned_production_units
-        and beginning_raw_material_inventory < total_planned_production_units
+        candidate_team_decision.raw_material_order_qty < total_material_required
+        and beginning_raw_material_inventory + raw_material_units_received < total_material_required
     ):
         warnings.append(
             "Raw material ordering is low relative to the total portfolio production plan."
@@ -738,6 +743,17 @@ def preview_team_decision(
     )
 
     return PortfolioDecisionPreview(
+        total_material_required=total_material_required,
+        material_rows=[{
+            "Product": item.decision.product_name,
+            "Slot": item.decision.slot_name,
+            "Material Design": material_design(item.product_line).title(),
+            "Planned Paddles": max(item.decision.planned_production_units, 0),
+            "RM / Paddle": item.material_units_per_paddle,
+            "RM Required": round(max(item.decision.planned_production_units, 0) * item.material_units_per_paddle, 2),
+            "Material Value / Paddle": _round_currency(item.material_units_per_paddle * supplier_metrics.weighted_material_unit_cost),
+            "Planned Material Value": _round_currency(max(item.decision.planned_production_units, 0) * item.material_units_per_paddle * supplier_metrics.weighted_material_unit_cost),
+        } for item in prepared_preview_team.products if item.decision.is_active],
         installed_capacity_units=installed_capacity_units,
         overtime_capacity_units=candidate_team_decision.overtime_capacity_units,
         effective_capacity_units=effective_capacity_units,
@@ -754,6 +770,8 @@ def preview_team_decision(
         weighted_supplier_mix_text=_supplier_mix_label(candidate_team_decision),
         weighted_material_unit_cost=supplier_metrics.weighted_material_unit_cost,
         weighted_lead_time=supplier_metrics.weighted_lead_time,
+        projected_procurement_cost=prepared_preview_team.procurement_cost,
+        projected_ordering_cost=prepared_preview_team.ordering_cost,
         projected_weighted_defect_rate=round(
             weighted_defect_numerator / weighted_defect_denominator,
             4,
@@ -1100,9 +1118,12 @@ def _prepare_team_round(
     product_lines: list[ProductLine],
     product_decisions: list[ProductDecision],
     development_projects: list[ProductDevelopmentProject],
+    material_requirements: dict[str, float] | None = None,
 ) -> PreparedTeamRound:
     """Prepare one team's Stage B round before cross-team demand allocation."""
-    supplier_metrics = _compute_supplier_metrics(team_decision, market_report, archetype)
+    delivery_policy = load_delivery_policy()
+    supplier_metrics = _compute_supplier_metrics(team_decision, market_report, archetype, delivery_policy)
+    material_requirements = material_requirements or load_material_requirements(market_report.round_number)
     inbound_orders, carryforward_orders = _split_open_material_orders(
         market_report.round_number,
         starting_state.open_material_orders,
@@ -1126,6 +1147,13 @@ def _prepare_team_round(
         max(team_decision.raw_material_order_qty, 0)
         * supplier_metrics.weighted_material_unit_cost
     )
+    ordering_cost = 0.0
+    if delivery_policy:
+        quote = sourcing_quote(team_decision.raw_material_order_qty, supplier_metrics.normalized_mix,
+                               market_report.supply_risk, market_report.round_number,
+                               archetype.base_cost, market_report.material_cost_index, delivery_policy)
+        ordering_cost = _round_currency(sum(row['order_fee'] for row in quote))
+        procurement_cost = _round_currency(sum(row['material_cost'] for row in quote) + ordering_cost)
     expansion_cost = _round_currency(
         max(team_decision.capacity_expansion_units, 0)
         * CAPACITY_EXPANSION_CAPEX_PER_UNIT
@@ -1163,27 +1191,33 @@ def _prepare_team_round(
         if decision.is_active
     }
     requested_total_production_units = sum(requested_units_by_slot.values())
-    feasible_total_production_units = min(
-        requested_total_production_units,
-        effective_capacity_units,
-        raw_material_units_available,
-    )
-    actual_units_by_slot = _allocate_integer_proportionally(
-        requested_units_by_slot,
-        feasible_total_production_units,
-    )
-    used_raw_material_units = sum(actual_units_by_slot.values())
-    raw_material_inventory_end = max(
-        raw_material_units_available - used_raw_material_units,
-        0,
-    )
+    rates_by_slot = {
+        line.slot_name: material_requirements[material_design(line)] for line in working_product_lines
+    }
+    requested_material_units = round(sum(
+        qty * rates_by_slot[slot] for slot, qty in requested_units_by_slot.items()
+    ), 2)
+    if all(rate == 1.0 for rate in rates_by_slot.values()):
+        actual_units_by_slot = _allocate_integer_proportionally(
+            requested_units_by_slot,
+            min(requested_total_production_units, effective_capacity_units, int(raw_material_units_available)),
+        )
+        used_raw_material_units = float(sum(actual_units_by_slot.values()))
+    else:
+        actual_units_by_slot, used_raw_material_units = allocate_materials(
+            requested_units_by_slot, rates_by_slot, effective_capacity_units, raw_material_units_available,
+        )
+    feasible_total_production_units = sum(actual_units_by_slot.values())
+    raw_material_inventory_end = round(max(raw_material_units_available - used_raw_material_units, 0), 2)
     raw_material_holding_cost = _round_currency(
         raw_material_inventory_end * RAW_MATERIAL_HOLDING_COST_PER_UNIT
     )
-    placed_material_order = _build_material_order(
+    placed_material_orders = _build_material_orders(
         market_report=market_report,
         team_decision=team_decision,
         supplier_metrics=supplier_metrics,
+        archetype=archetype,
+        policy=delivery_policy,
     )
     innovation_investment = _round_currency(
         sum(
@@ -1233,7 +1267,7 @@ def _prepare_team_round(
             overtime_capacity_units=max(team_decision.overtime_capacity_units, 0),
         )
         material_component_per_unit = (
-            supplier_metrics.weighted_material_unit_cost
+            supplier_metrics.weighted_material_unit_cost * rates_by_slot[slot_name]
             if actual_production_units > 0
             else 0.0
         )
@@ -1267,6 +1301,7 @@ def _prepare_team_round(
 
         prepared_products.append(
             PreparedProductRound(
+                material_units_per_paddle=rates_by_slot[slot_name],
                 product_line=product_line,
                 decision=decision,
                 beginning_inventory=beginning_inventory,
@@ -1317,14 +1352,17 @@ def _prepare_team_round(
         raw_material_units_available=raw_material_units_available,
         requested_total_production_units=requested_total_production_units,
         feasible_total_production_units=feasible_total_production_units,
-        actual_total_production_units=used_raw_material_units,
+        actual_total_production_units=feasible_total_production_units,
+        requested_material_units=requested_material_units,
+        consumed_material_units=used_raw_material_units,
         raw_material_inventory_end=raw_material_inventory_end,
         raw_material_holding_cost=raw_material_holding_cost,
         procurement_cost=procurement_cost,
+        ordering_cost=ordering_cost,
         expansion_cost=expansion_cost,
         innovation_investment=innovation_investment,
         carryforward_material_orders=carryforward_orders,
-        placed_material_order=placed_material_order,
+        placed_material_orders=placed_material_orders,
         products=prepared_products,
         projects=prepared_projects,
         active_product_count=sum(1 for item in working_product_decisions if item.is_active),
@@ -1601,6 +1639,7 @@ def _compute_supplier_metrics(
     team_decision: TeamDecision,
     market_report: MarketReport,
     archetype: TeamArchetype,
+    delivery_policy=None,
 ) -> SupplierMetrics:
     """Compute weighted supplier metrics from the numeric sourcing mix."""
     normalized_mix = _normalized_supplier_mix(team_decision)
@@ -1608,10 +1647,12 @@ def _compute_supplier_metrics(
         normalized_mix[name] * SUPPLIER_MATERIAL_COST_MULTIPLIERS[name]
         for name in SUPPLIER_NAMES
     )
-    weighted_lead_time = sum(
-        normalized_mix[name] * SUPPLIER_BASE_LEAD_TIMES[name]
-        for name in SUPPLIER_NAMES
-    )
+    timing = material_order_timing(normalized_mix, market_report.supply_risk)
+    if delivery_policy:
+        timing['adjusted_lead_time'] = round(sum(
+            share * (NORMAL_LEAD[name] + sum(i * p for i, p in enumerate(
+                DELAY_PROBABILITIES[name][market_report.supply_risk])))
+            for name, share in normalized_mix.items()), 2)
     weighted_defect_pressure = sum(
         normalized_mix[name] * SUPPLIER_DEFECT_PRESSURE[name]
         for name in SUPPLIER_NAMES
@@ -1620,23 +1661,15 @@ def _compute_supplier_metrics(
         normalized_mix[name] * SUPPLIER_RISK_EXPOSURE[name]
         for name in SUPPLIER_NAMES
     )
-    expedited_share = max(team_decision.expedited_order_share_pct, 0.0) / 100.0
     weighted_material_unit_cost = (
         archetype.base_cost
         * BASE_MATERIAL_COST_SHARE
         * weighted_material_multiplier
         * market_report.material_cost_index
-        * (1.0 + expedited_share * EXPEDITED_ORDER_COST_UPLIFT)
-    )
-    adjusted_lead_time = max(
-        weighted_lead_time
-        * SUPPLY_RISK_INDEX[market_report.supply_risk]
-        - expedited_share * EXPEDITED_LEAD_TIME_REDUCTION,
-        1.0,
     )
     return SupplierMetrics(
         weighted_material_unit_cost=_round_currency(weighted_material_unit_cost),
-        weighted_lead_time=round(adjusted_lead_time, 2),
+        weighted_lead_time=timing["adjusted_lead_time"],
         weighted_supplier_defect_pressure=round(weighted_defect_pressure, 4),
         weighted_supply_risk_exposure=round(weighted_supply_risk_exposure, 4),
         mix_total_pct=team_decision.supplier_mix_total(),
@@ -1840,6 +1873,10 @@ def _finalize_product_sales(prepared_team: PreparedTeamRound) -> None:
             for item in prepared_team.products
         }
     )
+    material_share = _allocation_share_map({
+        item.decision.slot_name: item.actual_production_units * item.material_units_per_paddle
+        for item in prepared_team.products
+    })
     backlog_share = _allocation_share_map(
         {
             item.decision.slot_name: item.backlog_units_end
@@ -1858,7 +1895,7 @@ def _finalize_product_sales(prepared_team: PreparedTeamRound) -> None:
     for product in prepared_team.products:
         slot_name = product.decision.slot_name
         product.allocated_procurement_cost = _round_currency(
-            prepared_team.procurement_cost * production_share.get(slot_name, 0.0)
+            prepared_team.procurement_cost * material_share.get(slot_name, 0.0)
         )
         product.allocated_backlog_cost = _round_currency(
             total_backlog_end
@@ -1873,7 +1910,7 @@ def _finalize_product_sales(prepared_team: PreparedTeamRound) -> None:
         )
         product.allocated_raw_material_holding_cost = _round_currency(
             prepared_team.raw_material_holding_cost
-            * production_share.get(slot_name, 0.0)
+            * material_share.get(slot_name, 0.0)
         )
 
 
@@ -1938,7 +1975,7 @@ def _planning_snapshot_from_prepared(
                     product.conversion_cost_per_unit
                     + max(product.decision.qc_budget_per_unit, 0.0)
                     * QC_COST_REALIZATION_FACTOR
-                    + prepared_team.supplier_metrics.weighted_material_unit_cost
+                    + prepared_team.supplier_metrics.weighted_material_unit_cost * product.material_units_per_paddle
                 )
             )
             variable_cost_units += product.actual_production_units
@@ -2045,7 +2082,7 @@ def _planning_snapshot_from_prepared(
 def _working_capital_requirement(
     finished_goods_inventory_units: int,
     fg_unit_cost: float,
-    raw_material_inventory_units: int,
+    raw_material_inventory_units: float,
     raw_material_unit_cost: float,
     short_term_debt_balance: float,
 ) -> float:
@@ -2296,7 +2333,10 @@ def _aggregate_team_round_result(
                     if item.actual_production_units > 0
                     else 0.0
                 )
-                + prepared_team.supplier_metrics.weighted_material_unit_cost
+                + prepared_team.supplier_metrics.weighted_material_unit_cost * next(
+                    product.material_units_per_paddle for product in prepared_team.products
+                    if product.decision.slot_name == item.slot_name
+                )
             )
             for item in product_results
             if item.actual_production_units > 0
@@ -2424,6 +2464,7 @@ def _aggregate_team_round_result(
         fill_rate=round(fill_rate, 4),
         revenue=_round_currency(total_revenue + total_liquidation_revenue),
         procurement_cost=prepared_team.procurement_cost,
+        ordering_cost=prepared_team.ordering_cost,
         production_cost=total_production_cost,
         holding_cost=total_holding_cost,
         warranty_cost=total_warranty_cost,
@@ -2446,7 +2487,7 @@ def _aggregate_team_round_result(
         beginning_finished_goods_inventory=total_beginning_inventory,
         beginning_raw_material_inventory=prepared_team.beginning_raw_material_inventory,
         raw_material_units_received=prepared_team.raw_material_units_received,
-        raw_material_units_consumed=prepared_team.actual_total_production_units,
+        raw_material_units_consumed=prepared_team.consumed_material_units,
         raw_material_order_qty=max(prepared_team.team_decision.raw_material_order_qty, 0),
         backlog_units_start=total_backlog_start,
         launch_events_text=" | ".join(prepared_team.launch_events),
@@ -2466,8 +2507,7 @@ def _update_persistent_team_state(
         completed_rounds.append(market_report.round_number)
 
     open_material_orders = list(prepared_team.carryforward_material_orders)
-    if prepared_team.placed_material_order is not None:
-        open_material_orders.append(prepared_team.placed_material_order)
+    open_material_orders.extend(prepared_team.placed_material_orders)
 
     next_installed_capacity = max(
         prepared_team.installed_capacity_units
@@ -2550,6 +2590,7 @@ def _update_product_lines(
                 replacement_project_id=product_line.replacement_project_id,
                 inventory_units=next_inventory,
                 backlog_units=next_backlog,
+                material_design=material_design(product_line),
             )
         )
     return updated_lines
@@ -3100,6 +3141,28 @@ def _allocate_backlog_across_products(
     return _allocate_integer_proportionally(unmet_by_slot, max_team_backorder_units)
 
 
+def _build_material_orders(market_report, team_decision, supplier_metrics, archetype, policy):
+    if policy is None:
+        order = _build_material_order(market_report, team_decision, supplier_metrics)
+        return [order] if order else []
+    quote = sourcing_quote(team_decision.raw_material_order_qty, supplier_metrics.normalized_mix,
+                           market_report.supply_risk, market_report.round_number,
+                           archetype.base_cost, market_report.material_cost_index, policy)
+    orders = []
+    for row in quote:
+        if row['quantity'] <= 0:
+            continue
+        delay = supplier_delay(policy.seed, market_report.round_number, row['supplier'], market_report.supply_risk)
+        orders.append(OpenMaterialOrder(
+            quantity=row['quantity'], arrival_round=row['normal_arrival'] + delay,
+            placed_round=market_report.round_number, weighted_material_unit_cost=row['unit_cost'],
+            weighted_lead_time=row['normal_lead'] + delay, supplier_name=row['supplier'],
+            normal_arrival_round=row['normal_arrival'], latest_arrival_round=row['latest_arrival'],
+            on_time_probability=row['on_time'], delay_rounds=delay, ordering_cost=row['order_fee'],
+            supply_risk_at_order=market_report.supply_risk))
+    return orders
+
+
 def _build_material_order(
     market_report: MarketReport,
     team_decision: TeamDecision,
@@ -3110,7 +3173,7 @@ def _build_material_order(
     if quantity <= 0:
         return None
 
-    lead_time_rounds = max(int(round(supplier_metrics.weighted_lead_time)), 1)
+    lead_time_rounds = material_lead_time_rounds(supplier_metrics.weighted_lead_time)
     return OpenMaterialOrder(
         quantity=quantity,
         arrival_round=market_report.round_number + lead_time_rounds,
@@ -3296,9 +3359,9 @@ def _update_reputation(
 def _supplier_mix_label(team_decision: TeamDecision) -> str:
     """Build a readable supplier mix label for preview UI."""
     return (
-        f"Offshore {team_decision.supplier_mix_offshore_pct:.0f}% / "
-        f"Balanced {team_decision.supplier_mix_balanced_pct:.0f}% / "
-        f"Premium {team_decision.supplier_mix_premium_pct:.0f}%"
+        f"Economy {team_decision.supplier_mix_offshore_pct:.0f}% / "
+        f"Standard {team_decision.supplier_mix_balanced_pct:.0f}% / "
+        f"Reliable {team_decision.supplier_mix_premium_pct:.0f}%"
     )
 
 

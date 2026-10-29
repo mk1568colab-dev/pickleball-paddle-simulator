@@ -15,6 +15,13 @@ SUPPLIER_NAMES = (
     "Premium Reliable",
 )
 
+# Keep stored supplier identifiers compatible with historical classroom records.
+SUPPLIER_COLUMN_LABELS = {
+    "supplier_mix_offshore_pct": "Economy %",
+    "supplier_mix_balanced_pct": "Standard %",
+    "supplier_mix_premium_pct": "Reliable %",
+}
+
 SEGMENT_REFERENCE_PRICES: dict[str, float] = {
     "premium": 190.0,
     "mid": 132.0,
@@ -68,7 +75,7 @@ LIFECYCLE_DEFECT_MODIFIERS: dict[str, float] = {
 }
 
 SUPPLIER_MATERIAL_COST_MULTIPLIERS: dict[str, float] = {
-    "Offshore Value": 0.86,
+    "Offshore Value": 0.80,
     "Balanced Source": 1.00,
     "Premium Reliable": 1.15,
 }
@@ -96,9 +103,6 @@ SUPPLY_RISK_INDEX: dict[str, float] = {
     "Moderate": 1.00,
     "High": 1.25,
 }
-
-EXPEDITED_ORDER_COST_UPLIFT = 0.18
-EXPEDITED_LEAD_TIME_REDUCTION = 0.80
 
 BASE_MATERIAL_COST_SHARE = 0.45
 BASE_CONVERSION_COST_SHARE = 0.55

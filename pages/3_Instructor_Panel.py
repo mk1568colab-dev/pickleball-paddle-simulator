@@ -5,6 +5,7 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 
+from engine.config import SUPPLIER_COLUMN_LABELS
 from engine.simulator import build_round_validation_rows, run_round
 from utils.auth import require_admin, require_authenticated_user
 from utils.bootstrap import ensure_app_storage
@@ -379,7 +380,7 @@ def _run_round_and_advance(
         development_projects=development_projects,
         existing_states=team_states,
     )
-    save_fallback_decisions(market_report.round_number, team_decisions, product_decisions, fallback)
+    save_fallback_decisions(market_report.round_number, team_decisions, product_decisions, fallback, development_projects)
     save_round_results(round_results)
     save_product_round_results(product_results)
     save_forecast_accuracy_results(forecast_accuracy_results)
@@ -410,6 +411,35 @@ def _run_round_and_advance(
     st.rerun()
 
 
+def _render_material_requirements(current_round, submitted):
+    from utils.demand_protocol import demand_status
+    from utils.material_rules import load_material_requirements, save_material_requirements
+    rates = load_material_requirements(current_round)
+    status = demand_status(current_round)
+    locked = bool((status and status['locked_at']) or submitted)
+    with st.expander(f"Raw-Material Requirements | Round {current_round}", expanded=True):
+        st.caption("Shared standard RM per paddle. Administrator only. Requirements lock when submissions first open and carry forward to the next round.")
+        with st.form(f"material_requirements_{current_round}"):
+            columns = st.columns(3)
+            values = {}
+            for column, segment in zip(columns, ('beginner', 'mid', 'premium')):
+                values[segment] = column.number_input(
+                    f"{segment.title()} RM / Paddle", min_value=0.01, max_value=10.0,
+                    value=float(rates[segment]), step=0.1, format="%.2f", disabled=locked,
+                )
+            save = st.form_submit_button("Save Material Requirements", disabled=locked)
+        if locked:
+            st.caption("Locked for this round, including while submissions are closed. Edit the next round before opening it.")
+        if save:
+            try:
+                save_material_requirements(current_round, values)
+            except (ValueError, PermissionError) as exc:
+                st.error(str(exc))
+            else:
+                st.session_state['instructor_panel_notice'] = 'Material requirements saved for this classroom.'
+                st.rerun()
+
+
 def main() -> None:
     """Render the instructor control page."""
     ensure_app_storage()
@@ -435,6 +465,7 @@ def main() -> None:
     product_lines = load_product_lines()
     team_states = load_team_states()
     active_team_accounts = load_users(role="team_leader", is_active=True)
+    _render_material_requirements(current_round, team_decisions)
 
     validation_rows = build_round_validation_rows(
         market_report=market_report,
@@ -684,11 +715,10 @@ def main() -> None:
                         "supplier_mix_offshore_pct",
                         "supplier_mix_balanced_pct",
                         "supplier_mix_premium_pct",
-                        "expedited_order_share_pct",
                         "max_backorder_units",
                         "planned_borrowing_amount",
                     ]
-                ],
+                ].rename(columns=SUPPLIER_COLUMN_LABELS),
                 use_container_width=True,
                 hide_index=True,
             )
@@ -773,7 +803,7 @@ def main() -> None:
 
     with danger_tab:
         st.warning(
-            "Factory reset erases all game progress, market report history, decisions, product portfolios, pipelines, results, and team states. It keeps admin/team-leader accounts."
+            "Factory reset erases all game progress, market report history, decisions, product portfolios, pipelines, results, and team states. It keeps accounts and the append-only Decision Audit Log."
         )
         confirm_factory_reset = st.checkbox(
             "I understand this will restart the simulation at Round 1.",

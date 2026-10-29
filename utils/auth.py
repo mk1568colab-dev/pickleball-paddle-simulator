@@ -54,6 +54,8 @@ def _render_sidebar_navigation(user: AppUser) -> None:
             label="Admin User Management",
         )
         st.page_link("pages/13_Classrooms.py", label="Classrooms")
+        st.page_link("pages/14_Data_Export_Backup.py", label="Data Export & Backup")
+        st.page_link("pages/15_Decision_Audit_Log.py", label="Decision Audit Log")
     st.page_link(
         RESULTS_DASHBOARD_PAGE_PATH,
         label="Results Dashboard",

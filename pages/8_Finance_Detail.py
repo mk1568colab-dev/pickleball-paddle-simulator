@@ -19,6 +19,7 @@ FINANCE_COLUMNS = [
     "archetype",
     "revenue",
     "procurement_cost",
+    "ordering_cost",
     "production_cost",
     "holding_cost",
     "warranty_cost",
@@ -60,6 +61,7 @@ STUDENT_SUMMARY_COLUMNS = [
 CURRENCY_COLUMNS = {
     "revenue",
     "procurement_cost",
+    "ordering_cost",
     "production_cost",
     "holding_cost",
     "warranty_cost",
@@ -193,7 +195,7 @@ def _cash_bridge_rows(row: pd.Series) -> pd.DataFrame:
     """Build a beginning-cash to ending-cash bridge for one team-round."""
     beginning_cash = _estimated_beginning_cash(row)
     cost_items = [
-        ("Procurement cost", -float(row["procurement_cost"]), "Raw material purchases placed this round."),
+        ("Procurement cost", -float(row["procurement_cost"]), "Material purchases plus supplier order fees; paid when ordered."),
         ("Production cost", -float(row["production_cost"]), "Conversion, labor, overtime, and product-level QC cost."),
         ("Holding cost", -float(row["holding_cost"]), "Finished-goods and raw-material carrying cost."),
         ("Warranty cost", -float(row["warranty_cost"]), "Defect-driven return/service cost."),
@@ -268,7 +270,8 @@ def _cost_breakdown_rows(row: pd.Series) -> pd.DataFrame:
     revenue = max(float(row["revenue"]), 1.0)
     sales_units = max(float(row["sales_units"]), 1.0)
     categories = [
-        ("Procurement", float(row["procurement_cost"]), "Raw material order quantity and supplier mix."),
+        ("Material purchases", float(row["procurement_cost"]) - float(row.get("ordering_cost", 0)), "Raw material order quantity and supplier mix."),
+        ("Ordering fees", float(row.get("ordering_cost", 0)), "Ordering charge under this round's saved rules. Included in procurement, not charged twice."),
         ("Production", float(row["production_cost"]), "Actual production, conversion cost, overtime, and QC spend."),
         ("Holding", float(row["holding_cost"]), "Inventory left after sales plus raw material carrying cost."),
         ("Warranty", float(row["warranty_cost"]), "Defects caused by base quality, supplier risk, QC, and utilization stress."),

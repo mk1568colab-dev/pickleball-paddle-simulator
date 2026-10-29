@@ -38,10 +38,14 @@ class LaunchTests(unittest.TestCase):
         return run_round(replace(DEFAULT_MARKET_REPORT, round_number=3), [firm], lines,
                          decisions, [project], [initial_state('Launch Test')])
 
+    def ready_project(self, slot='D'):
+        return replace(self.project(slot), cumulative_investment=20000,
+                       cumulative_testing=1, launch_readiness_score=100, status='launch_ready')
+
     def test_launch_into_C_and_D_keeps_two_originals(self):
         for slot in ['C', 'D']:
             with self.subTest(slot=slot):
-                output = self.simulate(self.project(slot))
+                output = self.simulate(self.ready_project(slot))
                 lines = {p.slot_name: p for p in output[3]}
                 self.assertEqual(len(lines), 4)
                 self.assertEqual(lines[slot].product_name, 'New Paddle')
@@ -101,9 +105,15 @@ class LaunchTests(unittest.TestCase):
         self.assertEqual(next(p for p in reloaded if p.project_id == project.project_id).cumulative_testing, 0.5)
 
     def test_launch_round_cost_is_charged(self):
-        output = self.simulate(self.project())
+        output = self.simulate(self.ready_project())
         self.assertEqual(output[0][0].innovation_investment, 22000)
         self.assertTrue(all(p.cumulative_testing == 0 for p in output[4]))
+
+    def test_current_round_development_cannot_launch_until_next_round(self):
+        output = self.simulate(self.project())
+        self.assertEqual(next(p for p in output[3] if p.slot_name == 'D').product_name, 'Open Product Slot')
+        self.assertEqual(output[0][0].innovation_investment, 22000)
+        self.assertEqual(output[4][0].cumulative_testing, 1)
 
     def test_testing_cost_affects_cash_profit_and_total_cost(self):
         base = replace(self.project(), launch_now=False, testing_intensity=0)

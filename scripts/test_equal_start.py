@@ -27,7 +27,7 @@ class EqualStartTests(unittest.TestCase):
         self.assertEqual(states[0].cash_balance, 50000)
         self.assertEqual(states[0].capacity_units, 300)
         self.assertEqual(len([p for p in load_product_lines(team_name="Team 0") if p.is_active]), 2)
-        self.assertEqual(len(load_product_lines(team_name="Team 0")), 5)
+        self.assertEqual(len(load_product_lines(team_name="Team 0")), 4)
         self.assertEqual({p.target_segment for p in load_product_lines(team_name="Team 0") if p.is_active}, {"beginner", "premium"})
         self.assertTrue(load_product_lines(team_name="Team 0")[2].retirement_flag)
         save_team_state(replace(states[0], cash_balance=43210))

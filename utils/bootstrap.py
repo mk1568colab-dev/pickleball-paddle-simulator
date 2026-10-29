@@ -8,6 +8,7 @@ import os
 
 from data.defaults import DEFAULT_MARKET_REPORT, DEFAULT_TEAM_ARCHETYPES, DEMO_USER_SEEDS
 from utils.database import (
+    active_transaction_path,
     DEVELOPMENT_ENVIRONMENT,
     get_connection,
     get_simulator_env,
@@ -23,6 +24,9 @@ DEMO_ACCOUNTS_ENV_VAR = "SIMULATOR_ENABLE_DEMO_ACCOUNTS"
 
 def ensure_app_storage() -> str:
     """Create the SQLite database, schema, and seed reference data."""
+    transaction_path = active_transaction_path()
+    if transaction_path is not None:
+        return str(transaction_path)
     database_path = initialize_database()
 
     with get_connection() as connection:

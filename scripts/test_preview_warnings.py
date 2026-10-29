@@ -36,7 +36,7 @@ class WarningTests(unittest.TestCase):
         self.assertFalse(any("Open Product Slot" in w for w in result.warnings))
 
     def test_launch_into_vacant_slot_still_checks_new_price(self):
-        result = self.preview(project=fixtures.LaunchTests().project("D"))
+        result = self.preview(project=fixtures.LaunchTests().ready_project("D"))
         self.assertTrue(any("New Paddle is priced below" in w for w in result.warnings))
 
 

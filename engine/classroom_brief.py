@@ -38,11 +38,11 @@ def strategy_signals(firm, products, projects, capacity):
     launch = any(p.launch_now for p in active_projects)
     checks = [
         ("Premium / quality", [qc >= 5, firm.supplier_mix_premium_pct >= 40, any(p.target_segment == "premium" for p in products)],
-         f"QC ${qc:.2f}/unit; premium sourcing {firm.supplier_mix_premium_pct:.0f}%; premium product {'yes' if any(p.target_segment == 'premium' for p in products) else 'no'}",
-         "QC >= $5/unit; premium sourcing >= 40%; an active premium product", "Defect rate; contribution per unit; premium sales"),
+         f"QC ${qc:.2f}/unit; Reliable sourcing {firm.supplier_mix_premium_pct:.0f}%; premium product {'yes' if any(p.target_segment == 'premium' for p in products) else 'no'}",
+         "QC >= $5/unit; Reliable sourcing >= 40%; an active premium product", "Defect rate; contribution per unit; premium sales"),
         ("Low cost / volume", [price_index <= .95 and bool(products), firm.supplier_mix_offshore_pct >= 60, units >= .85 * max(capacity, 1)],
-         f"Segment-relative price {price_index:.2f}x; offshore {firm.supplier_mix_offshore_pct:.0f}%; planned units {units}",
-         "Price <= 95% of segment benchmark; offshore >= 60%; planned units >= 85% of installed capacity", "Unit cost; sales volume; utilization; inventory and defects"),
+         f"Segment-relative price {price_index:.2f}x; Economy {firm.supplier_mix_offshore_pct:.0f}%; planned units {units}",
+         "Price <= 95% of segment benchmark; Economy >= 60%; planned units >= 85% of installed capacity", "Unit cost; sales volume; utilization; inventory and defects"),
         ("Growth / expansion", [firm.capacity_expansion_units > 0, firm.overtime_capacity_units > 0, units > capacity],
          f"Expansion {firm.capacity_expansion_units}; overtime {firm.overtime_capacity_units}; planned units {units}",
          "Capacity expansion > 0; overtime > 0; planned units > installed capacity", "Sales and share growth; cash and debt exposure"),

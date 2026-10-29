@@ -39,7 +39,7 @@ def complete_round_inputs(round_number, firms, products, projects, lines, states
                     "raw_material_order_qty", "supplier_mix_offshore_pct",
                     "supplier_mix_balanced_pct", "supplier_mix_premium_pct",
                     "expedited_order_share_pct", "max_backorder_units")}))
-        firms.append(replace(previous, team_name=team))
+        firms.append(replace(previous, team_name=team, expedited_order_share_pct=0.0))
         team_lines = repo.ensure_product_lines_for_team(team, profile.name)
         lines = [p for p in lines if p.team_name.casefold() != key] + team_lines
         products = [p for p in products if p.team_name.casefold() != key]
@@ -77,13 +77,15 @@ def complete_round_inputs(round_number, firms, products, projects, lines, states
     return firms, products, projects, lines, fallback
 
 
-def save_fallback_decisions(round_number, firms, products, fallback):
+def save_fallback_decisions(round_number, firms, products, fallback, effective_projects=None):
     """Keep the effective plan for next round; no student submitter is recorded."""
     missing = {name.casefold() for name in fallback}
+    from utils.decision_audit import decision_revision
     for firm in firms:
         if firm.team_name.casefold() in missing:
-            repo.save_team_decision(firm, round_number, submitted_by_user_id=None)
-    selected = [p for p in products if p.team_name.casefold() in missing]
-    repo.save_product_decisions(selected, round_number)
-    repo.save_product_forecasts([ProductForecast.from_dict(
-        dict(p.to_dict(), round_number=round_number)) for p in selected])
+            with decision_revision(round_number, firm.team_name, automatic=True, effective_projects=effective_projects):
+                repo.save_team_decision(firm, round_number, submitted_by_user_id=None)
+                selected = [p for p in products if p.team_name.casefold() == firm.team_name.casefold()]
+                repo.save_product_decisions(selected, round_number)
+                repo.save_product_forecasts([ProductForecast.from_dict(
+                    dict(p.to_dict(), round_number=round_number)) for p in selected])
