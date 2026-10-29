@@ -18,6 +18,7 @@ from engine.config import (
 from engine.sourcing import material_order_timing
 from engine.sourcing import sourcing_quote, public_incoming_orders, ordering_fee_description
 from utils.sourcing_rules import load_delivery_policy
+from utils.supply_planning import render_supply_planning
 from engine.simulator import estimate_development_project, preview_team_decision, project_ready_at_round_start
 from models.schemas import (
     MAX_TECH_GENERATION,
@@ -2252,6 +2253,7 @@ def main() -> None:
     )
 
     _render_firm_controls(market_report, selected_archetype)
+    supply_planning_container = st.container()
     planning_projects = _current_projects(team_name, current_round, saved_projects)
     for project in planning_projects:
         if project_ready_at_round_start(project, current_round) and not project.launch_now:
@@ -2285,6 +2287,10 @@ def main() -> None:
 
     with material_plan_container:
         _render_material_plan(preview, candidate_firm_decision)
+
+    with supply_planning_container:
+        render_supply_planning(user, candidate_firm_decision, market_report,
+                               selected_archetype, preview, existing_state)
 
     st.markdown("### 6. Planning Analytics Preview")
     _render_preview(candidate_firm_decision, candidate_projects, current_round, preview)
