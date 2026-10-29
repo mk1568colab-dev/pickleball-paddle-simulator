@@ -38,20 +38,47 @@ class LaunchTests(unittest.TestCase):
         return run_round(replace(DEFAULT_MARKET_REPORT, round_number=3), [firm], lines,
                          decisions, [project], [initial_state('Launch Test')])
 
-    def test_launch_into_D_and_E_keeps_two_originals(self):
-        for slot in ['D', 'E']:
+    def ready_project(self, slot='D'):
+        return replace(self.project(slot), cumulative_investment=20000,
+                       cumulative_testing=1, launch_readiness_score=100, status='launch_ready')
+
+    def test_launch_into_C_and_D_keeps_two_originals(self):
+        for slot in ['C', 'D']:
             with self.subTest(slot=slot):
-                output = self.simulate(self.project(slot))
+                output = self.simulate(self.ready_project(slot))
                 lines = {p.slot_name: p for p in output[3]}
-                self.assertEqual(len(lines), 5)
+                self.assertEqual(len(lines), 4)
                 self.assertEqual(lines[slot].product_name, 'New Paddle')
                 self.assertTrue(lines[slot].is_active)
                 self.assertTrue(lines['A'].is_active and lines['B'].is_active)
                 self.assertEqual(sum(p.is_active for p in lines.values()), 3)
 
-    def test_sixth_slot_rejected(self):
-        with self.assertRaisesRegex(ValueError, 'five slots'):
-            self.simulate(self.project('F'))
+    def test_fifth_and_sixth_slots_rejected(self):
+        for slot in ['E', 'F']:
+            with self.subTest(slot=slot), self.assertRaisesRegex(ValueError, 'four slots'):
+                self.simulate(self.project(slot))
+
+    def test_legacy_empty_fifth_slot_is_preserved_but_not_loaded(self):
+        from utils import repository as repo
+        from utils.database import get_connection
+        from models.schemas import ProductLine
+        repo.create_user('legacy_four', 'not-a-login-hash', 'team_leader', 'Legacy Four', True)
+        legacy = ProductLine.from_dict(dict(team_name='Legacy Four', slot_name='E',
+            product_name='Open Product Slot', is_active=False, inventory_units=0, backlog_units=0))
+        repo.save_product_lines([legacy])
+        decision = ProductDecision.from_dict(dict(team_name='Legacy Four', slot_name='E',
+            product_name='Open Product Slot', is_active=False, forecast_units=0,
+            planned_production_units=0, target_finished_goods_inventory=0))
+        repo.save_product_decisions([decision], round_number=1)
+        self.assertEqual([p.slot_name for p in repo.load_product_lines('Legacy Four')], list('ABCD'))
+        self.assertEqual(repo.load_product_decisions(1, 'Legacy Four'), [])
+        with get_connection() as conn:
+            self.assertEqual(conn.execute("SELECT count(*) FROM product_lines WHERE team_name='Legacy Four'").fetchone()[0], 5)
+            self.assertEqual(conn.execute("SELECT count(*) FROM product_decisions WHERE team_name='Legacy Four'").fetchone()[0], 1)
+        # Unexpected real stock must remain visible to the engine's safety check.
+        repo.save_product_lines([replace(legacy, inventory_units=5)])
+        self.assertEqual(len(repo.load_product_lines('Legacy Four')), 5)
+        repo.save_product_lines([legacy])
 
     def test_split_testing_accumulates_and_costs_less(self):
         project = self.project()
@@ -78,9 +105,15 @@ class LaunchTests(unittest.TestCase):
         self.assertEqual(next(p for p in reloaded if p.project_id == project.project_id).cumulative_testing, 0.5)
 
     def test_launch_round_cost_is_charged(self):
-        output = self.simulate(self.project())
+        output = self.simulate(self.ready_project())
         self.assertEqual(output[0][0].innovation_investment, 22000)
         self.assertTrue(all(p.cumulative_testing == 0 for p in output[4]))
+
+    def test_current_round_development_cannot_launch_until_next_round(self):
+        output = self.simulate(self.project())
+        self.assertEqual(next(p for p in output[3] if p.slot_name == 'D').product_name, 'Open Product Slot')
+        self.assertEqual(output[0][0].innovation_investment, 22000)
+        self.assertEqual(output[4][0].cumulative_testing, 1)
 
     def test_testing_cost_affects_cash_profit_and_total_cost(self):
         base = replace(self.project(), launch_now=False, testing_intensity=0)
@@ -121,6 +154,9 @@ class LaunchTests(unittest.TestCase):
             app.session_state["authenticated_username"] = "launch_test"
             app.run()
             self.assertFalse(app.exception, str(app.exception))
+            product_names = [w for w in app.text_input if w.label == 'Product Name']
+            self.assertEqual({w.key for w in product_names},
+                             {f'stage_b_product_{slot}_product_name' for slot in 'ABCD'})
             tables = [d.value for d in app.dataframe if "Testing Coverage" in d.value.columns]
             self.assertTrue(tables)
             self.assertEqual(tables[0].iloc[0]["Testing Coverage"], "100%")

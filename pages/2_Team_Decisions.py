@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+from dataclasses import replace
 from functools import lru_cache
 from html import escape
 from pathlib import Path
@@ -11,13 +12,13 @@ import pandas as pd
 import streamlit as st
 
 from engine.config import (
-    EXPEDITED_LEAD_TIME_REDUCTION,
     STARTING_RAW_MATERIAL_COVERAGE,
-    SUPPLIER_BASE_LEAD_TIMES,
     SUPPLIER_NAMES,
-    SUPPLY_RISK_INDEX,
 )
-from engine.simulator import estimate_development_project, preview_team_decision
+from engine.sourcing import material_order_timing
+from engine.sourcing import sourcing_quote, public_incoming_orders, ordering_fee_description
+from utils.sourcing_rules import load_delivery_policy
+from engine.simulator import estimate_development_project, preview_team_decision, project_ready_at_round_start
 from models.schemas import (
     MAX_TECH_GENERATION,
     MIN_TECH_GENERATION,
@@ -71,7 +72,6 @@ FIRM_WIDGET_KEYS = {
     "supplier_mix_offshore_pct": "stage_b_supplier_mix_offshore_pct",
     "supplier_mix_balanced_pct": "stage_b_supplier_mix_balanced_pct",
     "supplier_mix_premium_pct": "stage_b_supplier_mix_premium_pct",
-    "expedited_order_share_pct": "stage_b_expedited_order_share_pct",
     "max_backorder_units": "stage_b_max_backorder_units",
     "planned_borrowing_amount": "stage_b_planned_borrowing_amount",
 }
@@ -385,8 +385,8 @@ def _build_kiki_submit_checklist(
     total_forecast = int(getattr(preview, "total_forecast_units", 0) or 0)
     total_planned = int(getattr(preview, "total_planned_production_units", 0) or 0)
     effective_capacity = int(getattr(preview, "effective_capacity_units", 0) or 0)
-    raw_material_available = int(getattr(preview, "raw_material_units_available", 0) or 0)
-    raw_material_gap = raw_material_available - total_planned
+    raw_material_available = float(getattr(preview, "raw_material_units_available", 0) or 0)
+    raw_material_gap = raw_material_available - getattr(preview, "total_material_required", total_planned)
     forecast_gap = abs(int(getattr(preview, "forecast_production_gap_units", 0) or 0))
     forecast_gap_base = max(total_forecast, total_planned, 1)
     planned_utilization = total_planned / effective_capacity if effective_capacity > 0 else 0.0
@@ -400,13 +400,7 @@ def _build_kiki_submit_checklist(
     launch_gate_ready_count = sum(
         1
         for project in launch_requests
-        if bool(
-            estimate_development_project(
-                project,
-                include_current_round_investment=True,
-                current_round=current_round,
-            ).get("launch_gate_met", False)
-        )
+        if project_ready_at_round_start(project, current_round)
     )
 
     if not active_products:
@@ -655,29 +649,11 @@ def _current_supplier_mix() -> dict[str, float]:
 
 def _current_material_timing(market_report) -> dict[str, float | int]:
     """Calculate the expected arrival timing for the current raw-material order."""
-    normalized_mix = _current_supplier_mix()
-    base_weighted_lead_time = sum(
-        normalized_mix[supplier] * SUPPLIER_BASE_LEAD_TIMES[supplier]
-        for supplier in SUPPLIER_NAMES
-    )
-    expedited_share = (
-        max(float(st.session_state.get(FIRM_WIDGET_KEYS["expedited_order_share_pct"], 0.0)), 0.0)
-        / 100.0
-    )
-    adjusted_lead_time = max(
-        base_weighted_lead_time
-        * SUPPLY_RISK_INDEX[market_report.supply_risk]
-        - expedited_share * EXPEDITED_LEAD_TIME_REDUCTION,
-        1.0,
-    )
-    lead_time_rounds = max(int(round(adjusted_lead_time)), 1)
+    timing = material_order_timing(_current_supplier_mix(), market_report.supply_risk)
     return {
+        **timing,
         "order_qty": int(st.session_state.get(FIRM_WIDGET_KEYS["raw_material_order_qty"], 0)),
-        "base_weighted_lead_time": round(base_weighted_lead_time, 2),
-        "adjusted_lead_time": round(adjusted_lead_time, 2),
-        "lead_time_rounds": lead_time_rounds,
-        "arrival_round": market_report.round_number + lead_time_rounds,
-        "supply_risk_index": SUPPLY_RISK_INDEX[market_report.supply_risk],
+        "arrival_round": market_report.round_number + timing["lead_time_rounds"],
     }
 
 
@@ -740,7 +716,7 @@ def _suggested_firm_decision(team_name: str, archetype: TeamArchetype) -> TeamDe
         supplier_mix_offshore_pct=archetype.suggested_supplier_mix_offshore_pct,
         supplier_mix_balanced_pct=archetype.suggested_supplier_mix_balanced_pct,
         supplier_mix_premium_pct=archetype.suggested_supplier_mix_premium_pct,
-        expedited_order_share_pct=archetype.suggested_expedited_order_share_pct,
+        expedited_order_share_pct=0.0,
         max_backorder_units=archetype.suggested_max_backorder_units,
         planned_borrowing_amount=0.0,
     )
@@ -966,7 +942,7 @@ def _current_firm_decision(team_name: str, archetype_name: str) -> TeamDecision:
         supplier_mix_offshore_pct=float(st.session_state.get(FIRM_WIDGET_KEYS["supplier_mix_offshore_pct"], 0.0)),
         supplier_mix_balanced_pct=float(st.session_state.get(FIRM_WIDGET_KEYS["supplier_mix_balanced_pct"], 0.0)),
         supplier_mix_premium_pct=float(st.session_state.get(FIRM_WIDGET_KEYS["supplier_mix_premium_pct"], 0.0)),
-        expedited_order_share_pct=float(st.session_state.get(FIRM_WIDGET_KEYS["expedited_order_share_pct"], 0.0)),
+        expedited_order_share_pct=0.0,
         max_backorder_units=int(st.session_state.get(FIRM_WIDGET_KEYS["max_backorder_units"], 0)),
         planned_borrowing_amount=float(st.session_state.get(FIRM_WIDGET_KEYS["planned_borrowing_amount"], 0.0)),
     )
@@ -1242,6 +1218,7 @@ def _merge_product_lines(
                 replacement_project_id=product_line.replacement_project_id,
                 inventory_units=product_line.inventory_units,
                 backlog_units=product_line.backlog_units,
+                material_design=product_line.material_design,
             )
         )
 
@@ -1290,47 +1267,68 @@ def _render_state_snapshot(
         / max(sum(1 for line in product_lines if line.is_active), 1)
     )
 
-    snapshot_cols = st.columns(8)
+    snapshot_cols = st.columns(7)
     snapshot_cols[0].metric("Capacity", f"{installed_capacity:,}")
     snapshot_cols[1].metric("FG Inv.", f"{beginning_inventory:,}")
-    snapshot_cols[2].metric("RM Inv.", f"{raw_material_inventory:,}")
-    snapshot_cols[3].metric("Backlog", f"{beginning_backlog:,}")
-    snapshot_cols[4].metric("Reputation", f"{reputation:.1f}")
-    snapshot_cols[5].metric("Cash", f"${cash_balance:,.0f}")
-    snapshot_cols[6].metric("Debt", f"${short_term_debt:,.0f}")
-    snapshot_cols[7].metric(
+    snapshot_cols[2].metric("Backlog", f"{beginning_backlog:,}")
+    snapshot_cols[3].metric("Reputation", f"{reputation:.1f}")
+    snapshot_cols[4].metric("Cash", f"${cash_balance:,.0f}")
+    snapshot_cols[5].metric("Debt", f"${short_term_debt:,.0f}")
+    snapshot_cols[6].metric(
         "Tech vs Market",
         f"{average_tech - market_report.current_market_generation:+.1f}",
     )
+    arriving_units = sum(
+        order.quantity for order in (existing_state.open_material_orders if existing_state else [])
+        if order.arrival_round <= market_report.round_number
+    )
+    material_cols = st.columns(3)
+    format_rm = lambda value: f"{value:,.2f}".rstrip("0").rstrip(".")
+    material_cols[0].metric("RM Carried Over", format_rm(raw_material_inventory),
+                            help="Raw materials remaining after the previous round.")
+    material_cols[1].metric("RM Arriving This Round", format_rm(arriving_units),
+                            help="Previously placed orders due by this round; usable in this round's production.")
+    material_cols[2].metric("RM Available for Production", format_rm(raw_material_inventory + arriving_units),
+                            help="Carried-over materials plus orders arriving this round, before production consumption.")
     st.caption(
         f"Last-round interest expense: ${interest_last_round:,.0f} | "
         f"Liquidity warning flag: {'On' if liquidity_flag else 'Off'}"
     )
     if existing_state and existing_state.open_material_orders:
-        incoming_rows = [
-            {
-                "Quantity": order.quantity,
-                "Placed Round": order.placed_round,
-                "Scheduled Arrival": order.arrival_round,
-                "Lead Time Used": order.weighted_lead_time,
-                "Material Unit Cost": order.weighted_material_unit_cost,
-            }
-            for order in sorted(
-                existing_state.open_material_orders,
-                key=lambda item: (item.arrival_round, item.placed_round),
-            )
-        ]
+        incoming_rows = public_incoming_orders(existing_state.open_material_orders, market_report.round_number)
         st.caption("Incoming raw-material orders already placed and not yet received:")
         st.dataframe(pd.DataFrame(incoming_rows), use_container_width=True, hide_index=True)
     else:
         st.caption("Incoming raw-material orders: none currently waiting to arrive.")
 
 
-def _render_firm_controls(market_report) -> None:
+def _render_supplier_quotes(quote):
+    labels = ('Supplier', 'USD / RM', 'Units', 'Normal', 'Range', 'On time', 'Materials', 'Fee share')
+    rows = []
+    for row in quote:
+        values = (row['label'], f"${row['unit_cost']:,.2f}", f"{row['quantity']:,}",
+                  f"R{row['normal_arrival']}", f"R{row['normal_arrival']}-R{row['latest_arrival']}",
+                  f"{row['on_time']:.1%}", f"${row['material_cost']:,.2f}", f"${row['order_fee']:,.2f}")
+        rows.append('<tr>' + ''.join(f'<td data-label="{label}">{escape(value)}</td>'
+                                    for label, value in zip(labels, values)) + '</tr>')
+    st.html('''<style>
+    .kiki-sourcing-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:14px}
+    .kiki-sourcing-table th,.kiki-sourcing-table td{padding:10px 6px;border-bottom:1px solid #d5d9e0;text-align:right;overflow-wrap:anywhere}
+    .kiki-sourcing-table th{font-size:12px;font-weight:600}.kiki-sourcing-table th:first-child,.kiki-sourcing-table td:first-child{text-align:left}
+    .kiki-sourcing-table td{font-variant-numeric:tabular-nums}
+    @media(max-width:680px){.kiki-sourcing-table,.kiki-sourcing-table tbody,.kiki-sourcing-table tr{display:block;width:100%}
+    .kiki-sourcing-table thead{display:none}.kiki-sourcing-table tr{padding:8px 0;border-bottom:1px solid #d5d9e0}
+    .kiki-sourcing-table td{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border:0}
+    .kiki-sourcing-table td:before{content:attr(data-label);font-size:12px;text-align:left}}
+    </style><table class="kiki-sourcing-table" aria-label="Supplier quotes"><thead><tr>'''
+    + ''.join(f'<th>{label}</th>' for label in labels) + '</tr></thead><tbody>' + ''.join(rows) + '</tbody></table>')
+
+
+def _render_firm_controls(market_report, selected_archetype) -> None:
     """Render compact firm-level operations, sourcing, and finance controls."""
     st.markdown("### 3. Firm Controls")
     st.caption("Shared operations, sourcing, and finance choices for the whole firm.")
-    firm_cols = st.columns(10)
+    firm_cols = st.columns(9)
     firm_cols[0].number_input(
         "Overtime Capacity",
         min_value=0,
@@ -1355,35 +1353,28 @@ def _render_firm_controls(market_report) -> None:
         step=10,
         key=FIRM_WIDGET_KEYS["raw_material_order_qty"],
     )
-    firm_cols[4].slider(
-        "Expedite %",
-        min_value=0.0,
-        max_value=100.0,
-        step=1.0,
-        key=FIRM_WIDGET_KEYS["expedited_order_share_pct"],
-    )
-    firm_cols[5].number_input(
+    firm_cols[4].number_input(
         "Borrowing",
         min_value=0.0,
         step=500.0,
         key=FIRM_WIDGET_KEYS["planned_borrowing_amount"],
     )
-    firm_cols[6].number_input(
-        "Offshore %",
+    firm_cols[5].number_input(
+        "Economy %",
         min_value=0.0,
         max_value=100.0,
         step=1.0,
         key=FIRM_WIDGET_KEYS["supplier_mix_offshore_pct"],
     )
-    firm_cols[7].number_input(
-        "Balanced %",
+    firm_cols[6].number_input(
+        "Standard %",
         min_value=0.0,
         max_value=100.0,
         step=1.0,
         key=FIRM_WIDGET_KEYS["supplier_mix_balanced_pct"],
     )
-    firm_cols[8].number_input(
-        "Premium %",
+    firm_cols[7].number_input(
+        "Reliable %",
         min_value=0.0,
         max_value=100.0,
         step=1.0,
@@ -1397,9 +1388,31 @@ def _render_firm_controls(market_report) -> None:
             "supplier_mix_premium_pct",
         )
     )
-    firm_cols[9].metric("Supplier Total", f"{supplier_total:.0f}%")
+    firm_cols[8].metric("Supplier Total", f"{supplier_total:.0f}%")
     if round(supplier_total, 6) != 100.0:
         st.warning("Supplier mix must sum to 100% before saving.")
+    policy = load_delivery_policy()
+    if policy:
+        quantity = int(st.session_state.get(FIRM_WIDGET_KEYS['raw_material_order_qty'], 0))
+        quote = sourcing_quote(quantity, _current_supplier_mix(), market_report.supply_risk,
+                               market_report.round_number, selected_archetype.base_cost,
+                               market_report.material_cost_index, policy)
+        st.markdown('#### Supplier Quotes')
+        st.caption(f'Supply risk: {market_report.supply_risk} | Prices reflect the current material-cost index.')
+        _render_supplier_quotes(quote)
+        material_cost = sum(row['material_cost'] for row in quote)
+        fees = sum(row['order_fee'] for row in quote)
+        cols = st.columns(4)
+        cols[0].metric('New RM Order', f'{quantity:,} units')
+        cols[1].metric('Material Purchase', f'${material_cost:,.2f}')
+        cols[2].metric('Total Ordering Fee', f'${fees:,.0f}')
+        cols[3].metric('Total Order Cash', f'${material_cost + fees:,.2f}')
+        st.caption(ordering_fee_description(policy) + ' '
+                   'Materials arrive separately by supplier. Reliable: at most 1 round late. '
+                   'New orders cannot supply this round\'s production.')
+        st.caption('End-of-round holding: raw materials USD 2/unit; finished paddles USD 6/unit. '
+                   'In-transit orders have no warehouse holding charge.')
+        return
     timing = _current_material_timing(market_report)
     timing_cols = st.columns([1.0, 1.0, 1.0, 2.2])
     order_qty = int(timing["order_qty"])
@@ -1414,16 +1427,67 @@ def _render_firm_controls(market_report) -> None:
         "New raw-material orders are for future production. In this deterministic version, "
         "a saved order arrives in its scheduled arrival round. "
         f"Current weighted lead time is {timing['adjusted_lead_time']:.2f} rounds "
-        f"after supply risk ({market_report.supply_risk} x{timing['supply_risk_index']:.2f}) "
-        "and expedite. Base lead times: Offshore 2.4, Balanced 1.3, Premium 0.9 rounds."
+        f"after supply risk ({market_report.supply_risk} x{timing['supply_risk_index']:.2f}). "
+        "Base lead times: Economy 2.4, Standard 1.3, Reliable 0.9 rounds."
     )
 
 
+def _launch_planning_lines(product_lines, projects, current_round, archetype):
+    """Expose launch drafts without replacing persistent products before round execution."""
+    context = st.session_state[SESSION_CONTEXT_KEY]
+    backup_key = f"launch_plan_backups:{context}"
+    backups = st.session_state.setdefault(backup_key, {})
+    launches = [p for p in projects if p.launch_now and project_ready_at_round_start(p, current_round)]
+    if len(launches) > 1:
+        st.warning("Choose only one project to launch this round.")
+        launches = []
+    by_slot = {p.intended_slot_name: p for p in launches}
+    original_defaults = {p.slot_name: p for p in _seed_product_decisions_for_round(
+        product_lines[0].team_name, archetype, product_lines, current_round
+    )} if product_lines else {}
+    planning_lines = []
+    for line in product_lines:
+        slot = line.slot_name
+        project = by_slot.get(slot)
+        token = project.project_id + ':' + project.project_name if project else None
+        previous = backups.get(slot)
+        if previous and previous['token'] != token:
+            for field, value in previous['values'].items():
+                st.session_state[_product_widget_key(slot, field)] = value
+            del backups[slot]
+        if project:
+            if slot not in backups:
+                backups[slot] = {'token': token, 'values': {
+                    field: st.session_state.get(_product_widget_key(slot, field))
+                    for field in PRODUCT_FIELDS
+                }}
+                if (backups[slot]['values']['product_name'] == project.project_name
+                        and line.product_name != project.project_name):
+                    backups[slot]['values'] = {
+                        field: getattr(original_defaults[slot], field) for field in PRODUCT_FIELDS
+                    }
+            for field, value in dict(product_name=project.project_name,
+                                     target_segment=project.target_segment,
+                                     is_active=True, retire_flag=False).items():
+                st.session_state[_product_widget_key(slot, field)] = value
+            planning_lines.append(replace(
+                line, product_name=project.project_name, target_segment=project.target_segment,
+                is_active=True, retirement_flag=False, retired_round=None,
+                lifecycle_stage='launch', age_in_rounds=0,
+                tech_generation=project.target_tech_generation, launch_round=current_round,
+                inventory_units=0, backlog_units=0,
+                material_design=project.target_segment,
+            ))
+        else:
+            planning_lines.append(line)
+    return planning_lines
+
+
 def _render_product_profile(product_lines: list[ProductLine]) -> None:
-    """Render the five product slots as compact rows."""
+    """Render the four product slots as compact rows."""
     st.markdown("### 4. Product Profile")
     st.caption(
-        "Five product slots (A-E). New teams start with Beginner and Premium paddles; vacant slots require a development launch."
+        "Four product slots (A-D). New teams start with Beginner and Premium paddles; vacant slots require a development launch."
     )
     profile_widths = [2.3, 1.6, 0.9, 0.9, 1.0, 0.9, 0.95, 1.4]
     header_cols = st.columns(profile_widths)
@@ -1433,7 +1497,7 @@ def _render_product_profile(product_lines: list[ProductLine]) -> None:
             "Product Slot and State",
             "Segment",
             "Price",
-            "Forecast",
+            "Demand Forecast",
             "Production",
             "QC",
             "Target FG",
@@ -1448,6 +1512,9 @@ def _render_product_profile(product_lines: list[ProductLine]) -> None:
         product_line = line_by_slot[slot_name]
         is_retired_slot = product_line.retirement_flag and not product_line.is_active
         lifecycle = product_line.lifecycle_stage.title()
+        launch_draft = slot_name in st.session_state.get(
+            f"launch_plan_backups:{st.session_state.get(SESSION_CONTEXT_KEY)}", {}
+        )
         lifecycle_tone = (
             "green"
             if product_line.lifecycle_stage == "launch"
@@ -1477,7 +1544,7 @@ def _render_product_profile(product_lines: list[ProductLine]) -> None:
                 st.text_input(
                     "Product Name",
                     key=_product_widget_key(slot_name, "product_name"),
-                    disabled=is_retired_slot,
+                    disabled=is_retired_slot or launch_draft,
                     label_visibility="collapsed",
                 )
             active_value = bool(
@@ -1498,7 +1565,7 @@ def _render_product_profile(product_lines: list[ProductLine]) -> None:
                     options=segment_options,
                     index=_safe_option_index(segment_options, current_segment),
                     key=_product_widget_key(slot_name, "target_segment"),
-                    disabled=is_retired_slot,
+                    disabled=is_retired_slot or launch_draft,
                     label_visibility="collapsed",
                 )
             with row_cols[2]:
@@ -1512,7 +1579,7 @@ def _render_product_profile(product_lines: list[ProductLine]) -> None:
                 )
             with row_cols[3]:
                 st.number_input(
-                    "Forecast Units",
+                    "Demand Forecast",
                     min_value=0,
                     step=10,
                     key=_product_widget_key(slot_name, "forecast_units"),
@@ -1551,7 +1618,7 @@ def _render_product_profile(product_lines: list[ProductLine]) -> None:
                     "Active",
                     key=_product_widget_key(slot_name, "is_active"),
                     value=False if is_retired_slot else active_value,
-                    disabled=is_retired_slot,
+                    disabled=is_retired_slot or launch_draft,
                     help=(
                         "Retired slots stay inactive until a development project launches into this slot."
                         if is_retired_slot
@@ -1561,7 +1628,7 @@ def _render_product_profile(product_lines: list[ProductLine]) -> None:
                 st.checkbox(
                     "Retire",
                     key=_product_widget_key(slot_name, "retire_flag"),
-                    disabled=is_retired_slot,
+                    disabled=is_retired_slot or launch_draft,
                     help=(
                         "This slot has already been retired."
                         if is_retired_slot
@@ -1701,6 +1768,55 @@ def _render_development_pipeline(
                 )
 
 
+def _render_material_plan(preview, firm_decision):
+    st.markdown("#### Shared Raw-Material Plan")
+    st.caption("One shared RM inventory. Material design is fixed at product creation or launch; target-market changes do not change it.")
+    rows = []
+    for row in preview.material_rows:
+        rows.append(
+            '<tr><td>' + escape(str(row['Product']))
+            + '<small>Slot ' + escape(str(row['Slot'])) + ' / ' + escape(str(row['Material Design']))
+            + ' design</small></td>'
+            + f'<td data-label="Planned paddles">{row["Planned Paddles"]:,}</td>'
+            + f'<td data-label="RM / paddle">{row["RM / Paddle"]:.2f}</td>'
+            + f'<td data-label="RM required">{row["RM Required"]:,.2f}</td>'
+            + f'<td data-label="Material value">${row["Planned Material Value"]:,.2f}</td></tr>'
+        )
+    if rows:
+        st.html('''<style>
+        .kiki-material-plan{width:100%;border-collapse:collapse;table-layout:fixed;font-size:14px}
+        .kiki-material-plan th,.kiki-material-plan td{padding:10px 8px;text-align:right;border-bottom:1px solid #d5d9e0;vertical-align:middle;overflow-wrap:anywhere}
+        .kiki-material-plan th{font-size:12px;font-weight:500}
+        .kiki-material-plan th:first-child,.kiki-material-plan td:first-child{text-align:left;width:30%;padding-left:0}
+        .kiki-material-plan small{display:block;font-size:12px;margin-top:4px}
+        .kiki-material-plan td{font-variant-numeric:tabular-nums}
+        @media(max-width:640px){.kiki-material-plan,.kiki-material-plan tbody,.kiki-material-plan tr{display:block;width:100%}
+        .kiki-material-plan thead{display:none}.kiki-material-plan tr{border-bottom:1px solid #d5d9e0;padding:8px 0}
+        .kiki-material-plan td{display:flex;justify-content:space-between;gap:12px;border:0;padding:5px 0}
+        .kiki-material-plan td:first-child{display:block;width:100%;font-weight:600}
+        .kiki-material-plan td[data-label]:before{content:attr(data-label);font-size:12px;text-align:left}}
+        </style><table class="kiki-material-plan" aria-label="Shared raw material requirements"><thead><tr>
+        <th>Product / design</th><th>Planned paddles</th><th>RM / paddle</th><th>RM required</th><th>Material value</th>
+        </tr></thead><tbody>''' + ''.join(rows) + '</tbody></table>')
+    columns = st.columns(4)
+    required = preview.total_material_required
+    gap = round(preview.raw_material_units_available - required, 2)
+    columns[0].metric("Required RM", f"{required:,.2f}")
+    columns[1].metric("Available RM", f"{preview.raw_material_units_available:,.2f}")
+    columns[2].metric("RM Shortage" if gap < 0 else "RM Remaining", f"{abs(gap):,.2f}")
+    columns[3].metric("Planned Material Value", f"${required * preview.weighted_material_unit_cost:,.2f}")
+    st.caption(
+        f"Current quote: USD {preview.weighted_material_unit_cost:,.2f} / standard RM unit. "
+        f"New order: {firm_decision.raw_material_order_qty:,} RM; "
+        f"total order cash: USD {preview.projected_procurement_cost:,.2f} "
+        f"(includes USD {preview.projected_ordering_cost:,.2f} in order fees). "
+        "Planned material value is an estimate at this quote, not an additional cash charge. "
+        "Conversion, QC and other costs are separate."
+    )
+    if gap < 0:
+        st.warning(f"This plan needs {abs(gap):,.2f} more RM than is available this round. New orders arrive in future rounds.")
+
+
 def _render_preview(
     candidate_firm_decision: TeamDecision,
     candidate_projects: list[ProductDevelopmentProject],
@@ -1715,7 +1831,7 @@ def _render_preview(
         if preview.effective_capacity_units > 0
         else 0.0
     )
-    raw_material_gap = preview.raw_material_units_available - total_planned
+    raw_material_gap = preview.raw_material_units_available - preview.total_material_required
 
     row_one = st.columns(5)
     row_one[0].metric("Forecast", f"{total_forecast:,}")
@@ -1726,7 +1842,7 @@ def _render_preview(
 
     row_two = st.columns(5)
     row_two[0].metric("Forecast Gap", f"{preview.forecast_production_gap_units:+,}")
-    row_two[1].metric("RM Gap", f"{raw_material_gap:+,}")
+    row_two[1].metric("RM Gap", f"{raw_material_gap:+,.2f}")
     row_two[2].metric("Defect Rate", f"{preview.projected_weighted_defect_rate:.2%}")
     row_two[3].metric("Margin / Unit", f"${preview.projected_weighted_margin_per_unit:,.2f}")
     row_two[4].metric("Likely Borrowing", f"${preview.projected_likely_borrowing_need:,.0f}")
@@ -1742,13 +1858,7 @@ def _render_preview(
         launch_gate_ready_count = sum(
             1
             for project in launch_requests
-            if bool(
-                estimate_development_project(
-                    project,
-                    include_current_round_investment=True,
-                    current_round=current_round,
-                ).get("launch_gate_met", False)
-            )
+            if project_ready_at_round_start(project, current_round)
         )
         row_three[3].metric(
             "Launch Requests Ready",
@@ -1761,8 +1871,9 @@ def _render_preview(
     st.caption(
         f"Weighted supplier mix: {preview.weighted_supplier_mix_text} | "
         f"Projected portfolio segment mix: {preview.segment_mix_summary} | "
-        f"Weighted lead time: {preview.weighted_lead_time:.2f} rounds | "
-        f"Projected innovation spend: ${preview.projected_innovation_investment:,.0f} | "
+        + ("Supplier-specific delivery windows | " if load_delivery_policy() else
+           f"Weighted lead time: {preview.weighted_lead_time:.2f} rounds | ")
+        + f"Projected innovation spend: ${preview.projected_innovation_investment:,.0f} | "
         f"Max backorder units: {candidate_firm_decision.max_backorder_units:,}"
     )
 
@@ -1836,7 +1947,7 @@ def _render_project_launch_gate_guidance(
                 "Testing Coverage": f"{estimate.get('cumulative_testing_after_this_round', 0.0):.0%}",
                 "readiness_gate": "Pass" if estimate.get("readiness_gate_met") else "Not yet",
                 "timing_gate": "Pass" if estimate.get("timing_gate_met") else "Not yet",
-                "can_launch_now": "Yes" if estimate.get("launch_gate_met") else "No",
+                "can_launch_now": "Yes" if project_ready_at_round_start(project, current_round) else "No",
                 "funding_progress_pct": estimate.get("funding_progress_pct", 0.0),
                 "readiness_after_this_round": estimate.get(
                     "projected_readiness_after_this_round",
@@ -1856,7 +1967,7 @@ def _render_project_launch_gate_guidance(
         "Both achieve the same coverage, but spreading tests takes longer. Set testing to 0 after full coverage to avoid unnecessary costs. "
         "Testing costs are included in development spending and do not count toward project funding. "
         "A project can launch only when all three gates pass: funding, readiness, and timing. "
-        "If the table says Can Launch Now = Yes, check Launch Now before saving."
+        "Can Launch Now uses development completed before this round. Select Launch Now, then set the new product's price, demand forecast and production before saving."
     )
     launch_gate_frame = pd.DataFrame(rows).rename(
         columns={
@@ -1886,8 +1997,6 @@ def _validation_messages(
         messages.append("Team name is required before you can save.")
     if not candidate_firm_decision.supplier_mix_valid():
         messages.append("Supplier mix percentages must sum to 100 before saving.")
-    if not 0.0 <= candidate_firm_decision.expedited_order_share_pct <= 100.0:
-        messages.append("Expedited order share must stay between 0 and 100.")
     if not any(item.is_active for item in candidate_product_decisions) and not any(
         item.launch_now for item in candidate_projects if item.is_defined()
     ):
@@ -1931,6 +2040,8 @@ def _validation_messages(
             messages.append(f"Project {project.project_slot_name} demand-fit modifier must be positive.")
         if project.launch_now:
             launch_requests += 1
+            if not project_ready_at_round_start(project, current_round):
+                messages.append(f"Project {project.project_slot_name} must finish development before this round to launch now.")
 
     if launch_requests > 1:
         messages.append("Only one launch request per team is allowed per round.")
@@ -1947,15 +2058,18 @@ def _save_stage_b_submission(
     submitted_by_user_id: str,
 ) -> str:
     """Persist the firm, product, forecast, pipeline, and product-line submission."""
-    save_team_decision(
-        decision=candidate_firm_decision,
-        round_number=current_round,
-        submitted_by_user_id=submitted_by_user_id,
-    )
-    save_product_decisions(product_decisions=candidate_product_decisions, round_number=current_round)
-    save_product_forecasts(_build_product_forecasts(current_round, candidate_product_decisions))
-    save_product_development_projects(candidate_projects)
-    save_product_lines(_merge_product_lines(product_lines, candidate_product_decisions))
+    from utils.decision_audit import save_audited_submission
+    launch_slots = {p.intended_slot_name for p in candidate_projects if p.launch_now}
+    original_by_slot = {p.slot_name: p for p in product_lines}
+    merged_lines = [original_by_slot[p.slot_name] if p.slot_name in launch_slots else p
+                    for p in _merge_product_lines(product_lines, candidate_product_decisions)]
+    import sqlite3
+    try:
+        save_audited_submission(candidate_firm_decision, candidate_product_decisions, candidate_projects,
+                               merged_lines, current_round, submitted_by_user_id)
+    except (PermissionError, ValueError, sqlite3.Error, OSError):
+        st.error("Your decision was not saved. The previous saved plan is unchanged. Please retry or contact your instructor.")
+        st.stop()
     return (
         f"Saved the Stage C portfolio, forecast, and pipeline submission for "
         f"`{candidate_firm_decision.team_name}` in round `{current_round}`."
@@ -2015,7 +2129,7 @@ def main() -> None:
 
     st.title("Team Decisions")
     st.caption(
-        "Set firm controls, compare Product A-E, manage development projects, and check the live planning preview before saving."
+        "Set firm controls, compare Product A-D, manage development projects, and check the live planning preview before saving."
     )
 
     market_report = planning_market_report(load_market_report())
@@ -2137,12 +2251,24 @@ def main() -> None:
         f"Premium tech adoption is {market_report.premium_tech_adoption:.0%} and mid-market tech adoption is {market_report.mid_market_tech_adoption:.0%}."
     )
 
-    _render_firm_controls(market_report)
-    _render_product_profile(product_lines)
+    _render_firm_controls(market_report, selected_archetype)
+    planning_projects = _current_projects(team_name, current_round, saved_projects)
+    for project in planning_projects:
+        if project_ready_at_round_start(project, current_round) and not project.launch_now:
+            if st.button(
+                f"Launch {project.project_name} in Product {project.intended_slot_name}",
+                key=f"plan_launch_{current_context}_{project.project_slot_name}",
+                disabled=any(p.launch_now for p in planning_projects),
+            ):
+                st.session_state[_project_widget_key(project.project_slot_name, 'launch_now')] = True
+                st.rerun()
+    planning_lines = _launch_planning_lines(product_lines, planning_projects, current_round, selected_archetype)
+    _render_product_profile(planning_lines)
+    material_plan_container = st.container()
     _render_development_pipeline(team_name, current_round)
 
     candidate_firm_decision = _current_firm_decision(team_name, selected_archetype_name)
-    candidate_product_decisions = _current_product_decisions(team_name, product_lines)
+    candidate_product_decisions = _current_product_decisions(team_name, planning_lines)
     candidate_projects = _current_projects(team_name, current_round, saved_projects)
     _render_project_launch_gate_guidance(candidate_projects, current_round)
     preview = preview_team_decision(
@@ -2156,6 +2282,9 @@ def main() -> None:
         current_round_projects=current_round_projects,
         existing_states=team_states,
     )
+
+    with material_plan_container:
+        _render_material_plan(preview, candidate_firm_decision)
 
     st.markdown("### 6. Planning Analytics Preview")
     _render_preview(candidate_firm_decision, candidate_projects, current_round, preview)

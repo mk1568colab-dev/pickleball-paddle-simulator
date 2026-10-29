@@ -7,7 +7,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 
-PRODUCT_SLOT_NAMES = ("A", "B", "C", "D", "E")
+PRODUCT_SLOT_NAMES = ("A", "B", "C", "D")
 PROJECT_SLOT_NAMES = ("P1", "P2")
 TARGET_SEGMENTS = ("premium", "mid", "beginner")
 LIFECYCLE_STAGES = ("launch", "growth", "maturity", "decline")
@@ -42,6 +42,9 @@ LEGACY_BACKORDER_MAP = {
 }
 
 LEGACY_SUPPLIER_MIX_MAP = {
+    "Economy": (100.0, 0.0, 0.0),
+    "Standard": (0.0, 100.0, 0.0),
+    "Reliable": (0.0, 0.0, 100.0),
     "Offshore Value": (100.0, 0.0, 0.0),
     "Balanced Source": (0.0, 100.0, 0.0),
     "Premium Reliable": (0.0, 0.0, 100.0),
@@ -404,6 +407,13 @@ class ProductLine:
     replacement_project_id: str | None = None
     inventory_units: int = 0
     backlog_units: int = 0
+    material_design: str = ""
+
+    def __post_init__(self):
+        if not self.material_design:
+            self.material_design = self.target_segment
+        if self.material_design not in TARGET_SEGMENTS:
+            raise ValueError("Unknown material design.")
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> "ProductLine":
@@ -440,6 +450,7 @@ class ProductLine:
             ),
             inventory_units=int(payload.get("inventory_units", 0)),
             backlog_units=int(payload.get("backlog_units", 0)),
+            material_design=str(payload.get("material_design") or payload.get("target_segment", "mid")),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -729,6 +740,13 @@ class OpenMaterialOrder:
     placed_round: int
     weighted_material_unit_cost: float
     weighted_lead_time: float
+    supplier_name: str = ""
+    normal_arrival_round: int = 0
+    latest_arrival_round: int = 0
+    on_time_probability: float = 1.0
+    delay_rounds: int = 0
+    ordering_cost: float = 0.0
+    supply_risk_at_order: str = ""
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> "OpenMaterialOrder":
@@ -741,6 +759,13 @@ class OpenMaterialOrder:
                 payload.get("weighted_material_unit_cost", 0.0)
             ),
             weighted_lead_time=float(payload.get("weighted_lead_time", 0.0)),
+            supplier_name=str(payload.get("supplier_name", "")),
+            normal_arrival_round=int(payload.get("normal_arrival_round", 0)),
+            latest_arrival_round=int(payload.get("latest_arrival_round", 0)),
+            on_time_probability=float(payload.get("on_time_probability", 1.0)),
+            delay_rounds=int(payload.get("delay_rounds", 0)),
+            ordering_cost=float(payload.get("ordering_cost", 0.0)),
+            supply_risk_at_order=str(payload.get("supply_risk_at_order", "")),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -985,10 +1010,11 @@ class RoundResult:
     lost_sales_units: int = 0
     backlog_units_end: int = 0
     ending_inventory: int = 0
-    ending_raw_material_inventory: int = 0
+    ending_raw_material_inventory: float = 0.0
     fill_rate: float = 1.0
     revenue: float = 0.0
     procurement_cost: float = 0.0
+    ordering_cost: float = 0.0
     production_cost: float = 0.0
     holding_cost: float = 0.0
     warranty_cost: float = 0.0
@@ -1009,9 +1035,9 @@ class RoundResult:
     average_portfolio_tech_generation: float = 0.0
     cannibalized_demand_units: float = 0.0
     beginning_finished_goods_inventory: int = 0
-    beginning_raw_material_inventory: int = 0
+    beginning_raw_material_inventory: float = 0.0
     raw_material_units_received: int = 0
-    raw_material_units_consumed: int = 0
+    raw_material_units_consumed: float = 0.0
     raw_material_order_qty: int = 0
     backlog_units_start: int = 0
     launch_events_text: str = ""
@@ -1074,12 +1100,13 @@ class RoundResult:
             lost_sales_units=int(payload.get("lost_sales_units", 0)),
             backlog_units_end=int(payload.get("backlog_units_end", 0)),
             ending_inventory=int(payload.get("ending_inventory", 0)),
-            ending_raw_material_inventory=int(
+            ending_raw_material_inventory=float(
                 payload.get("ending_raw_material_inventory", 0)
             ),
             fill_rate=float(payload.get("fill_rate", 1.0)),
             revenue=float(payload.get("revenue", 0.0)),
             procurement_cost=float(payload.get("procurement_cost", 0.0)),
+            ordering_cost=float(payload.get("ordering_cost", 0.0)),
             production_cost=float(payload.get("production_cost", 0.0)),
             holding_cost=float(payload.get("holding_cost", 0.0)),
             warranty_cost=float(payload.get("warranty_cost", 0.0)),
@@ -1116,13 +1143,13 @@ class RoundResult:
             beginning_finished_goods_inventory=int(
                 payload.get("beginning_finished_goods_inventory", 0)
             ),
-            beginning_raw_material_inventory=int(
+            beginning_raw_material_inventory=float(
                 payload.get("beginning_raw_material_inventory", 0)
             ),
             raw_material_units_received=int(
                 payload.get("raw_material_units_received", 0)
             ),
-            raw_material_units_consumed=int(
+            raw_material_units_consumed=float(
                 payload.get("raw_material_units_consumed", 0)
             ),
             raw_material_order_qty=int(payload.get("raw_material_order_qty", 0)),
@@ -1144,7 +1171,7 @@ class PersistentTeamState:
     archetype: str
     cash_balance: float = 0.0
     inventory_units: int = 0
-    raw_material_inventory: int = 0
+    raw_material_inventory: float = 0.0
     backlog_units: int = 0
     capacity_units: int = 0
     reputation_score: float = 50.0
@@ -1173,7 +1200,7 @@ class PersistentTeamState:
             archetype=str(payload.get("archetype", "")),
             cash_balance=float(payload.get("cash_balance", 0.0)),
             inventory_units=int(payload.get("inventory_units", 0)),
-            raw_material_inventory=int(payload.get("raw_material_inventory", 0)),
+            raw_material_inventory=float(payload.get("raw_material_inventory", 0)),
             backlog_units=int(payload.get("backlog_units", 0)),
             capacity_units=int(payload.get("capacity_units", 0)),
             reputation_score=float(payload.get("reputation_score", 50.0)),

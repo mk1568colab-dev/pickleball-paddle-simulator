@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import sqlite3
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -21,6 +22,7 @@ from utils.repository import (
     update_user,
 )
 from utils.security import hash_password, validate_password_strength
+from utils.team_excel_import import read_team_workbook, validate_team_rows, create_teams_from_workbook
 
 
 CREDENTIAL_NOTICE_KEY = "admin_credentials_notice"
@@ -250,8 +252,9 @@ def main() -> None:
     ]
     st.dataframe(_frame(public_users), use_container_width=True)
 
-    single_user_tab, generate_teams_tab, edit_user_tab, bulk_import_tab, remove_team_tab = st.tabs(
+    excel_tab, single_user_tab, generate_teams_tab, edit_user_tab, bulk_import_tab, remove_team_tab = st.tabs(
         [
+            "Import Excel Teams",
             "Create User",
             "Generate Team Accounts",
             "Edit Existing User",
@@ -259,6 +262,62 @@ def main() -> None:
             "Remove Teams",
         ]
     )
+
+    with excel_tab:
+        st.subheader("Import Excel Teams")
+        template_path = Path(__file__).resolve().parents[1] / "data" / "templates" / "Kiki_Team_Import_Template.xlsx"
+        st.download_button("Download Excel Template", template_path.read_bytes(),
+                           file_name=template_path.name,
+                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        st.info("New teams only. Existing accounts and game records will not be replaced. "
+                "Each row creates one active team-leader login with the common starting conditions.")
+        upload_generation = st.session_state.get("excel_upload_generation", 0)
+        upload = st.file_uploader("Team workbook (.xlsx)", type=["xlsx"],
+                                  key=f"excel_team_upload_{upload_generation}")
+        if upload is not None:
+            content = upload.getvalue()
+            signature = hashlib.sha256(content).hexdigest()
+            allow_classroom_passwords = st.checkbox(
+                "Allow simple student passwords from this workbook (including first names)",
+                value=False, key=f"classroom_passwords_{signature}",
+                help="Applies only to new student accounts in this Excel import. "
+                     "Administrator accounts and password changes retain the normal password rules.")
+            if allow_classroom_passwords:
+                st.warning("First-name passwords are easy to guess. Use them only for this classroom game; "
+                           "do not reuse school passwords or publish this workbook outside the course.")
+            try:
+                rows = read_team_workbook(content)
+                errors = validate_team_rows(rows, allow_classroom_passwords=allow_classroom_passwords)
+            except Exception:
+                # Do not echo parser exceptions that might contain uploaded passwords.
+                st.error("Could not read this workbook. Use the Teams sheet and three Text columns "
+                         "from the template; no formulas, blank required cells, or more than 200 rows.")
+            else:
+                st.dataframe(pd.DataFrame([{"Excel row": row["row"], "Team": row["team_name"],
+                              "Username": row["username"], "Password": "Hidden"} for row in rows]),
+                             hide_index=True, use_container_width=True)
+                if errors:
+                    st.error("No teams created. Correct these rows and upload the workbook again.")
+                    st.dataframe(pd.DataFrame(errors), hide_index=True, use_container_width=True)
+                else:
+                    confirmed = st.checkbox(f"Create {len(rows)} new teams and their accounts",
+                                            key=f"confirm_excel_{signature}_{allow_classroom_passwords}")
+                    if st.button("Create Teams from Excel", type="primary", disabled=not confirmed,
+                                 key=f"import_excel_{signature}"):
+                        try:
+                            with st.spinner("Creating teams..."):
+                                count = create_teams_from_workbook(
+                                    rows, allow_classroom_passwords=allow_classroom_passwords)
+                        except (ValueError, sqlite3.Error):
+                            st.error("Import canceled; no teams from this upload were saved. "
+                                     "Refresh the page and check for account or team-name conflicts.")
+                        else:
+                            st.session_state["excel_import_success"] = count
+                            st.session_state["excel_upload_generation"] = upload_generation + 1
+                            st.rerun()
+        if "excel_import_success" in st.session_state:
+            st.success(f"Created {st.session_state.pop('excel_import_success')} teams. "
+                       "Use the usernames and passwords from your workbook to sign in.")
 
     with single_user_tab:
         with st.form("create_user_form"):

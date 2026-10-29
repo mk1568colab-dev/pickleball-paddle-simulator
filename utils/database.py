@@ -6,6 +6,7 @@ import logging
 import os
 import sqlite3
 from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Iterator
 
@@ -23,9 +24,76 @@ SQLITE_TIMEOUT_SECONDS = 30.0
 SQLITE_BUSY_TIMEOUT_MS = 30_000
 
 _logged_database_paths: set[str] = set()
+_transaction_connection = ContextVar("simulator_transaction_connection", default=None)
 
 
 SCHEMA_SQL = """
+CREATE TABLE IF NOT EXISTS decision_audit_context (
+    singleton INTEGER PRIMARY KEY CHECK(singleton=1),
+    game_id TEXT NOT NULL,
+    enabled_at_utc TEXT NOT NULL,
+    game_started_at_utc TEXT NOT NULL
+);
+INSERT OR IGNORE INTO decision_audit_context VALUES
+    (1, lower(hex(randomblob(16))), strftime('%Y-%m-%dT%H:%M:%fZ','now'), strftime('%Y-%m-%dT%H:%M:%fZ','now'));
+CREATE TABLE IF NOT EXISTS decision_audit_events (
+    event_sequence INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id TEXT NOT NULL UNIQUE,
+    game_id TEXT NOT NULL,
+    classroom_id TEXT NOT NULL,
+    classroom_name TEXT NOT NULL,
+    team_name TEXT NOT NULL,
+    round_number INTEGER NOT NULL,
+    revision INTEGER NOT NULL,
+    occurred_at_utc TEXT NOT NULL,
+    source TEXT NOT NULL CHECK(source IN ('student_submission','admin_submission','automatic_carry_forward')),
+    actor_user_id INTEGER,
+    actor_username TEXT NOT NULL,
+    actor_role TEXT NOT NULL,
+    initiated_by_user_id INTEGER,
+    initiated_by_username TEXT,
+    comparison_basis TEXT NOT NULL,
+    prior_round_number INTEGER,
+    change_count INTEGER NOT NULL,
+    reason TEXT NOT NULL,
+    before_json TEXT NOT NULL,
+    after_json TEXT NOT NULL,
+    UNIQUE(game_id, team_name, round_number, revision)
+);
+CREATE TABLE IF NOT EXISTS decision_audit_changes (
+    change_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id TEXT NOT NULL REFERENCES decision_audit_events(event_id),
+    game_id TEXT NOT NULL,
+    team_name TEXT NOT NULL,
+    round_number INTEGER NOT NULL,
+    revision INTEGER NOT NULL,
+    occurred_at_utc TEXT NOT NULL,
+    source TEXT NOT NULL,
+    actor_username TEXT NOT NULL,
+    decision_group TEXT NOT NULL,
+    slot_name TEXT NOT NULL,
+    field_name TEXT NOT NULL,
+    before_present INTEGER NOT NULL,
+    before_value_json TEXT NOT NULL,
+    after_present INTEGER NOT NULL,
+    after_value_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS decision_audit_team_round ON decision_audit_events(game_id,team_name,round_number);
+CREATE INDEX IF NOT EXISTS decision_audit_change_event ON decision_audit_changes(event_id);
+CREATE TRIGGER IF NOT EXISTS decision_audit_events_no_update BEFORE UPDATE ON decision_audit_events
+BEGIN SELECT RAISE(ABORT, 'Decision history is append-only.'); END;
+CREATE TRIGGER IF NOT EXISTS decision_audit_events_no_delete BEFORE DELETE ON decision_audit_events
+BEGIN SELECT RAISE(ABORT, 'Decision history is append-only.'); END;
+CREATE TRIGGER IF NOT EXISTS decision_audit_changes_no_update BEFORE UPDATE ON decision_audit_changes
+BEGIN SELECT RAISE(ABORT, 'Decision history is append-only.'); END;
+CREATE TRIGGER IF NOT EXISTS decision_audit_changes_no_delete BEFORE DELETE ON decision_audit_changes
+BEGIN SELECT RAISE(ABORT, 'Decision history is append-only.'); END;
+CREATE TABLE IF NOT EXISTS material_rules (
+    round_number INTEGER PRIMARY KEY,
+    beginner REAL NOT NULL CHECK(beginner BETWEEN 0.01 AND 10),
+    mid REAL NOT NULL CHECK(mid BETWEEN 0.01 AND 10),
+    premium REAL NOT NULL CHECK(premium BETWEEN 0.01 AND 10)
+);
 CREATE TABLE IF NOT EXISTS demand_commitments (
     round_number INTEGER PRIMARY KEY,
     outlook_low INTEGER NOT NULL CHECK(outlook_low >= 0),
@@ -236,7 +304,7 @@ CREATE TABLE IF NOT EXISTS team_states (
     archetype TEXT NOT NULL,
     cash_balance REAL NOT NULL,
     inventory_units INTEGER NOT NULL,
-    raw_material_inventory INTEGER NOT NULL,
+    raw_material_inventory REAL NOT NULL,
     backlog_units INTEGER NOT NULL,
     capacity_units INTEGER NOT NULL,
     reputation_score REAL NOT NULL,
@@ -280,11 +348,12 @@ CREATE TABLE IF NOT EXISTS round_results (
     lost_sales_units INTEGER NOT NULL DEFAULT 0,
     backlog_units_end INTEGER NOT NULL DEFAULT 0,
     ending_inventory INTEGER NOT NULL DEFAULT 0,
-    ending_raw_material_inventory INTEGER NOT NULL DEFAULT 0,
+    ending_raw_material_inventory REAL NOT NULL DEFAULT 0,
     fill_rate REAL NOT NULL DEFAULT 1.0,
     unit_price REAL NOT NULL DEFAULT 0.0,
     revenue REAL NOT NULL DEFAULT 0.0,
     procurement_cost REAL NOT NULL DEFAULT 0.0,
+    ordering_cost REAL NOT NULL DEFAULT 0.0,
     production_cost REAL NOT NULL DEFAULT 0.0,
     holding_cost REAL NOT NULL DEFAULT 0.0,
     warranty_cost REAL NOT NULL DEFAULT 0.0,
@@ -306,13 +375,13 @@ CREATE TABLE IF NOT EXISTS round_results (
     cannibalized_demand_units REAL NOT NULL DEFAULT 0.0,
     available_capacity INTEGER NOT NULL DEFAULT 0,
     beginning_finished_goods_inventory INTEGER NOT NULL DEFAULT 0,
-    beginning_raw_material_inventory INTEGER NOT NULL DEFAULT 0,
+    beginning_raw_material_inventory REAL NOT NULL DEFAULT 0,
     raw_material_units_received INTEGER NOT NULL DEFAULT 0,
-    raw_material_units_consumed INTEGER NOT NULL DEFAULT 0,
+    raw_material_units_consumed REAL NOT NULL DEFAULT 0,
     raw_material_order_qty INTEGER NOT NULL DEFAULT 0,
-    starting_raw_material_inventory INTEGER NOT NULL DEFAULT 0,
+    starting_raw_material_inventory REAL NOT NULL DEFAULT 0,
     raw_material_ordered INTEGER NOT NULL DEFAULT 0,
-    raw_material_inventory_end INTEGER NOT NULL DEFAULT 0,
+    raw_material_inventory_end REAL NOT NULL DEFAULT 0,
     backlog_units_start INTEGER NOT NULL DEFAULT 0,
     supplier_choice TEXT NOT NULL DEFAULT '',
     order_priority TEXT NOT NULL DEFAULT '',
@@ -426,7 +495,7 @@ TEAM_DECISION_MIGRATIONS = (
 )
 
 TEAM_STATE_MIGRATIONS = (
-    ("raw_material_inventory", "INTEGER NOT NULL DEFAULT 0"),
+    ("raw_material_inventory", "REAL NOT NULL DEFAULT 0"),
     ("backlog_units", "INTEGER NOT NULL DEFAULT 0"),
     ("open_material_orders_json", "TEXT NOT NULL DEFAULT '[]'"),
     ("short_term_debt_balance", "REAL NOT NULL DEFAULT 0.0"),
@@ -466,11 +535,12 @@ ROUND_RESULT_MIGRATIONS = (
     ("lost_sales_units", "INTEGER NOT NULL DEFAULT 0"),
     ("backlog_units_end", "INTEGER NOT NULL DEFAULT 0"),
     ("ending_inventory", "INTEGER NOT NULL DEFAULT 0"),
-    ("ending_raw_material_inventory", "INTEGER NOT NULL DEFAULT 0"),
+    ("ending_raw_material_inventory", "REAL NOT NULL DEFAULT 0"),
     ("fill_rate", "REAL NOT NULL DEFAULT 1.0"),
     ("unit_price", "REAL NOT NULL DEFAULT 0.0"),
     ("revenue", "REAL NOT NULL DEFAULT 0.0"),
     ("procurement_cost", "REAL NOT NULL DEFAULT 0.0"),
+    ("ordering_cost", "REAL NOT NULL DEFAULT 0.0"),
     ("production_cost", "REAL NOT NULL DEFAULT 0.0"),
     ("holding_cost", "REAL NOT NULL DEFAULT 0.0"),
     ("warranty_cost", "REAL NOT NULL DEFAULT 0.0"),
@@ -488,13 +558,13 @@ ROUND_RESULT_MIGRATIONS = (
     ("reputation_after_round", "REAL NOT NULL DEFAULT 0.0"),
     ("available_capacity", "INTEGER NOT NULL DEFAULT 0"),
     ("beginning_finished_goods_inventory", "INTEGER NOT NULL DEFAULT 0"),
-    ("beginning_raw_material_inventory", "INTEGER NOT NULL DEFAULT 0"),
+    ("beginning_raw_material_inventory", "REAL NOT NULL DEFAULT 0"),
     ("raw_material_units_received", "INTEGER NOT NULL DEFAULT 0"),
-    ("raw_material_units_consumed", "INTEGER NOT NULL DEFAULT 0"),
+    ("raw_material_units_consumed", "REAL NOT NULL DEFAULT 0"),
     ("raw_material_order_qty", "INTEGER NOT NULL DEFAULT 0"),
-    ("starting_raw_material_inventory", "INTEGER NOT NULL DEFAULT 0"),
+    ("starting_raw_material_inventory", "REAL NOT NULL DEFAULT 0"),
     ("raw_material_ordered", "INTEGER NOT NULL DEFAULT 0"),
-    ("raw_material_inventory_end", "INTEGER NOT NULL DEFAULT 0"),
+    ("raw_material_inventory_end", "REAL NOT NULL DEFAULT 0"),
     ("backlog_units_start", "INTEGER NOT NULL DEFAULT 0"),
     ("supplier_choice", "TEXT NOT NULL DEFAULT ''"),
     ("order_priority", "TEXT NOT NULL DEFAULT ''"),
@@ -615,7 +685,7 @@ def get_simulator_env() -> str:
     return environment
 
 
-def get_database_path() -> Path:
+def get_base_database_path() -> Path:
     """Resolve the configured SQLite database path."""
     configured_path = os.getenv(DATABASE_ENV_VAR, "").strip()
     path_source = DATABASE_ENV_VAR
@@ -630,6 +700,12 @@ def get_database_path() -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     _log_database_path_once(path, path_source)
     return path
+
+
+def get_database_path() -> Path:
+    """Route each browser session to its own classroom, never a process-global DB."""
+    from utils.classrooms import classroom_database_path
+    return classroom_database_path(get_base_database_path())
 
 
 def _get_data_dir() -> tuple[Path, str]:
@@ -675,6 +751,13 @@ def _log_database_path_once(path: Path, source: str) -> None:
 @contextmanager
 def get_connection() -> Iterator[sqlite3.Connection]:
     """Yield a SQLite connection configured for the simulator."""
+    shared = _transaction_connection.get()
+    if shared is not None:
+        connection, path = shared
+        if get_database_path().resolve() != path:
+            raise RuntimeError("Cannot switch classrooms inside a database transaction.")
+        yield connection
+        return
     connection = sqlite3.connect(
         get_database_path(),
         timeout=SQLITE_TIMEOUT_SECONDS,
@@ -690,12 +773,46 @@ def get_connection() -> Iterator[sqlite3.Connection]:
         connection.close()
 
 
+def active_transaction_path():
+    shared = _transaction_connection.get()
+    if shared is None:
+        return None
+    if get_database_path().resolve() != shared[1]:
+        raise RuntimeError("Cannot switch classrooms inside a database transaction.")
+    return shared[1]
+
+
+@contextmanager
+def atomic_write():
+    """Share one transaction across existing repository helpers and its audit row."""
+    if _transaction_connection.get() is not None:
+        raise RuntimeError("Nested atomic writes are not supported.")
+    with get_connection() as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        token = _transaction_connection.set((connection, get_database_path().resolve()))
+        try:
+            yield connection
+        finally:
+            _transaction_connection.reset(token)
+
+
 def initialize_database() -> Path:
     """Create the database file and schema if they do not exist yet."""
     database_path = get_database_path()
+    if active_transaction_path() is not None:
+        return database_path
     with get_connection() as connection:
+        existing_game = connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_reports'"
+        ).fetchone() is not None
         connection.executescript(SCHEMA_SQL)
         _migrate_schema(connection)
+        from engine.materials import DEFAULT_REQUIREMENTS, LEGACY_REQUIREMENTS
+        rates = LEGACY_REQUIREMENTS if existing_game else DEFAULT_REQUIREMENTS
+        connection.execute(
+            "INSERT OR IGNORE INTO material_rules(round_number, beginner, mid, premium) VALUES (1,?,?,?)",
+            (rates['beginner'], rates['mid'], rates['premium']),
+        )
     return database_path
 
 
@@ -707,6 +824,7 @@ def _migrate_schema(connection: sqlite3.Connection) -> None:
     _ensure_columns(connection, "team_states", TEAM_STATE_MIGRATIONS)
     _ensure_columns(connection, "round_results", ROUND_RESULT_MIGRATIONS)
     _ensure_columns(connection, "product_lines", PRODUCT_LINE_MIGRATIONS)
+    _ensure_columns(connection, "product_lines", (("material_design", "TEXT NOT NULL DEFAULT ''"),))
     _ensure_columns(connection, "product_decisions", PRODUCT_DECISION_MIGRATIONS)
     _ensure_columns(
         connection,

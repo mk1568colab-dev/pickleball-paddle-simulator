@@ -199,7 +199,15 @@ def _latest_round_frame(frame: pd.DataFrame) -> pd.DataFrame:
     return frame[frame["round_number"] == latest_round].copy()
 
 
-def _state_rows(states) -> list[dict[str, object]]:
+def _public_ranking_frame(frame: pd.DataFrame) -> pd.DataFrame:
+    """Only completed odd-round snapshots are released to competitors."""
+    if frame.empty:
+        return frame.copy()
+    released = frame[(frame["round_number"] > 0) & (frame["round_number"] % 2 == 1)]
+    return _latest_round_frame(released) if not released.empty else released.copy()
+
+
+def _state_rows(states, reveal_realized_arrivals=True) -> list[dict[str, object]]:
     """Flatten persistent team state into dashboard-friendly rows."""
     rows: list[dict[str, object]] = []
     for state in states:
@@ -227,6 +235,11 @@ def _state_rows(states) -> list[dict[str, object]]:
                 "cumulative_profit": state.cumulative_profit,
             }
         )
+        if not reveal_realized_arrivals:
+            rows[-1].pop('next_inbound_round')
+            rows[-1]['next_normal_arrival_round'] = min(
+                (order.normal_arrival_round if order.supplier_name else order.arrival_round
+                 for order in state.open_material_orders), default=None)
     return rows
 
 
@@ -804,11 +817,15 @@ def main() -> None:
                 st.dataframe(own_debrief_frame, use_container_width=True, hide_index=True)
 
         st.markdown("#### Public Ranking Table")
-        if team_results_frame.empty:
-            st.info("Rankings appear after the admin runs a round.")
+        public_rankings = _public_ranking_frame(team_results_frame)
+        if public_rankings.empty:
+            st.info("Competitor rankings are published after rounds 1, 3, 5, 7, and subsequent odd rounds.")
         else:
-            latest_team_frame = _latest_round_frame(team_results_frame)
-            rankings = _team_rankings(latest_team_frame, market_report.total_demand)
+            published_round = int(public_rankings["round_number"].iloc[0])
+            st.caption(f"Published ranking: Round {published_round}. Next update after Round {published_round + 2}. "
+                       "Even-round competitor results are not published; your own results remain available every round.")
+            published_market = load_market_report(published_round)
+            rankings = _team_rankings(public_rankings, published_market.total_demand)
             st.dataframe(rankings[0], use_container_width=True, hide_index=True)
 
     with round_trends_tab:
@@ -838,7 +855,7 @@ def main() -> None:
             st.dataframe(_portfolio_snapshot_frame(own_portfolio_lines_frame), use_container_width=True, hide_index=True)
 
         st.markdown("#### Your Team State")
-        own_state_frame = _frame(_state_rows(load_team_states(team_name=team_name)))
+        own_state_frame = _frame(_state_rows(load_team_states(team_name=team_name), reveal_realized_arrivals=False))
         if own_state_frame.empty:
             st.info("Your persistent team state will appear after the first completed round.")
         else:

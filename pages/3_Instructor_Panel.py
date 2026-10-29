@@ -5,10 +5,12 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 
+from engine.config import SUPPLIER_COLUMN_LABELS
 from engine.simulator import build_round_validation_rows, run_round
 from utils.auth import require_admin, require_authenticated_user
 from utils.bootstrap import ensure_app_storage
 from utils.demand_protocol import committed_report, complete_demand_round, demand_status
+from utils.submission_fallback import complete_round_inputs, save_fallback_decisions
 from utils.repository import (
     advance_market_report_to_next_round,
     factory_reset_game_data,
@@ -190,7 +192,7 @@ def _readiness_rows(
                     "feasibility": "-",
                     "cash": "-",
                     "launch": "-",
-                    "status": "Missing submission",
+                    "status": "Auto-carry pending",
                 }
             )
             continue
@@ -264,7 +266,7 @@ def _validation_exception_rows(
                         "team_name": status_row["team_name"],
                         "area": "Submission",
                         "issue": "No firm-level decision saved for the current round.",
-                        "suggested_action": "Ask the team to save before running.",
+                        "suggested_action": "Run with the previous plan (starting defaults if none), without development spending or launch/cancel actions.",
                     }
                 )
 
@@ -356,6 +358,13 @@ def _run_round_and_advance(
     except ValueError as exc:
         st.error(str(exc))
         return
+    team_decisions, product_decisions, development_projects, product_lines, fallback = complete_round_inputs(
+        market_report.round_number, team_decisions, product_decisions,
+        development_projects, product_lines, team_states,
+    )
+    if not team_decisions:
+        st.error("Create at least one active team before running the round.")
+        return
     (
         round_results,
         product_results,
@@ -371,6 +380,7 @@ def _run_round_and_advance(
         development_projects=development_projects,
         existing_states=team_states,
     )
+    save_fallback_decisions(market_report.round_number, team_decisions, product_decisions, fallback, development_projects)
     save_round_results(round_results)
     save_product_round_results(product_results)
     save_forecast_accuracy_results(forecast_accuracy_results)
@@ -382,7 +392,9 @@ def _run_round_and_advance(
     set_round_submissions_open(
         market_report.round_number,
         False,
-        "Round completed by instructor.",
+        "Round completed by instructor." + (
+            " Auto-carried (no submission): " + ", ".join(fallback) if fallback else ""
+        ),
     )
     set_round_submissions_open(
         next_market_report.round_number,
@@ -394,8 +406,38 @@ def _run_round_and_advance(
         f"Round {market_report.round_number} completed for {len(round_results)} teams, "
         f"{len(product_results)} product slots, and {len(forecast_accuracy_results)} forecast rows. "
         f"Public Market Report is now ready for Round {next_market_report.round_number}."
+        + (" Auto-carried (no development spending): " + ", ".join(fallback) + "." if fallback else "")
     )
     st.rerun()
+
+
+def _render_material_requirements(current_round, submitted):
+    from utils.demand_protocol import demand_status
+    from utils.material_rules import load_material_requirements, save_material_requirements
+    rates = load_material_requirements(current_round)
+    status = demand_status(current_round)
+    locked = bool((status and status['locked_at']) or submitted)
+    with st.expander(f"Raw-Material Requirements | Round {current_round}", expanded=True):
+        st.caption("Shared standard RM per paddle. Administrator only. Requirements lock when submissions first open and carry forward to the next round.")
+        with st.form(f"material_requirements_{current_round}"):
+            columns = st.columns(3)
+            values = {}
+            for column, segment in zip(columns, ('beginner', 'mid', 'premium')):
+                values[segment] = column.number_input(
+                    f"{segment.title()} RM / Paddle", min_value=0.01, max_value=10.0,
+                    value=float(rates[segment]), step=0.1, format="%.2f", disabled=locked,
+                )
+            save = st.form_submit_button("Save Material Requirements", disabled=locked)
+        if locked:
+            st.caption("Locked for this round, including while submissions are closed. Edit the next round before opening it.")
+        if save:
+            try:
+                save_material_requirements(current_round, values)
+            except (ValueError, PermissionError) as exc:
+                st.error(str(exc))
+            else:
+                st.session_state['instructor_panel_notice'] = 'Material requirements saved for this classroom.'
+                st.rerun()
 
 
 def main() -> None:
@@ -423,6 +465,7 @@ def main() -> None:
     product_lines = load_product_lines()
     team_states = load_team_states()
     active_team_accounts = load_users(role="team_leader", is_active=True)
+    _render_material_requirements(current_round, team_decisions)
 
     validation_rows = build_round_validation_rows(
         market_report=market_report,
@@ -521,8 +564,8 @@ def main() -> None:
                 st.warning(f"Round {current_round} submissions are closed.")
                 st.rerun()
             if button_cols[2].button("Run Round", type="primary", key="instructor_run_round"):
-                if not team_decisions:
-                    st.error("Save at least one team submission before running the round.")
+                if not team_decisions and not active_team_accounts:
+                    st.error("Create at least one active team before running the round.")
                 else:
                     _run_round_and_advance(
                         market_report,
@@ -532,6 +575,12 @@ def main() -> None:
                         product_lines,
                         team_states,
                     )
+            missing_names = sorted({u.team_name for u in active_team_accounts if u.team_name}
+                                   - {d.team_name for d in team_decisions})
+            if missing_names:
+                st.info("Auto-carry at Run Round: " + ", ".join(missing_names)
+                        + ". Previous operating/product plan (starting defaults if none); "
+                        "no development investment, testing, launch or cancellation.")
             if round_status.submissions_open:
                 st.info(
                     "Submissions are open. Actual demand and market settings are locked. Close submissions before running."
@@ -666,11 +715,10 @@ def main() -> None:
                         "supplier_mix_offshore_pct",
                         "supplier_mix_balanced_pct",
                         "supplier_mix_premium_pct",
-                        "expedited_order_share_pct",
                         "max_backorder_units",
                         "planned_borrowing_amount",
                     ]
-                ],
+                ].rename(columns=SUPPLIER_COLUMN_LABELS),
                 use_container_width=True,
                 hide_index=True,
             )
@@ -755,7 +803,7 @@ def main() -> None:
 
     with danger_tab:
         st.warning(
-            "Factory reset erases all game progress, market report history, decisions, product portfolios, pipelines, results, and team states. It keeps admin/team-leader accounts."
+            "Factory reset erases all game progress, market report history, decisions, product portfolios, pipelines, results, and team states. It keeps accounts and the append-only Decision Audit Log."
         )
         confirm_factory_reset = st.checkbox(
             "I understand this will restart the simulation at Round 1.",

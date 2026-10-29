@@ -8,7 +8,8 @@ from models.schemas import AppUser
 from utils.branding import APP_NAME, APP_TAGLINE, MASCOT_IMAGE_PATH, MASCOT_NAME
 from utils.repository import get_user_by_username, has_active_admin
 from utils.security import verify_password
-from utils.student_guide import big_picture_download
+from utils.classrooms import (ACTIVE_CLASSROOM_KEY, AUTH_CLASSROOM_KEY, active_classroom_id,
+                              classroom_name, render_classroom_picker)
 
 
 SESSION_USER_KEY = "authenticated_username"
@@ -31,11 +32,7 @@ def _render_sidebar_navigation(user: AppUser) -> None:
     """Render role-aware sidebar navigation links."""
     st.markdown("### Navigation")
     st.page_link(HOME_PAGE_PATH, label="Home")
-    st.download_button(
-        "Game Big Picture", data=big_picture_download(),
-        file_name="Kiki_Game_Big_Picture.html", mime="text/html",
-        icon=":material/download:", key="big_picture_download",
-    )
+    st.page_link(GAME_BIG_PICTURE_GUIDE_PAGE_PATH, label="Game Big Picture")
     st.page_link(ACCOUNT_PAGE_PATH, label="My Account")
     st.page_link(
         PUBLIC_MARKET_REPORT_PAGE_PATH,
@@ -56,6 +53,9 @@ def _render_sidebar_navigation(user: AppUser) -> None:
             ADMIN_USER_MANAGEMENT_PAGE_PATH,
             label="Admin User Management",
         )
+        st.page_link("pages/13_Classrooms.py", label="Classrooms")
+        st.page_link("pages/14_Data_Export_Backup.py", label="Data Export & Backup")
+        st.page_link("pages/15_Decision_Audit_Log.py", label="Decision Audit Log")
     st.page_link(
         RESULTS_DASHBOARD_PAGE_PATH,
         label="Results Dashboard",
@@ -104,13 +104,16 @@ def login_user(username: str, password: str) -> tuple[bool, str]:
     if not verify_password(password, user.password_hash):
         return False, "Invalid username or password."
 
+    st.session_state[AUTH_CLASSROOM_KEY] = active_classroom_id()
     st.session_state[SESSION_USER_KEY] = user.username
     return True, "Login successful."
 
 
 def logout_user() -> None:
     """Clear the current user session."""
-    st.session_state.pop(SESSION_USER_KEY, None)
+    classroom_id = active_classroom_id()
+    st.session_state.clear()
+    st.session_state[ACTIVE_CLASSROOM_KEY] = classroom_id
 
 
 def render_login_form() -> None:
@@ -124,6 +127,7 @@ def render_login_form() -> None:
         st.subheader("Login")
         st.caption("Use the account created by your instructor or admin.")
 
+    render_classroom_picker()
     with st.form("login_form"):
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
@@ -143,6 +147,7 @@ def render_user_sidebar(user: AppUser) -> None:
     with st.sidebar:
         st.image(MASCOT_IMAGE_PATH, width=120)
         st.caption(APP_NAME)
+        st.markdown(f"**Classroom: {classroom_name()}**")
         st.divider()
         _render_sidebar_navigation(user)
         st.divider()

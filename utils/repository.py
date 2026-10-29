@@ -217,6 +217,8 @@ def save_round_status(status: ClassroomRoundStatus) -> None:
                 if report is None:
                     raise ValueError("Save the market report first.")
                 connection.execute("UPDATE demand_commitments SET actual_demand=?, locked_at=CURRENT_TIMESTAMP WHERE round_number=?", (report[0], status.round_number))
+            from utils.material_rules import snapshot_material_requirements
+            snapshot_material_requirements(connection, status.round_number)
         connection.execute(
             """
             INSERT INTO classroom_rounds (
@@ -494,7 +496,8 @@ def load_product_lines(team_name: str | None = None) -> list[ProductLine]:
             retired_round,
             replacement_project_id,
             inventory_units,
-            backlog_units
+            backlog_units,
+            material_design
         FROM product_lines
         WHERE 1 = 1
     """
@@ -509,7 +512,11 @@ def load_product_lines(team_name: str | None = None) -> list[ProductLine]:
     with get_connection() as connection:
         rows = connection.execute(query, tuple(parameters)).fetchall()
 
-    return [ProductLine.from_dict(dict(row)) for row in rows]
+    # Keep legacy empty E records in storage without exposing a fifth slot.
+    return [ProductLine.from_dict(dict(row)) for row in rows if not (
+        row["slot_name"] == "E" and row["product_name"] == "Open Product Slot"
+        and not row["is_active"] and not row["inventory_units"] and not row["backlog_units"]
+    )]
 
 
 def save_product_lines(product_lines: list[ProductLine]) -> None:
@@ -547,6 +554,7 @@ def save_product_lines(product_lines: list[ProductLine]) -> None:
                 replacement_project_id,
                 inventory_units,
                 backlog_units,
+                material_design,
                 updated_at
             )
             VALUES (
@@ -568,6 +576,7 @@ def save_product_lines(product_lines: list[ProductLine]) -> None:
                 :replacement_project_id,
                 :inventory_units,
                 :backlog_units,
+                :material_design,
                 CURRENT_TIMESTAMP
             )
             ON CONFLICT(product_id) DO UPDATE SET
@@ -588,6 +597,10 @@ def save_product_lines(product_lines: list[ProductLine]) -> None:
                 replacement_project_id = excluded.replacement_project_id,
                 inventory_units = excluded.inventory_units,
                 backlog_units = excluded.backlog_units,
+                material_design = CASE
+                    WHEN excluded.launch_round != product_lines.launch_round THEN excluded.material_design
+                    ELSE COALESCE(NULLIF(product_lines.material_design, ''), product_lines.target_segment)
+                END,
                 updated_at = CURRENT_TIMESTAMP
             """,
             payloads,
@@ -679,7 +692,11 @@ def load_product_decisions(
     with get_connection() as connection:
         rows = connection.execute(query, tuple(parameters)).fetchall()
 
-    return [ProductDecision.from_dict(dict(row)) for row in rows]
+    return [ProductDecision.from_dict(dict(row)) for row in rows if not (
+        row["slot_name"] == "E" and row["product_name"] == "Open Product Slot"
+        and not row["is_active"] and not row["forecast_units"]
+        and not row["planned_production_units"] and not row["target_finished_goods_inventory"]
+    )]
 
 
 def save_product_decisions(
@@ -1094,6 +1111,7 @@ def load_round_results(
             fill_rate,
             revenue,
             procurement_cost,
+            ordering_cost,
             production_cost,
             holding_cost,
             warranty_cost,
@@ -1200,6 +1218,7 @@ def save_round_results(results: list[RoundResult]) -> None:
                 unit_price,
                 revenue,
                 procurement_cost,
+                ordering_cost,
                 production_cost,
                 holding_cost,
                 warranty_cost,
@@ -1270,6 +1289,7 @@ def save_round_results(results: list[RoundResult]) -> None:
                 :unit_price,
                 :revenue,
                 :procurement_cost,
+                :ordering_cost,
                 :production_cost,
                 :holding_cost,
                 :warranty_cost,
@@ -1338,6 +1358,7 @@ def save_round_results(results: list[RoundResult]) -> None:
                 unit_price = excluded.unit_price,
                 revenue = excluded.revenue,
                 procurement_cost = excluded.procurement_cost,
+                ordering_cost = excluded.ordering_cost,
                 production_cost = excluded.production_cost,
                 holding_cost = excluded.holding_cost,
                 warranty_cost = excluded.warranty_cost,
@@ -1840,6 +1861,8 @@ def reset_runtime_data() -> None:
     """Clear decisions, results, and persistent runtime state."""
     ensure_app_storage()
     with get_connection() as connection:
+        from utils.decision_audit import start_new_audit_game
+        start_new_audit_game(connection)
         connection.execute("DELETE FROM classroom_rounds")
         connection.execute("DELETE FROM product_decisions")
         connection.execute("DELETE FROM product_forecasts")
@@ -1856,6 +1879,9 @@ def factory_reset_game_data() -> MarketReport:
     """Reset all gameplay data to a fresh Round 1 state while preserving accounts."""
     ensure_app_storage()
     with get_connection() as connection:
+        from utils.decision_audit import start_new_audit_game
+        start_new_audit_game(connection)
+        connection.execute("DELETE FROM material_rules WHERE round_number > 1")
         connection.execute("DELETE FROM demand_commitments")
         connection.execute("DELETE FROM classroom_rounds")
         connection.execute("DELETE FROM market_reports")

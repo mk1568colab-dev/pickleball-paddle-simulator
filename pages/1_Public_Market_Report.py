@@ -28,33 +28,22 @@ def main() -> None:
 
     current_report = load_market_report()
     share_total = current_report.share_total()
-    if abs(share_total - 1.0) > 0.02:
+    if user.role == 'admin' and abs(share_total - 1.0) > 0.02:
         st.warning(
             f"Demand shares currently sum to {share_total:.2f}. "
             "The engine will normalize them during round allocation."
         )
 
     if user.role != "admin":
-        st.info("This page is view-only for team leaders.")
-        st.caption("The outlook range describes the current decision round. Actual market demand is revealed only after results. It is not your team's guaranteed demand.")
         public = public_market_row(current_report)
-        cols = st.columns(2)
-        cols[0].metric("Decision Round", current_report.round_number)
-        low, high = public.pop('demand_outlook_low'), public.pop('demand_outlook_high')
-        cols[1].metric("Market Demand Outlook", f"{low:,} to {high:,} units" if isinstance(low, (int, float)) else "Not published")
-        summary, scenarios = market_brief(public_market_row(current_report))
-        st.subheader("Market Brief")
-        st.write(summary)
-        if scenarios:
-            st.table(scenarios)
-            st.caption("Public-range scenarios, rounded by segment. These are not actual demand or guaranteed team sales.")
-        public.pop("round_number", None)
-        st.table([{"Market factor": key.replace("_", " ").title(), "Value": str(value)} for key, value in public.items()])
-        if revealed_demands():
+        st.subheader(f"Round {current_report.round_number} Market Report")
+        st.write(market_brief(public))
+        completed = revealed_demands()
+        if completed:
             st.subheader("Completed Round Demand")
             st.table([{"Round": r["round_number"], "Outlook Low": r["outlook_low"],
                        "Outlook High": r["outlook_high"], "Actual Market Demand": r["actual_demand"]}
-                      for r in revealed_demands()])
+                      for r in completed])
         return
 
     status = demand_status(current_report.round_number)
