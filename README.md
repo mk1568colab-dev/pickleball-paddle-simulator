@@ -72,6 +72,23 @@ Teams sell active products today while investing in future products for tomorrow
 
 This version intentionally excludes marketing, ambassador strategy, retailer negotiation, team-member accounts, multi-country operations, and heavy Monte Carlo systems.
 
+## Teams Joining Mid-Game
+
+New teams start with the same cash, capacity, materials, and starter products as before.
+Only their starting reputation changes: it uses the **20th percentile** of active teams'
+reputation scores from the last completed round in the same classroom. This is a
+linearly interpolated percentile, rounded to two decimals, not 20% of a score or
+the average of the bottom 20%.
+
+- Count each team once, even if it has multiple active team-leader logins.
+- Exclude inactive teams and teams without results in the last completed round.
+- Use the standard starting reputation of 60 when there are no eligible results.
+- Freeze one benchmark for an entire Excel import, CSV import, or numbered batch.
+- Apply this rule only when initializing a new team. Existing teams and historical
+  results are not reset; subsequent reputation changes follow the normal game model.
+
+`Admin User Management` displays the current starting reputation and its source round.
+
 ## Quick Start: Run Locally
 
 Use local mode for testing on your own computer.
