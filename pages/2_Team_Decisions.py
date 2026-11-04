@@ -1700,10 +1700,10 @@ def _render_development_pipeline(
                 )
                 if requirement_changed:
                     st.info(
-                        f"Development requirement updated: ${project.required_investment:,.0f} to "
-                        f"${current_estimate['required_investment']:,.0f}. Prior investment and testing "
+                        f"Development requirement updated: \\${project.required_investment:,.0f} to "
+                        f"\\${current_estimate['required_investment']:,.0f}. Prior investment and testing "
                         f"coverage are retained. Additional funding needed before new investment: "
-                        f"${current_estimate['remaining_investment_after_this_round']:,.0f}."
+                        f"\\${current_estimate['remaining_investment_after_this_round']:,.0f}."
                     )
                 top_cols = st.columns([1.55, 1.0, 0.85, 0.8])
                 top_cols[0].text_input(
@@ -1995,8 +1995,8 @@ def _render_project_launch_gate_guidance(
     gen4_testing_cost = TESTING_FULL_INTENSITY_COST * TESTING_COST_MULTIPLIERS_BY_TECH_GENERATION[4]
     st.caption(
         "Testing accumulates up to 100% coverage. For Gen 1-3, two rounds at 0.5 cost "
-        f"${base_testing_cost * 0.5 ** 2:,.0f} each; one round at 1.0 costs ${base_testing_cost:,.0f}. "
-        f"For Gen 4, the same choices cost ${gen4_testing_cost * 0.5 ** 2:,.0f} each or ${gen4_testing_cost:,.0f} in one round. "
+        f"\\${base_testing_cost * 0.5 ** 2:,.0f} each; one round at 1.0 costs \\${base_testing_cost:,.0f}. "
+        f"For Gen 4, the same choices cost \\${gen4_testing_cost * 0.5 ** 2:,.0f} each or \\${gen4_testing_cost:,.0f} in one round. "
         "Both achieve the same coverage, but spreading tests takes longer. Set testing to 0 after full coverage to avoid unnecessary costs. "
         "Testing costs are included in development spending and do not count toward project funding. "
         "A project can launch only when all three gates pass: funding, readiness, and timing. "
