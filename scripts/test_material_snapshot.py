@@ -24,6 +24,7 @@ from data.classroom_start import COMMON_PROFILE, initial_state
 from data.defaults import DEFAULT_MARKET_REPORT
 from models.schemas import TeamArchetype, ProductLine, OpenMaterialOrder
 from engine.config import STARTING_RAW_MATERIAL_COVERAGE
+from engine.sourcing import public_incoming_orders
 '''
         script += FUNCTION
         script += f'''

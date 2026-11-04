@@ -14,6 +14,8 @@ import streamlit as st
 from engine.config import (
     STARTING_RAW_MATERIAL_COVERAGE,
     SUPPLIER_NAMES,
+    TESTING_FULL_INTENSITY_COST,
+    TESTING_COST_MULTIPLIERS_BY_TECH_GENERATION,
 )
 from engine.sourcing import material_order_timing
 from engine.sourcing import sourcing_quote, public_incoming_orders, ordering_fee_description
@@ -1655,6 +1657,25 @@ def _render_development_pipeline(
 
     for project_column, project_slot_name in zip(project_columns, PROJECT_SLOT_NAMES):
         project = existing_project_by_slot[project_slot_name]
+        current_estimate = (
+            estimate_development_project(project, include_current_round_investment=False, current_round=current_round)
+            if project.is_pipeline_active() else {}
+        )
+        requirement_changed = bool(
+            current_estimate and project.required_investment > 0
+            and abs(current_estimate["required_investment"] - project.required_investment) > 0.01
+        )
+        displayed_status = project.status
+        displayed_readiness = project.launch_readiness_score
+        displayed_earliest = project.earliest_launch_round
+        if requirement_changed:
+            displayed_readiness = current_estimate["projected_readiness_after_this_round"]
+            displayed_earliest = current_estimate["estimated_earliest_launch_round"]
+            displayed_status = (
+                "funding_needed" if not current_estimate["funding_gate_met"] else
+                "launch_ready" if project_ready_at_round_start(project, current_round) else
+                "review_launch_gates"
+            )
         fixed_settings_locked = _project_fixed_settings_locked(project)
         if fixed_settings_locked:
             _sync_locked_project_fields(project)
@@ -1662,21 +1683,28 @@ def _render_development_pipeline(
             with st.container(border=True):
                 status_tone = (
                     "green"
-                    if project.status == "launch_ready"
+                    if displayed_status == "launch_ready"
                     else "amber"
-                    if project.status in {"concept", "development", "pilot"}
+                    if displayed_status in {"concept", "development", "pilot", "funding_needed", "review_launch_gates"}
                     else ""
                 )
                 last_launch_label = project.launched_round or "-"
                 st.markdown(
                     f'<div class="kiki-row-header">Project {project_slot_name}</div>'
-                    f'{_chip(project.status.replace("_", " ").title(), status_tone)}'
+                    f'{_chip(displayed_status.replace("_", " ").title(), status_tone)}'
                     f'{_chip(f"Invested ${project.cumulative_investment:,.0f}")}'
-                    f'{_chip(f"Readiness {project.launch_readiness_score:.1f}%")}'
-                    f'{_chip(f"Earliest R{project.earliest_launch_round}")}'
+                    f'{_chip(f"Readiness {displayed_readiness:.1f}%")}'
+                    f'{_chip(f"Earliest R{displayed_earliest}")}'
                     f'{_chip(f"Last {last_launch_label}")}',
                     unsafe_allow_html=True,
                 )
+                if requirement_changed:
+                    st.info(
+                        f"Development requirement updated: ${project.required_investment:,.0f} to "
+                        f"${current_estimate['required_investment']:,.0f}. Prior investment and testing "
+                        f"coverage are retained. Additional funding needed before new investment: "
+                        f"${current_estimate['remaining_investment_after_this_round']:,.0f}."
+                    )
                 top_cols = st.columns([1.55, 1.0, 0.85, 0.8])
                 top_cols[0].text_input(
                     "Project Name",
@@ -1963,8 +1991,12 @@ def _render_project_launch_gate_guidance(
         return
 
     st.markdown("#### Launch Gate Checklist")
+    base_testing_cost = TESTING_FULL_INTENSITY_COST * TESTING_COST_MULTIPLIERS_BY_TECH_GENERATION[1]
+    gen4_testing_cost = TESTING_FULL_INTENSITY_COST * TESTING_COST_MULTIPLIERS_BY_TECH_GENERATION[4]
     st.caption(
-        "Testing accumulates up to 100% coverage. Two rounds at 0.5 cost $500 each; one round at 1.0 costs $2,000. "
+        "Testing accumulates up to 100% coverage. For Gen 1-3, two rounds at 0.5 cost "
+        f"${base_testing_cost * 0.5 ** 2:,.0f} each; one round at 1.0 costs ${base_testing_cost:,.0f}. "
+        f"For Gen 4, the same choices cost ${gen4_testing_cost * 0.5 ** 2:,.0f} each or ${gen4_testing_cost:,.0f} in one round. "
         "Both achieve the same coverage, but spreading tests takes longer. Set testing to 0 after full coverage to avoid unnecessary costs. "
         "Testing costs are included in development spending and do not count toward project funding. "
         "A project can launch only when all three gates pass: funding, readiness, and timing. "

@@ -270,8 +270,10 @@ def main() -> None:
                earliest_launch_round can move earlier
         ```
 
-        Testing coverage accumulates up to 1.0. Each round costs $2,000 times testing intensity squared.
-        Two rounds at 0.5 therefore cost $1,000 in total versus $2,000 for one round at 1.0.
+        Testing coverage accumulates up to 1.0. Each round costs the base testing cost times
+        the target-generation multiplier times testing intensity squared. Gen 1-3 use a
+        multiplier of 1.0; Gen 4 uses 1.2. Two rounds at 0.5 therefore cost $1,000 in total
+        versus $2,000 for one round at 1.0 for Gen 1-3, or $1,200 versus $2,400 for Gen 4.
         Both produce equal coverage; distributed testing takes longer. Costs remain payable even
         beyond full coverage, so intensity resets to zero after each round. Testing expense is included
         in innovation spending, cash flow, and profit, but does not satisfy the development funding gate.
@@ -284,6 +286,8 @@ def main() -> None:
                 ("NPD_REQUIRED_INVESTMENT_BASE", config.NPD_REQUIRED_INVESTMENT_BASE, "Base development cost before segment and technology adjustments."),
                 ("NPD_SEGMENT_COST_MULTIPLIERS", config.NPD_SEGMENT_COST_MULTIPLIERS, "Development-cost multiplier by target customer segment."),
                 ("NPD_TECH_GENERATION_COST_MULTIPLIERS", config.NPD_TECH_GENERATION_COST_MULTIPLIERS, "Development-cost multiplier by target technology generation."),
+                ("TESTING_FULL_INTENSITY_COST", config.TESTING_FULL_INTENSITY_COST, "Base cost for testing intensity 1.0 before the generation multiplier."),
+                ("TESTING_COST_MULTIPLIERS_BY_TECH_GENERATION", config.TESTING_COST_MULTIPLIERS_BY_TECH_GENERATION, "Testing-expense multiplier by target technology generation; does not change coverage or readiness."),
                 ("NPD_DEMAND_FIT_AMBITION_COST_RATE", config.NPD_DEMAND_FIT_AMBITION_COST_RATE, "Cost pressure from targeting stronger demand fit."),
                 ("NPD_DEFECT_IMPROVEMENT_COST_RATE", config.NPD_DEFECT_IMPROVEMENT_COST_RATE, "Cost pressure from targeting a lower defect baseline."),
                 ("LAUNCH_READINESS_THRESHOLD", config.LAUNCH_READINESS_THRESHOLD, "Readiness score required before a project can launch."),
