@@ -23,6 +23,7 @@ from utils.repository import (
 )
 from utils.security import hash_password, validate_password_strength
 from utils.team_excel_import import read_team_workbook, validate_team_rows, create_teams_from_workbook
+from utils.team_entry import EntryReputation, load_entry_reputation
 
 
 CREDENTIAL_NOTICE_KEY = "admin_credentials_notice"
@@ -207,11 +208,14 @@ def _generate_temporary_password(team_number: int) -> str:
     return f"team{team_number}"
 
 
-def _save_initial_team_state(team_name: str, starting_cash_balance: float) -> None:
+def _save_initial_team_state(
+    team_name: str, starting_cash_balance: float,
+    *, entry_reputation: EntryReputation | None = None,
+) -> None:
     """Preserve existing teams and initialize new teams with the common baseline."""
     # Account creation now initializes the complete common baseline.
     from utils.repository import ensure_equal_start_team
-    ensure_equal_start_team(team_name)
+    ensure_equal_start_team(team_name, entry_reputation=entry_reputation)
 
 
 def main() -> None:
@@ -222,6 +226,17 @@ def main() -> None:
 
     st.title("Admin User Management")
     st.caption("Create, update, deactivate, and bulk import classroom accounts.")
+
+    entry_reputation = load_entry_reputation()
+    st.metric("New-Team Starting Reputation", f"{entry_reputation.score:.2f}")
+    if entry_reputation.team_count:
+        st.caption(
+            f"Round {entry_reputation.round_number} | "
+            f"{entry_reputation.team_count} active teams | 20th percentile. "
+            "Existing teams are unchanged."
+        )
+    else:
+        st.caption("Standard starting reputation: no eligible completed-round results.")
 
     _show_credential_notice()
     _show_bulk_import_summary()
@@ -270,7 +285,8 @@ def main() -> None:
                            file_name=template_path.name,
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         st.info("New teams only. Existing accounts and game records will not be replaced. "
-                "Each row creates one active team-leader login with the common starting conditions.")
+                "Each row creates one active team-leader login with common starting resources "
+                "and the new-team starting reputation shown above.")
         upload_generation = st.session_state.get("excel_upload_generation", 0)
         upload = st.file_uploader("Team workbook (.xlsx)", type=["xlsx"],
                                   key=f"excel_team_upload_{upload_generation}")
@@ -645,6 +661,7 @@ def main() -> None:
 
 def _run_bulk_import(import_frame: pd.DataFrame, update_existing: bool) -> dict[str, object]:
     """Create or update team leader accounts from a CSV upload."""
+    entry_reputation = load_entry_reputation()
     created_count = 0
     updated_count = 0
     skipped_count = 0
@@ -692,6 +709,7 @@ def _run_bulk_import(import_frame: pd.DataFrame, update_existing: bool) -> dict[
                     role="team_leader",
                     team_name=team_name,
                     is_active=is_active,
+                    entry_reputation=entry_reputation,
                 )
                 created_count += 1
                 credential_rows.append(
@@ -757,6 +775,7 @@ def _run_team_account_generation(
     update_existing: bool,
 ) -> dict[str, object]:
     """Generate a numbered set of team-leader accounts."""
+    entry_reputation = load_entry_reputation()
     created_count = 0
     updated_count = 0
     skipped_count = 0
@@ -805,10 +824,12 @@ def _run_team_account_generation(
                     role="team_leader",
                     team_name=team_name,
                     is_active=is_active,
+                    entry_reputation=entry_reputation,
                 )
                 created_count += 1
                 existing_team_users[team_name.strip().lower()] = get_user_by_username(username)
-                _save_initial_team_state(team_name, starting_cash_balance)
+                _save_initial_team_state(team_name, starting_cash_balance,
+                                         entry_reputation=entry_reputation)
             elif existing_user.role != "team_leader":
                 error_rows.append(
                     {
@@ -829,7 +850,8 @@ def _run_team_account_generation(
                 )
                 updated_count += 1
                 existing_team_users[team_name.strip().lower()] = get_user_by_username(username)
-                _save_initial_team_state(team_name, starting_cash_balance)
+                _save_initial_team_state(team_name, starting_cash_balance,
+                                         entry_reputation=entry_reputation)
             else:
                 skipped_count += 1
                 continue

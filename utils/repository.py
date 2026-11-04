@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from dataclasses import replace
 from typing import Any
 
 from data.defaults import DEFAULT_MARKET_REPORT
@@ -28,6 +29,7 @@ from models.schemas import (
 )
 from utils.bootstrap import ensure_app_storage
 from utils.database import get_connection
+from utils.team_entry import EntryReputation, load_entry_reputation
 
 
 VALID_ROLES = {"admin", "team_leader"}
@@ -2022,12 +2024,16 @@ def create_user(
     role: str,
     team_name: str | None,
     is_active: bool,
+    *,
+    entry_reputation: EntryReputation | None = None,
 ) -> AppUser:
     """Create a new user account."""
     ensure_app_storage()
     normalized_username = _normalize_username(username)
     normalized_role = _normalize_role(role)
     normalized_team_name = _normalize_team_name(normalized_role, team_name)
+    if normalized_role == "team_leader" and entry_reputation is None:
+        entry_reputation = load_entry_reputation()
 
     try:
         with get_connection() as connection:
@@ -2058,18 +2064,21 @@ def create_user(
     if created_user is None:
         raise ValueError("The user could not be loaded after creation.")
     if created_user.role == "team_leader" and created_user.team_name:
-        ensure_equal_start_team(created_user.team_name)
+        ensure_equal_start_team(created_user.team_name, entry_reputation=entry_reputation)
     return created_user
 
 
-def ensure_equal_start_team(team_name: str) -> None:
+def ensure_equal_start_team(
+    team_name: str, *, entry_reputation: EntryReputation | None = None,
+) -> None:
     """Initialize new teams only; never reset existing classroom progress."""
     from data.classroom_start import COMMON_PROFILE_NAME, initial_state
     if load_team_states(team_name=team_name):
         return
     if load_team_decisions(team_name=team_name) or load_product_lines(team_name=team_name):
         return
-    save_team_state(initial_state(team_name))
+    entry_reputation = entry_reputation or load_entry_reputation()
+    save_team_state(replace(initial_state(team_name), reputation_score=entry_reputation.score))
     ensure_product_lines_for_team(team_name, COMMON_PROFILE_NAME)
     ensure_development_projects_for_team(team_name)
 

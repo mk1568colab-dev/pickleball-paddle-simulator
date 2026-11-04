@@ -1,6 +1,6 @@
 """Create-only classroom roster imports. Never update existing teams or logins."""
 
-from dataclasses import asdict, fields
+from dataclasses import asdict, fields, replace
 from io import BytesIO
 import json
 import zipfile
@@ -12,6 +12,7 @@ from models.schemas import ProductLine, PROJECT_SLOT_NAMES, build_product_id
 from utils.database import get_connection
 from utils.repository import _empty_development_project_slot, load_market_report
 from utils.security import hash_password, validate_password_strength
+from utils.team_entry import load_entry_reputation
 
 HEADERS = ("team_name", "username", "password")
 MAX_TEAMS = 200
@@ -127,11 +128,12 @@ def create_teams_from_workbook(rows: list[dict], *, allow_classroom_passwords=Fa
         errors = validate_team_rows(rows, connection, allow_classroom_passwords=allow_classroom_passwords)
         if errors:
             raise ValueError("Import canceled. Refresh the preview and resolve the reported conflicts.")
+        entry_reputation = load_entry_reputation(connection)
         for row, password_hash in zip(rows, hashes):
             team = row["team_name"]
             _insert_new(connection, "users", dict(username=row["username"], password_hash=password_hash,
                         role="team_leader", team_name=team, is_active=1))
-            state = asdict(initial_state(team))
+            state = asdict(replace(initial_state(team), reputation_score=entry_reputation.score))
             for key in ("completed_rounds", "last_decision", "open_material_orders"):
                 state[key + "_json"] = json.dumps(state.pop(key))
             _insert_new(connection, "team_states", state)
