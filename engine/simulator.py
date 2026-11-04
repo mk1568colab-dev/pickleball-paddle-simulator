@@ -7,6 +7,7 @@ from dataclasses import dataclass, field, replace
 
 from engine.config import (
     TESTING_FULL_INTENSITY_COST,
+    TESTING_COST_MULTIPLIERS_BY_TECH_GENERATION,
     ARCHETYPE_FIT_WEIGHT,
     BACKLOG_PENALTY_PER_UNIT,
     BASE_CANNIBALIZATION_RATE,
@@ -2944,7 +2945,12 @@ def _testing_after_round(project: ProductDevelopmentProject) -> float:
 
 def _testing_cost(project: ProductDevelopmentProject) -> float:
     # Rush testing is more expensive; extra effort beyond full coverage has no benefit.
-    return _round_currency(TESTING_FULL_INTENSITY_COST * min(max(project.testing_intensity, 0.0), 1.0) ** 2)
+    tech_multiplier = TESTING_COST_MULTIPLIERS_BY_TECH_GENERATION[project.target_tech_generation]
+    return _round_currency(
+        TESTING_FULL_INTENSITY_COST
+        * tech_multiplier
+        * min(max(project.testing_intensity, 0.0), 1.0) ** 2
+    )
 
 
 def _project_readiness_score(
