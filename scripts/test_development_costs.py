@@ -163,7 +163,7 @@ class DevelopmentCostTests(unittest.TestCase):
             tables = [d.value for d in app.dataframe if 'Testing Cost' in d.value.columns]
             self.assertEqual(tables[0].iloc[0]['Testing Cost'], 600)
             text = ' '.join(c.value for c in app.caption)
-            self.assertIn('For Gen 4, the same choices cost $600 each or $2,400 in one round.', text)
+            self.assertIn(r'For Gen 4, the same choices cost \$600 each or \$2,400 in one round.', text)
 
 
 if __name__ == '__main__':

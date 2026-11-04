@@ -181,7 +181,7 @@ class DevelopmentCostTransitionTests(unittest.TestCase):
             app.run()
             self.assertFalse(app.exception, str(app.exception))
             notices = ' '.join(e.value for e in app.info)
-            self.assertIn('Development requirement updated: $21,875 to $26,250', notices)
+            self.assertIn(r'Development requirement updated: \$21,875 to \$26,250', notices)
             self.assertIn('$4,375', notices)
             headers = [e.value for e in app.markdown if 'kiki-row-header' in e.value and 'Project P1' in e.value]
             self.assertIn('Funding Needed', headers[0])
