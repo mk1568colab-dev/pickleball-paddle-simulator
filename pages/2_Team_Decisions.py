@@ -12,6 +12,7 @@ import pandas as pd
 import streamlit as st
 
 from engine.config import (
+    MAX_LAUNCHES_PER_ROUND,
     STARTING_RAW_MATERIAL_COVERAGE,
     SUPPLIER_NAMES,
     TESTING_FULL_INTENSITY_COST,
@@ -1435,15 +1436,24 @@ def _render_firm_controls(market_report, selected_archetype) -> None:
     )
 
 
+def _select_project_launch(project_slot_name):
+    st.session_state[_project_widget_key(project_slot_name, "launch_now")] = True
+
+
 def _launch_planning_lines(product_lines, projects, current_round, archetype):
     """Expose launch drafts without replacing persistent products before round execution."""
     context = st.session_state[SESSION_CONTEXT_KEY]
     backup_key = f"launch_plan_backups:{context}"
     backups = st.session_state.setdefault(backup_key, {})
     launches = [p for p in projects if p.launch_now and project_ready_at_round_start(p, current_round)]
-    if len(launches) > 1:
-        st.warning("Choose only one project to launch this round.")
+    if len(launches) > MAX_LAUNCHES_PER_ROUND:
+        st.warning(f"Choose at most {MAX_LAUNCHES_PER_ROUND} projects to launch this round.")
         launches = []
+    conflicting_slots = {p.intended_slot_name for p in launches
+                         if sum(q.intended_slot_name == p.intended_slot_name for q in launches) > 1}
+    if conflicting_slots:
+        st.warning("Launch projects must use different product slots. Select only one project per slot.")
+        launches = [p for p in launches if p.intended_slot_name not in conflicting_slots]
     by_slot = {p.intended_slot_name: p for p in launches}
     original_defaults = {p.slot_name: p for p in _seed_product_decisions_for_round(
         product_lines[0].team_name, archetype, product_lines, current_round
@@ -2046,6 +2056,7 @@ def _validation_messages(
             messages.append(f"Product {decision.slot_name} needs a demand forecast before saving.")
 
     launch_requests = 0
+    launch_slots = set()
     for project in candidate_projects:
         project_controls_used = (
             project.investment_this_round > 0
@@ -2073,11 +2084,14 @@ def _validation_messages(
             messages.append(f"Project {project.project_slot_name} demand-fit modifier must be positive.")
         if project.launch_now:
             launch_requests += 1
+            if project.intended_slot_name in launch_slots:
+                messages.append(f"Product {project.intended_slot_name} can receive only one launch this round.")
+            launch_slots.add(project.intended_slot_name)
             if not project_ready_at_round_start(project, current_round):
                 messages.append(f"Project {project.project_slot_name} must finish development before this round to launch now.")
 
-    if launch_requests > 1:
-        messages.append("Only one launch request per team is allowed per round.")
+    if launch_requests > MAX_LAUNCHES_PER_ROUND:
+        messages.append(f"At most {MAX_LAUNCHES_PER_ROUND} launch requests per team are allowed per round.")
 
     return messages
 
@@ -2289,13 +2303,14 @@ def main() -> None:
     planning_projects = _current_projects(team_name, current_round, saved_projects)
     for project in planning_projects:
         if project_ready_at_round_start(project, current_round) and not project.launch_now:
-            if st.button(
+            st.button(
                 f"Launch {project.project_name} in Product {project.intended_slot_name}",
                 key=f"plan_launch_{current_context}_{project.project_slot_name}",
-                disabled=any(p.launch_now for p in planning_projects),
-            ):
-                st.session_state[_project_widget_key(project.project_slot_name, 'launch_now')] = True
-                st.rerun()
+                disabled=any(p.launch_now and p.intended_slot_name == project.intended_slot_name
+                             for p in planning_projects),
+                on_click=_select_project_launch,
+                args=(project.project_slot_name,),
+            )
     planning_lines = _launch_planning_lines(product_lines, planning_projects, current_round, selected_archetype)
     _render_product_profile(planning_lines)
     material_plan_container = st.container()
