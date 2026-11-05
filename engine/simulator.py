@@ -925,7 +925,12 @@ def build_round_validation_rows(
                 "multiple_launch_requests": sum(
                     1 for item in prepared_team.projects if item.launch_requested
                 )
-                > MAX_LAUNCHES_PER_ROUND,
+                > MAX_LAUNCHES_PER_ROUND or any(
+                    sum(other.launch_requested and
+                        other.project.intended_slot_name == item.project.intended_slot_name
+                        for other in prepared_team.projects) > 1
+                    for item in prepared_team.projects if item.launch_requested
+                ),
             }
         )
 
@@ -1547,13 +1552,25 @@ def _apply_project_launches(
     retired_product_count = 0
     notes: list[str] = []
 
+    conflicting_slots = {item.project.intended_slot_name for item in launchable_projects
+                         if sum(other.project.intended_slot_name == item.project.intended_slot_name
+                                for other in launchable_projects) > 1}
+    for item in launchable_projects:
+        if item.project.intended_slot_name in conflicting_slots:
+            item.project.launch_now = False
+            message = f"{item.project.project_name} deferred: more than one launch targets slot {item.project.intended_slot_name}."
+            item.notes.append(message)
+            notes.append(message)
+    launchable_projects = [item for item in launchable_projects
+                           if item.project.intended_slot_name not in conflicting_slots]
+
     for skipped_project in launchable_projects[MAX_LAUNCHES_PER_ROUND:]:
         skipped_project.project.launch_now = False
         skipped_project.notes.append(
-            "Deferred because only one launch per team is allowed each round."
+            f"Deferred because at most {MAX_LAUNCHES_PER_ROUND} launches per team are allowed each round."
         )
         notes.append(
-            f"{skipped_project.project.project_name} stayed in the pipeline because only one launch per round is allowed."
+            f"{skipped_project.project.project_name} stayed in the pipeline because the per-round launch limit was reached."
         )
 
     for project_wrapper in launchable_projects[:MAX_LAUNCHES_PER_ROUND]:

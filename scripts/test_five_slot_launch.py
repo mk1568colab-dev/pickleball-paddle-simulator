@@ -36,7 +36,8 @@ class LaunchTests(unittest.TestCase):
         firm = TeamDecision.from_dict(dict(team_name='Launch Test', archetype=COMMON_PROFILE_NAME,
             supplier_mix_offshore_pct=30, supplier_mix_balanced_pct=50, supplier_mix_premium_pct=20))
         return run_round(replace(DEFAULT_MARKET_REPORT, round_number=3), [firm], lines,
-                         decisions, [project], [initial_state('Launch Test')])
+                         decisions, project if isinstance(project, list) else [project],
+                         [initial_state('Launch Test')])
 
     def ready_project(self, slot='D'):
         return replace(self.project(slot), cumulative_investment=20000,
@@ -57,6 +58,34 @@ class LaunchTests(unittest.TestCase):
         for slot in ['E', 'F']:
             with self.subTest(slot=slot), self.assertRaisesRegex(ValueError, 'four slots'):
                 self.simulate(self.project(slot))
+
+    def test_two_ready_projects_launch_into_distinct_slots(self):
+        from models.schemas import build_project_id
+        first = replace(self.ready_project('C'), project_slot_name='P1',
+                        project_id=build_project_id('Launch Test', 'P1'), project_name='Paddle C')
+        second = replace(self.ready_project('D'), project_slot_name='P2',
+                         project_id=build_project_id('Launch Test', 'P2'), project_name='Paddle D')
+        output = self.simulate([first, second])
+        lines = {p.slot_name: p for p in output[3]}
+        self.assertEqual(lines['C'].product_name, 'Paddle C')
+        self.assertEqual(lines['D'].product_name, 'Paddle D')
+        self.assertEqual(sum(p.is_active for p in lines.values()), 4)
+        self.assertEqual(sum(p.launched_this_round for p in output[1]), 2)
+        for p in output[1]:
+            if p.slot_name in ('C', 'D'):
+                self.assertEqual(p.selling_price_per_unit, 189)
+                self.assertEqual(p.planned_production_units, 40)
+
+    def test_conflicting_launches_do_not_overwrite_each_other(self):
+        from models.schemas import build_project_id
+        first = replace(self.ready_project('C'), project_slot_name='P1',
+                        project_id=build_project_id('Launch Test', 'P1'))
+        second = replace(first, project_slot_name='P2',
+                         project_id=build_project_id('Launch Test', 'P2'), project_name='Other')
+        output = self.simulate([first, second])
+        self.assertFalse(next(p for p in output[3] if p.slot_name == 'C').is_active)
+        self.assertEqual(sum(p.launched_this_round for p in output[1]), 0)
+        self.assertTrue(all(p.status != 'launched' for p in output[4]))
 
     def test_legacy_empty_fifth_slot_is_preserved_but_not_loaded(self):
         from utils import repository as repo

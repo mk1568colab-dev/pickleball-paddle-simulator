@@ -200,7 +200,7 @@ def _readiness_rows(
         launch_requests = int(validation.get("launch_requests", 0))
         launch_ready = int(validation.get("launch_ready_projects", 0))
         if bool(validation.get("multiple_launch_requests", False)):
-            launch_status = "Multiple requests"
+            launch_status = "Conflicting launch requests"
         elif launch_requests and launch_ready:
             launch_status = f"{launch_ready} ready"
         elif launch_requests:
@@ -335,7 +335,7 @@ def _validation_exception_rows(
                     "team_name": team_name,
                     "area": "Launch",
                     "issue": "Multiple launch requests are selected.",
-                    "suggested_action": "Only one launch is allowed per team per round.",
+                    "suggested_action": "Allow up to two ready launches per team per round, each into a different product slot.",
                 }
             )
     return rows
