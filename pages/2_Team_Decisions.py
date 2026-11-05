@@ -12,6 +12,7 @@ import pandas as pd
 import streamlit as st
 
 from engine.config import (
+    CAPACITY_EXPANSION_CAPEX_PER_UNIT,
     MAX_LAUNCHES_PER_ROUND,
     STARTING_RAW_MATERIAL_COVERAGE,
     SUPPLIER_NAMES,
@@ -1328,7 +1329,42 @@ def _render_supplier_quotes(quote):
     + ''.join(f'<th>{label}</th>' for label in labels) + '</tr></thead><tbody>' + ''.join(rows) + '</tbody></table>')
 
 
-def _render_firm_controls(market_report, selected_archetype) -> None:
+def _render_capacity_effects(market_report, firm_decision, preview) -> None:
+    installed = preview.installed_capacity_units
+    overtime = max(firm_decision.overtime_capacity_units, 0)
+    expansion = max(firm_decision.capacity_expansion_units, 0)
+    temporary, permanent = st.columns(2)
+    with temporary:
+        st.markdown(f"**Overtime | Round {market_report.round_number} only**")
+        st.markdown(
+            f"Capacity: **{installed:,} to {preview.effective_capacity_units:,}** "
+            f"(+{overtime:,} units)"
+        )
+        st.caption(
+            f"Estimated overtime premium: \\${preview.projected_overtime_premium:,.2f} "
+            "(included in production cost). No permanent capacity added."
+        )
+    with permanent:
+        st.markdown(f"**Expansion | From Round {market_report.round_number + 1}**")
+        st.markdown(
+            f"Installed capacity: **{installed:,} to {installed + expansion:,}** "
+            f"(+{expansion:,} units)"
+        )
+        st.caption(
+            f"Expansion cost this round: \\${preview.projected_expansion_cost:,.2f} | "
+            f"{expansion:,} units x \\${CAPACITY_EXPANSION_CAPEX_PER_UNIT:,.2f}/unit. "
+            "No extra capacity this round."
+        )
+    planned = preview.total_planned_production_units
+    feasible = preview.projected_max_feasible_production
+    st.caption(
+        f"Current plan: {planned:,} paddles | Feasible production: {feasible:,} before defects | "
+        f"Plan shortfall: {max(planned - feasible, 0):,}. "
+        "Output depends on materials and planned production; additional capacity does not guarantee sales."
+    )
+
+
+def _render_firm_controls(market_report, selected_archetype):
     """Render compact firm-level operations, sourcing, and finance controls."""
     st.markdown("### 3. Firm Controls")
     st.caption("Shared operations, sourcing, and finance choices for the whole firm.")
@@ -1338,12 +1374,21 @@ def _render_firm_controls(market_report, selected_archetype) -> None:
         min_value=0,
         step=10,
         key=FIRM_WIDGET_KEYS["overtime_capacity_units"],
+        help=(
+            "Temporary capacity for this round only. The estimated premium follows the "
+            "current product plan and overtime setting, and can apply even when production "
+            "is below installed capacity. It is part of production cost, not a separate fee."
+        ),
     )
     firm_cols[1].number_input(
         "Capacity Expansion",
         min_value=0,
         step=10,
         key=FIRM_WIDGET_KEYS["capacity_expansion_units"],
+        help=(
+            f"USD {CAPACITY_EXPANSION_CAPEX_PER_UNIT:,.2f} per additional unit of installed capacity. "
+            "The cost is charged this round; added capacity is available from the next round."
+        ),
     )
     firm_cols[2].number_input(
         "Max Backorder",
@@ -1393,6 +1438,7 @@ def _render_firm_controls(market_report, selected_archetype) -> None:
         )
     )
     firm_cols[8].metric("Supplier Total", f"{supplier_total:.0f}%")
+    capacity_effects_container = st.container()
     if round(supplier_total, 6) != 100.0:
         st.warning("Supplier mix must sum to 100% before saving.")
     policy = load_delivery_policy()
@@ -1416,7 +1462,7 @@ def _render_firm_controls(market_report, selected_archetype) -> None:
                    'New orders cannot supply this round\'s production.')
         st.caption('End-of-round holding: raw materials USD 2/unit; finished paddles USD 6/unit. '
                    'In-transit orders have no warehouse holding charge.')
-        return
+        return capacity_effects_container
     timing = _current_material_timing(market_report)
     timing_cols = st.columns([1.0, 1.0, 1.0, 2.2])
     order_qty = int(timing["order_qty"])
@@ -1434,6 +1480,7 @@ def _render_firm_controls(market_report, selected_archetype) -> None:
         f"after supply risk ({market_report.supply_risk} x{timing['supply_risk_index']:.2f}). "
         "Base lead times: Economy 2.4, Standard 1.3, Reliable 0.9 rounds."
     )
+    return capacity_effects_container
 
 
 def _select_project_launch(project_slot_name):
@@ -2298,7 +2345,7 @@ def main() -> None:
         f"Premium tech adoption is {market_report.premium_tech_adoption:.0%} and mid-market tech adoption is {market_report.mid_market_tech_adoption:.0%}."
     )
 
-    _render_firm_controls(market_report, selected_archetype)
+    capacity_effects_container = _render_firm_controls(market_report, selected_archetype)
     supply_planning_container = st.container()
     planning_projects = _current_projects(team_name, current_round, saved_projects)
     for project in planning_projects:
@@ -2331,6 +2378,9 @@ def main() -> None:
         current_round_projects=current_round_projects,
         existing_states=team_states,
     )
+
+    with capacity_effects_container:
+        _render_capacity_effects(market_report, candidate_firm_decision, preview)
 
     with material_plan_container:
         _render_material_plan(preview, candidate_firm_decision)

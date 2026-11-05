@@ -290,6 +290,8 @@ class PortfolioDecisionPreview:
     project_rows: list[dict[str, object]]
     total_material_required: float = 0.0
     material_rows: list[dict[str, object]] = field(default_factory=list)
+    projected_overtime_premium: float = 0.0
+    projected_expansion_cost: float = 0.0
 
 
 @dataclass
@@ -744,6 +746,17 @@ def preview_team_decision(
     )
 
     return PortfolioDecisionPreview(
+        # Compare rates at the same feasible output, not two different production plans.
+        projected_overtime_premium=_round_currency(sum(
+            product.actual_production_units * (
+                product.conversion_cost_per_unit - _conversion_cost_per_unit(
+                    archetype, market_report, product.actual_production_units, 0,
+                )
+            )
+            for product in prepared_preview_team.products
+            if product.decision.is_active
+        )),
+        projected_expansion_cost=prepared_preview_team.expansion_cost,
         total_material_required=total_material_required,
         material_rows=[{
             "Product": item.decision.product_name,

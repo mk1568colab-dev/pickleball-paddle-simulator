@@ -79,6 +79,12 @@ class StudentLaunchTests(unittest.TestCase):
             check(app)
             app.number_input(key='stage_b_raw_material_order_qty').set_value(250).run()
             check(app)
+            app.number_input(key='stage_b_overtime_capacity_units').set_value(40).run()
+            app.number_input(key='stage_b_capacity_expansion_units').set_value(50).run()
+            check(app)
+            self.assertTrue(any('Expansion cost this round: \\$3,600.00' in c.value
+                                for c in app.caption))
+            self.assertTrue(any('Expansion | From Round 4' in m.value for m in app.markdown))
             # Toggling one launch must not erase the other project's price/production.
             app.checkbox(key='stage_b_project_P2_launch_now').uncheck().run()
             self.assertTrue(app.number_input(key='stage_b_product_D_selling_price_per_unit').disabled)
