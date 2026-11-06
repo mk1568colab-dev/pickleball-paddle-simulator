@@ -990,11 +990,8 @@ def _initialize_team_state(
                     if existing_state.capacity_units > 0
                     else archetype.base_capacity
                 ),
-                reputation_score=(
-                    existing_state.reputation_score
-                    if existing_state.reputation_score > 0
-                    else archetype.base_reputation
-                ),
+                # Zero is a valid assigned entry score, not a missing value.
+                reputation_score=existing_state.reputation_score,
             )
         return existing_state
 
