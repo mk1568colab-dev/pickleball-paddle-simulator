@@ -25,7 +25,6 @@ from engine.config import (
     LAUNCH_NOVELTY_BONUS,
     LAUNCH_READINESS_THRESHOLD,
     LIQUIDITY_LOW_CASH_THRESHOLD,
-    LIQUIDITY_STRESS_REPUTATION_PENALTY,
     LIFECYCLE_AGE_THRESHOLDS,
     LIFECYCLE_DEMAND_MULTIPLIERS,
     LIFECYCLE_DEFECT_MODIFIERS,
@@ -66,7 +65,6 @@ from engine.config import (
     READINESS_INVESTMENT_SCALE,
     READINESS_TESTING_BONUS_MAX,
     REPUTATION_ATTRACTIVENESS_WEIGHT,
-    REPUTATION_UPDATE_WEIGHTS,
     RETIREMENT_LIQUIDATION_RECOVERY_RATE,
     SAME_GROUP_CANNIBALIZATION_FACTOR,
     SAME_SEGMENT_CANNIBALIZATION_FACTOR,
@@ -116,6 +114,7 @@ from models.schemas import (
 from utils.repository import load_team_archetypes
 from utils.material_rules import load_material_requirements
 from engine.materials import allocate_materials, material_design
+from engine.reputation import reputation_step
 
 
 @dataclass
@@ -2416,12 +2415,8 @@ def _aggregate_team_round_result(
         backlog_units_end=total_backlog_end,
         demand_allocated=total_service_demand,
         quality_sensitivity=market_report.quality_sensitivity,
+        actual_production_units=prepared_team.actual_total_production_units,
     )
-    if cash_flow_summary.liquidity_stress_flag:
-        reputation_after_round = max(
-            reputation_after_round - LIQUIDITY_STRESS_REPUTATION_PENALTY,
-            0.0,
-        )
     active_tech_generations = [
         item.tech_generation for item in product_results if item.sales_units >= 0
     ]
@@ -3355,38 +3350,11 @@ def _update_reputation(
     backlog_units_end: int,
     demand_allocated: float,
     quality_sensitivity: float,
+    actual_production_units: int = 1,
 ) -> float:
-    """Update next-round reputation based on quality and service performance."""
-    demand_base = demand_allocated if demand_allocated > 0 else 1.0
-    quality_multiplier = 1.0 + (
-        quality_sensitivity
-        * REPUTATION_UPDATE_WEIGHTS["quality_sensitivity_multiplier"]
-    )
-
-    defect_component = (
-        REPUTATION_UPDATE_WEIGHTS["defect_target"] - defect_rate
-    ) * REPUTATION_UPDATE_WEIGHTS["defect_weight"] * quality_multiplier
-    fill_component = (
-        fill_rate - REPUTATION_UPDATE_WEIGHTS["fill_rate_baseline"]
-    ) * REPUTATION_UPDATE_WEIGHTS["fill_rate_weight"]
-    lost_sales_component = (
-        (lost_sales_units / demand_base)
-        * REPUTATION_UPDATE_WEIGHTS["lost_sales_weight"]
-        * quality_multiplier
-    )
-    backlog_component = (
-        (backlog_units_end / demand_base)
-        * REPUTATION_UPDATE_WEIGHTS["backlog_weight"]
-    )
-
-    updated_reputation = (
-        current_reputation
-        + defect_component
-        + fill_component
-        - lost_sales_component
-        - backlog_component
-    )
-    return max(0.0, min(updated_reputation, 100.0))
+    """Evaluate service once; backlog and lost sales already affect fill rate."""
+    return reputation_step(current_reputation, fill_rate, defect_rate, quality_sensitivity,
+                           actual_production_units, has_service_demand=demand_allocated > 0)['reputation']
 
 
 def _supplier_mix_label(team_decision: TeamDecision) -> str:

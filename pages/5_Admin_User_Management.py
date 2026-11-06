@@ -233,7 +233,7 @@ def main() -> None:
         st.caption(
             f"Round {entry_reputation.round_number} | "
             f"{entry_reputation.team_count} active teams | 20th percentile: {entry_reputation.benchmark_score:.2f}. "
-            f"Capped at the normal 60-point start, then minus {LATE_ENTRY_REPUTATION_DEDUCTION:.0f} entry points; minimum 0. "
+            f"Capped at the normal 60-point start, then minus {LATE_ENTRY_REPUTATION_DEDUCTION:.0f} entry points; minimum 10. "
             "Existing teams are unchanged."
         )
     elif entry_reputation.round_number is not None:

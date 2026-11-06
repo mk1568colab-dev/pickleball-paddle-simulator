@@ -1276,7 +1276,11 @@ def _render_state_snapshot(
     snapshot_cols[0].metric("Capacity", f"{installed_capacity:,}")
     snapshot_cols[1].metric("FG Inv.", f"{beginning_inventory:,}")
     snapshot_cols[2].metric("Backlog", f"{beginning_backlog:,}")
-    snapshot_cols[3].metric("Reputation", f"{reputation:.1f}")
+    snapshot_cols[3].metric(
+        "Reputation", f"{reputation:.2f}",
+        help="Next-round reputation combines 50% prior reputation and 50% service/quality performance, "
+             "bounded to 10-100. Current reputation can differ from an original historical result after an instructor correction.",
+    )
     snapshot_cols[4].metric("Cash", f"${cash_balance:,.0f}")
     snapshot_cols[5].metric("Debt", f"${short_term_debt:,.0f}")
     snapshot_cols[6].metric(

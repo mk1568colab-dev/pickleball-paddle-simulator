@@ -7,6 +7,7 @@ import sqlite3
 from data.classroom_start import COMMON_PROFILE
 from utils.bootstrap import ensure_app_storage
 from utils.database import get_connection
+from engine.reputation import MIN_REPUTATION, POLICY_BASIS
 
 LATE_ENTRY_REPUTATION_DEDUCTION = 10.0
 
@@ -39,10 +40,15 @@ def load_entry_reputation(connection: sqlite3.Connection | None = None) -> Entry
     ).fetchone()[0]
     scores = []
     if completed_round is not None:
+        rebased = connection.execute('''SELECT 1 FROM decision_audit_events e
+            JOIN decision_audit_context c ON c.game_id=e.game_id
+            WHERE e.comparison_basis=? LIMIT 1''', (POLICY_BASIS,)).fetchone() is not None
         rows = connection.execute(
             """
-            SELECT r.reputation_after_round
+            SELECT CASE WHEN ? THEN COALESCE(s.reputation_score,r.reputation_after_round)
+                        ELSE r.reputation_after_round END
             FROM round_results AS r
+            LEFT JOIN team_states s ON s.team_name=r.team_name COLLATE NOCASE
             WHERE r.round_number = ?
               AND EXISTS (
                   SELECT 1 FROM users AS u
@@ -50,7 +56,7 @@ def load_entry_reputation(connection: sqlite3.Connection | None = None) -> Entry
                     AND u.role = 'team_leader' AND u.is_active = 1
               )
             """,
-            (completed_round,),
+            (int(rebased), completed_round),
         ).fetchall()
         scores = sorted(float(row[0]) for row in rows
                         if row[0] is not None and isfinite(float(row[0]))
@@ -58,7 +64,7 @@ def load_entry_reputation(connection: sqlite3.Connection | None = None) -> Entry
     if not scores:
         score = COMMON_PROFILE.base_reputation
         if completed_round is not None:
-            score = max(0.0, score - LATE_ENTRY_REPUTATION_DEDUCTION)
+            score = max(MIN_REPUTATION, score - LATE_ENTRY_REPUTATION_DEDUCTION)
         return EntryReputation(score, completed_round, 0)
 
     # Linear interpolation: position 0.2 * (n - 1), not 20% of a score.
@@ -66,5 +72,5 @@ def load_entry_reputation(connection: sqlite3.Connection | None = None) -> Entry
     lower = int(position)
     upper = min(lower + 1, len(scores) - 1)
     benchmark = scores[lower] + (position - lower) * (scores[upper] - scores[lower])
-    score = max(0.0, min(benchmark, COMMON_PROFILE.base_reputation) - LATE_ENTRY_REPUTATION_DEDUCTION)
+    score = max(MIN_REPUTATION, min(benchmark, COMMON_PROFILE.base_reputation) - LATE_ENTRY_REPUTATION_DEDUCTION)
     return EntryReputation(round(score, 2), completed_round, len(scores), round(benchmark, 2))

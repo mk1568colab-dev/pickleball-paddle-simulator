@@ -8,6 +8,7 @@ from pathlib import Path
 import sqlite3
 
 from utils.decision_audit import _snapshot
+from engine.reputation import POLICY_BASIS
 
 
 def adjust_late_entry_reputation(path, *, team, game_id, expected_round, expected_score,
@@ -27,6 +28,9 @@ def adjust_late_entry_reputation(path, *, team, game_id, expected_round, expecte
         context = connection.execute('SELECT game_id FROM decision_audit_context WHERE singleton=1').fetchone()
         if not context or context['game_id'] != game_id:
             raise ValueError('Wrong game/classroom. No changes made.')
+        if connection.execute('SELECT 1 FROM decision_audit_events WHERE game_id=? AND comparison_basis=?',
+                              (game_id, POLICY_BASIS)).fetchone():
+            raise ValueError('Superseded by the 50/50 policy replay. Do not deduct the entry penalty again.')
         state = connection.execute('SELECT * FROM team_states WHERE team_name=? COLLATE NOCASE', (team,)).fetchone()
         if state is None:
             raise ValueError('Team does not exist. No changes made.')
