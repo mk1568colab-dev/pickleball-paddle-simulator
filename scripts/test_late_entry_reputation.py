@@ -109,11 +109,11 @@ class LateEntryTests(unittest.TestCase):
         names = self.incumbents()
         before = self.existing_records(names)
         snapshot = load_entry_reputation()
-        self.assertEqual((snapshot.score, snapshot.team_count, snapshot.round_number), (8, 5, 1))
+        self.assertEqual((snapshot.score, snapshot.team_count, snapshot.round_number), (10, 5, 1))
         self.assertEqual(snapshot.benchmark_score, 18)
         self.add_team("Late Firm")
         state = load_team_states(team_name="Late Firm")[0]
-        self.assertEqual(state, replace(initial_state("Late Firm"), reputation_score=8))
+        self.assertEqual(state, replace(initial_state("Late Firm"), reputation_score=10))
         self.assertEqual(before, self.existing_records(names))
 
     def test_latest_completed_results_not_live_state_or_pending_results(self):
@@ -135,19 +135,19 @@ class LateEntryTests(unittest.TestCase):
             for name in ("Inactive", "Deleted", "admin_only")
         ])
         self.assertEqual(load_entry_reputation().team_count, 5)
-        self.assertEqual(load_entry_reputation().score, 8)
+        self.assertEqual(load_entry_reputation().score, 10)
 
     def test_multiple_logins_for_one_team_do_not_weight_percentile(self):
         self.incumbents()
         create_user("second_login", "hash", "team_leader", "Firm 0", True)
         self.assertEqual(load_entry_reputation().team_count, 5)
-        self.assertEqual(load_entry_reputation().score, 8)
+        self.assertEqual(load_entry_reputation().score, 10)
 
     def test_new_teams_without_results_do_not_lower_later_entry_scores(self):
         self.incumbents()
         for i in range(4):
             self.add_team(f"New Firm {i}")
-            self.assertEqual(self.reputation(f"New Firm {i}"), 8)
+            self.assertEqual(self.reputation(f"New Firm {i}"), 10)
         self.assertEqual(load_entry_reputation().team_count, 5)
 
     def test_existing_team_reputation_is_never_reinitialized(self):
@@ -165,7 +165,7 @@ class LateEntryTests(unittest.TestCase):
     def test_single_team_and_zero_reputation_are_valid(self):
         self.incumbents((0,))
         self.add_team("Late Firm")
-        self.assertEqual(self.reputation("Late Firm"), 0)
+        self.assertEqual(self.reputation("Late Firm"), 10)
         self.assertEqual(load_entry_reputation().team_count, 1)
 
     def test_late_entry_without_active_benchmark_still_has_deduction(self):
@@ -196,7 +196,7 @@ class LateEntryTests(unittest.TestCase):
             self.assertEqual(self.reputation("Late Firm"), 50)
         with database_scope(Path(self.directory.name) / "section_022.db"):
             self.add_team("Late Firm")
-            self.assertEqual(self.reputation("Late Firm"), 8)
+            self.assertEqual(self.reputation("Late Firm"), 10)
 
     def test_excel_batch_uses_one_snapshot_and_preserves_incumbents(self):
         names = self.incumbents()
@@ -207,7 +207,7 @@ class LateEntryTests(unittest.TestCase):
             self.assertEqual(importer.create_teams_from_workbook(rows), 3)
         self.assertEqual(loader.call_count, 1)
         for row in rows:
-            self.assertEqual(self.reputation(row["team_name"]), 8)
+            self.assertEqual(self.reputation(row["team_name"]), 10)
         self.assertEqual(before, self.existing_records(names))
 
     def test_numbered_generator_and_csv_import_freeze_one_snapshot_each(self):
@@ -230,7 +230,7 @@ class LateEntryTests(unittest.TestCase):
         self.assertEqual((imported["created_count"], imported["error_rows"]), (3, []))
         self.assertEqual(loader.call_count, 1)
         for name in ["Generated 1", "Generated 2", "Generated 3", "CSV 0", "CSV 1", "CSV 2"]:
-            self.assertEqual(self.reputation(name), 8)
+            self.assertEqual(self.reputation(name), 10)
 
     def test_admin_page_shows_reputation_and_source_round(self):
         from streamlit.testing.v1 import AppTest
@@ -242,13 +242,13 @@ class LateEntryTests(unittest.TestCase):
             app.run(timeout=30)
         self.assertFalse(app.exception)
         metric = next(m for m in app.metric if m.label == "New-Team Starting Reputation")
-        self.assertEqual(metric.value, "8.00")
+        self.assertEqual(metric.value, "10.00")
         self.assertTrue(any("Round 1 | 5 active teams | 20th percentile" in c.value for c in app.caption))
-        self.assertTrue(any("minus 10 entry points; minimum 0" in c.value for c in app.caption))
+        self.assertTrue(any("minus 10 entry points; minimum 10" in c.value for c in app.caption))
 
     def test_penalty_boundaries_and_cap(self):
         self.incumbents((100,))
-        for benchmark, expected in ((0, 0), (5, 0), (10, 0), (10.01, .01), (30, 20), (60, 50), (100, 50)):
+        for benchmark, expected in ((0, 10), (5, 10), (10, 10), (10.01, 10), (30, 20), (60, 50), (100, 50)):
             with self.subTest(benchmark=benchmark):
                 save_round_results([RoundResult(1, 'Firm 0', COMMON_PROFILE_NAME, reputation_after_round=benchmark)])
                 self.assertEqual(load_entry_reputation().score, expected)
@@ -263,7 +263,7 @@ class LateEntryTests(unittest.TestCase):
                 self.assertEqual(state.reputation_score, score)
         self.assertEqual(simulator._initialize_team_state(None, firm, COMMON_PROFILE).reputation_score, 60)
 
-    def test_zero_entry_survives_preview_and_first_competitive_round(self):
+    def test_entry_floor_survives_preview_and_first_competitive_round(self):
         self.incumbents((0,))
         self.add_team('Late Firm')
         state = load_team_states(team_name='Late Firm')[0]
@@ -277,8 +277,8 @@ class LateEntryTests(unittest.TestCase):
             simulator.preview_team_decision(market, firm, products, [], lines, [], [], [], [state])
             simulator.run_round(market, [firm], lines, products, [], [state])
             self.assertTrue(update.call_args_list)
-            self.assertTrue(all(call.kwargs['current_reputation'] == 0 for call in update.call_args_list))
-        self.assertEqual(self.reputation('Late Firm'), 0)
+            self.assertTrue(all(call.kwargs['current_reputation'] == 10 for call in update.call_args_list))
+        self.assertEqual(self.reputation('Late Firm'), 10)
 
     def test_existing_low_and_zero_scores_not_reinitialized_or_penalized_again(self):
         self.incumbents((30,))

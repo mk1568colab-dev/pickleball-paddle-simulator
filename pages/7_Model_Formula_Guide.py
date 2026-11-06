@@ -23,6 +23,15 @@ def main() -> None:
     require_admin(user)
 
     st.title("Model Formula Guide")
+    st.subheader("Reputation: 50/50")
+    st.code('''quality_score = max(0, 1 - defect_rate / 0.05)  # 0 if nothing produced
+quality_weight = 0.20 + 0.10 * quality_sensitivity
+operating_score = 100 * ((1 - quality_weight) * fill_rate**2 + quality_weight * quality_score)
+next_reputation = clip(0.50 * prior_reputation + 0.50 * operating_score, 10, 100)''', language='text')
+    st.caption("Lost sales and backlog affect fill rate; there are no additional reputation deductions for them or liquidity. "
+               "With no demand or backlog to serve, reputation holds. Fill and defect rates use saved four-decimal precision. "
+               "Late entrants start at the classroom's 20th-percentile benchmark minus 10 points, bounded to 10-50. "
+               "Historical results keep their original values; instructor recalculation adjusts current reputation and records its round-by-round trace in the audit log.")
     policy = load_delivery_policy()
     st.caption("Operating rules are explicit. This classroom also uses seeded, reproducible supplier delivery uncertainty."
                if policy else "This page makes the simulator logic visible. The model is deterministic and rule-based, not an AI black box.")
