@@ -8,16 +8,19 @@ from data.classroom_start import COMMON_PROFILE
 from utils.bootstrap import ensure_app_storage
 from utils.database import get_connection
 
+LATE_ENTRY_REPUTATION_DEDUCTION = 10.0
+
 
 @dataclass(frozen=True)
 class EntryReputation:
     score: float
     round_number: int | None
     team_count: int
+    benchmark_score: float | None = None
 
 
 def load_entry_reputation(connection: sqlite3.Connection | None = None) -> EntryReputation:
-    """Freeze the 20th percentile of active teams' latest completed-round scores."""
+    """Freeze a discounted, capped entry score from this classroom's results."""
     if connection is None:
         ensure_app_storage()
         with get_connection() as connection:
@@ -53,11 +56,15 @@ def load_entry_reputation(connection: sqlite3.Connection | None = None) -> Entry
                         if row[0] is not None and isfinite(float(row[0]))
                         and 0 <= float(row[0]) <= 100)
     if not scores:
-        return EntryReputation(COMMON_PROFILE.base_reputation, completed_round, 0)
+        score = COMMON_PROFILE.base_reputation
+        if completed_round is not None:
+            score = max(0.0, score - LATE_ENTRY_REPUTATION_DEDUCTION)
+        return EntryReputation(score, completed_round, 0)
 
     # Linear interpolation: position 0.2 * (n - 1), not 20% of a score.
     position = 0.2 * (len(scores) - 1)
     lower = int(position)
     upper = min(lower + 1, len(scores) - 1)
-    score = scores[lower] + (position - lower) * (scores[upper] - scores[lower])
-    return EntryReputation(round(score, 2), completed_round, len(scores))
+    benchmark = scores[lower] + (position - lower) * (scores[upper] - scores[lower])
+    score = max(0.0, min(benchmark, COMMON_PROFILE.base_reputation) - LATE_ENTRY_REPUTATION_DEDUCTION)
+    return EntryReputation(round(score, 2), completed_round, len(scores), round(benchmark, 2))

@@ -23,7 +23,7 @@ from utils.repository import (
 )
 from utils.security import hash_password, validate_password_strength
 from utils.team_excel_import import read_team_workbook, validate_team_rows, create_teams_from_workbook
-from utils.team_entry import EntryReputation, load_entry_reputation
+from utils.team_entry import EntryReputation, LATE_ENTRY_REPUTATION_DEDUCTION, load_entry_reputation
 
 
 CREDENTIAL_NOTICE_KEY = "admin_credentials_notice"
@@ -232,8 +232,14 @@ def main() -> None:
     if entry_reputation.team_count:
         st.caption(
             f"Round {entry_reputation.round_number} | "
-            f"{entry_reputation.team_count} active teams | 20th percentile. "
+            f"{entry_reputation.team_count} active teams | 20th percentile: {entry_reputation.benchmark_score:.2f}. "
+            f"Capped at the normal 60-point start, then minus {LATE_ENTRY_REPUTATION_DEDUCTION:.0f} entry points; minimum 0. "
             "Existing teams are unchanged."
+        )
+    elif entry_reputation.round_number is not None:
+        st.caption(
+            f"Round {entry_reputation.round_number} completed; no eligible active-team benchmark. "
+            f"Normal starting reputation minus {LATE_ENTRY_REPUTATION_DEDUCTION:.0f} entry points. Existing teams are unchanged."
         )
     else:
         st.caption("Standard starting reputation: no eligible completed-round results.")
